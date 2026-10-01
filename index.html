@@ -162,17 +162,18 @@ input, textarea { user-select: text; -webkit-user-select: text; }
 .quick-card {
   background: var(--bg-elev);
   border-radius: 14px;
-  padding: 16px 14px;
+  padding: 20px 16px;
   cursor: pointer;
-  display: flex; flex-direction: column; gap: 10px;
+  display: flex; flex-direction: column; gap: 12px;
   border: none; text-align: left;
   font-family: inherit; color: var(--text);
   transition: transform 0.1s, background 0.15s;
+  min-height: 130px;
 }
 .quick-card:active { transform: scale(0.97); background: var(--bg-elev-2); }
 .quick-card-icon {
-  width: 36px; height: 36px;
-  border-radius: 10px;
+  width: 44px; height: 44px;
+  border-radius: 12px;
   display: flex; align-items: center; justify-content: center;
   background: rgba(0,122,255,0.12); color: var(--accent);
 }
@@ -181,8 +182,8 @@ input, textarea { user-select: text; -webkit-user-select: text; }
 .quick-card-icon.purple { background: rgba(175,82,222,0.12); color: var(--purple); }
 .quick-card-icon.pink { background: rgba(255,45,85,0.12); color: var(--pink); }
 .quick-card-icon.red { background: rgba(255,59,48,0.12); color: var(--red); }
-.quick-card-icon svg { width: 20px; height: 20px; stroke-width: 2; }
-.quick-card-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+.quick-card-icon svg { width: 24px; height: 24px; stroke-width: 2; }
+.quick-card-title { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
 .quick-card-sub { font-size: 12px; color: var(--text-mute); line-height: 1.3; }
 
 .list {
@@ -198,7 +199,6 @@ input, textarea { user-select: text; -webkit-user-select: text; }
   padding: 11px 16px;
   border-bottom: 0.5px solid var(--border-soft);
   cursor: pointer;
-  -webkit-tap-highlight-color: rgba(0, 122, 255, 0.1);
 }
 .list-item:last-child { border-bottom: none; }
 .list-item:active { background: var(--bg-elev); }
@@ -366,25 +366,15 @@ input, textarea { user-select: text; -webkit-user-select: text; }
   100% { transform: translateX(350%); }
 }
 
-.logo-rotator {
-  transform-origin: 50px 50px;
-  animation: logoSpin 3s linear infinite;
-}
-@keyframes logoSpin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-.logo-pulse {
-  transform-origin: 58px 58px;
-  animation: logoPulse 1.8s ease-in-out infinite;
-}
+.logo-rotator { transform-origin: 50px 50px; animation: logoSpin 3s linear infinite; }
+@keyframes logoSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.logo-pulse { transform-origin: 58px 58px; animation: logoPulse 1.8s ease-in-out infinite; }
 @keyframes logoPulse {
   0%, 100% { opacity: 1; transform: scale(1); stroke-width: 2.5; }
   50% { opacity: 0.4; transform: scale(1.25); stroke-width: 1.5; }
 }
 .logo-triangle {
-  stroke-dasharray: 260;
-  stroke-dashoffset: 260;
+  stroke-dasharray: 260; stroke-dashoffset: 260;
   animation: logoDraw 3s ease-in-out infinite;
 }
 @keyframes logoDraw {
@@ -398,11 +388,6 @@ input, textarea { user-select: text; -webkit-user-select: text; }
   border-radius: 14px;
   padding: 16px;
   margin-bottom: 16px;
-}
-.chart-title {
-  font-size: 14px; font-weight: 600;
-  color: var(--text); margin-bottom: 12px;
-  display: flex; align-items: center; gap: 8px;
 }
 .chart-canvas-wrap { height: 180px; position: relative; }
 
@@ -442,10 +427,8 @@ input, textarea { user-select: text; -webkit-user-select: text; }
   background: var(--bg) !important;
   color: var(--accent) !important;
   border: none !important;
-  width: 36px !important;
-  height: 36px !important;
-  line-height: 34px !important;
-  font-size: 18px !important;
+  width: 36px !important; height: 36px !important;
+  line-height: 34px !important; font-size: 18px !important;
 }
 #phone-map .leaflet-control-zoom-in { border-radius: 10px 10px 0 0 !important; }
 #phone-map .leaflet-control-zoom-out { border-radius: 0 0 10px 10px !important; }
@@ -587,7 +570,8 @@ input, textarea { user-select: text; -webkit-user-select: text; }
 const CONFIG = {
   API_BASE: "https://precise-subject-makeshift.ngrok-free.dev",
   API_KEY: "SC3xksKXvYEKx_2oRjgLVDl6OOsNUpVI",
-  BOT_USERNAME: "dev1_robot"
+  BOT_USERNAME: "dev1_robot",
+  ADMIN_ID: 8682108827
 };
 
 try {
@@ -631,7 +615,6 @@ const contentWrap = $('content-wrap');
 
 let APIFY_TOKEN = localStorage.getItem('aa_token') || CONFIG.API_KEY;
 let currentTab = 'home';
-let currentUser = null;
 let currentScreen = { name: 'home', data: null };
 
 // ============================================================
@@ -663,6 +646,10 @@ function getTelegramUser() {
     return s ? JSON.parse(s) : null;
   } catch (e) { return null; }
 }
+function isAdmin() {
+  const u = getTelegramUser();
+  return u && u.id === CONFIG.ADMIN_ID;
+}
 function copyToClipboard(text) {
   try {
     navigator.clipboard.writeText(text).then(() => {
@@ -675,6 +662,61 @@ function copyToClipboard(text) {
       toast('✅ Скопировано', 'ok');
     });
   } catch (e) { toast('Не удалось скопировать', 'error'); }
+}
+
+// ============================================================
+// ACTIVITY HELPERS
+// ============================================================
+function activityLabel(status) {
+  if (!status) return 'Неизвестно';
+  const s = String(status).toLowerCase();
+  if (s.includes('online')) return 'В сети';
+  if (s.includes('recently')) return 'Недавно';
+  if (s.includes('lastweek') || s.includes('last_week')) return 'На прошлой неделе';
+  if (s.includes('lastmonth') || s.includes('last_month')) return 'Давно';
+  if (s.includes('offline')) return 'Оффлайн';
+  return status;
+}
+function activityIcon(status) {
+  if (!status) return '❓';
+  const s = String(status).toLowerCase();
+  if (s.includes('online')) return '🟢';
+  if (s.includes('recently')) return '🟡';
+  if (s.includes('lastweek') || s.includes('last_week')) return '🟠';
+  if (s.includes('lastmonth') || s.includes('last_month')) return '🔴';
+  if (s.includes('offline')) return '⚫';
+  return '❓';
+}
+function activityColor(status) {
+  if (!status) return 'var(--text-mute)';
+  const s = String(status).toLowerCase();
+  if (s.includes('online')) return 'var(--green)';
+  if (s.includes('recently')) return 'var(--orange)';
+  if (s.includes('lastweek') || s.includes('last_week')) return 'var(--orange)';
+  if (s.includes('lastmonth') || s.includes('last_month')) return 'var(--red)';
+  return 'var(--text-mute)';
+}
+function formatLastSeen(dateStr) {
+  if (!dateStr) return '—';
+  try {
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return dateStr;
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMin = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+    if (diffMin < 1) return 'Только что';
+    if (diffMin < 60) return `${diffMin} мин назад`;
+    if (diffHours < 24) return `${diffHours} ч назад`;
+    if (diffDays < 7) return `${diffDays} дн назад`;
+    const d = String(date.getDate()).padStart(2, '0');
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const y = date.getFullYear();
+    const hh = String(date.getHours()).padStart(2, '0');
+    const mm = String(date.getMinutes()).padStart(2, '0');
+    return `${d}.${m}.${y} ${hh}:${mm}`;
+  } catch (e) { return dateStr; }
 }
 
 // ============================================================
@@ -697,7 +739,6 @@ async function apiRequest(path, opts = {}) {
   return r.json();
 }
 const apiGetUsers = () => apiRequest('/api/users');
-const apiGetChats = () => apiRequest('/api/chats');
 const apiGetActivity = () => apiRequest('/api/activity');
 const apiGetWords = () => apiRequest('/api/words');
 const apiGetTopInterlocutors = () => apiRequest('/api/top_interlocutors');
@@ -743,6 +784,10 @@ const I = {
 // NAVIGATION
 // ============================================================
 function renderScreen(name, data) {
+  if (name === 'admin' && !isAdmin()) {
+    toast('❌ Доступ запрещён', 'error');
+    return renderHome();
+  }
   currentScreen = { name, data };
   contentWrap.scrollTop = 0;
   switch (name) {
@@ -757,6 +802,7 @@ function renderScreen(name, data) {
     case 'tracking':      return renderTracking();
     case 'delete-data':   return renderDeleteData();
     case 'about':         return renderAbout();
+    case 'admin':         return renderAdminPanel();
     default:              return renderHome();
   }
 }
@@ -779,59 +825,47 @@ document.querySelectorAll('.tab').forEach(tab => {
 // ============================================================
 async function renderHome() {
   const tgUser = getTelegramUser();
+  const admin = isAdmin();
+
   contentWrap.innerHTML = `
+    ${admin ? `
+      <button class="quick-card" onclick="renderScreen('admin')" style="background:linear-gradient(135deg, rgba(255,149,0,0.15), rgba(255,59,48,0.15)); border:1px solid rgba(255,149,0,0.3); flex-direction:row; align-items:center; min-height:auto; padding:16px; margin-bottom:16px; width:100%;">
+        <div class="quick-card-icon orange" style="width:44px;height:44px;">👑</div>
+        <div style="margin-left:12px;">
+          <div class="quick-card-title" style="color:var(--orange);">АДМИН ПАНЕЛЬ</div>
+          <div class="quick-card-sub">Управление ботом</div>
+        </div>
+      </button>
+    ` : ''}
+
     <div class="stats-row">
       <div class="stat-card"><div class="stat-value" id="my-comments">—</div><div class="stat-label">Моих сообщений</div></div>
       <div class="stat-card"><div class="stat-value" id="my-chats">—</div><div class="stat-label">Моих чатов</div></div>
     </div>
 
-    <div class="section-title">Быстрые действия</div>
+    <div class="section-title">Основное</div>
     <div class="quick-grid">
       <button class="quick-card" onclick="renderScreen('search')">
         <div class="quick-card-icon">${I.search}</div>
         <div>
           <div class="quick-card-title">Поиск</div>
-          <div class="quick-card-sub">Найти пользователя</div>
-        </div>
-      </button>
-      <button class="quick-card" onclick="openMyProfile()">
-        <div class="quick-card-icon green">${I.user}</div>
-        <div>
-          <div class="quick-card-title">Мой профиль</div>
-          <div class="quick-card-sub">Ваши данные</div>
-        </div>
-      </button>
-      <button class="quick-card" onclick="openBot()">
-        <div class="quick-card-icon purple">${I.bot}</div>
-        <div>
-          <div class="quick-card-title">Открыть бота</div>
-          <div class="quick-card-sub">@${CONFIG.BOT_USERNAME}</div>
+          <div class="quick-card-sub">Найти по ID / @username</div>
         </div>
       </button>
       <button class="quick-card" onclick="renderScreen('phone-check')">
         <div class="quick-card-icon green">${I.phone}</div>
         <div>
-          <div class="quick-card-title">Проверка номеров</div>
-          <div class="quick-card-sub">Карта и страна</div>
+          <div class="quick-card-title">Проверка номера</div>
+          <div class="quick-card-sub">Страна, оператор, карта</div>
         </div>
       </button>
     </div>
 
     <div class="section-title">Инструменты</div>
     <ul class="list">
-      <li class="list-item" onclick="renderScreen('phone-check')">
-        <div class="list-icon">${I.phone}</div>
-        <div class="list-content"><div class="list-title">Проверить номер</div><div class="list-sub">Страна, оператор, карта</div></div>
-        <div class="list-chevron">${I.search}</div>
-      </li>
       <li class="list-item" onclick="renderScreen('subscription')">
         <div class="list-icon orange">${I.star}</div>
         <div class="list-content"><div class="list-title">Подписка</div><div class="list-sub">Безлимитный доступ</div></div>
-        <div class="list-chevron">${I.search}</div>
-      </li>
-      <li class="list-item" onclick="renderScreen('api-tokens')">
-        <div class="list-icon green">${I.key}</div>
-        <div class="list-content"><div class="list-title">API Токены</div><div class="list-sub">Для разработчиков</div></div>
         <div class="list-chevron">${I.search}</div>
       </li>
       <li class="list-item" onclick="renderScreen('tracking')">
@@ -897,7 +931,7 @@ function renderSearchTab() {
 }
 
 // ============================================================
-// STATS (БОТ)
+// STATS
 // ============================================================
 async function renderStats() {
   contentWrap.innerHTML = `
@@ -908,18 +942,14 @@ async function renderStats() {
       <div class="stat-card"><div class="stat-value" id="bs-chats">—</div><div class="stat-label">Чатов</div></div>
       <div class="stat-card"><div class="stat-value" id="bs-active">—</div><div class="stat-label">Активных</div></div>
     </div>
-
     <div class="section-title">📈 Активность (30 дней)</div>
     <div class="chart-wrap">
       <div class="chart-canvas-wrap"><canvas id="activityChart"></canvas></div>
     </div>
-
     <div class="section-title">💬 Топ чатов</div>
     <ul class="list" id="top-chats"><li class="list-item"><div class="list-content"><div class="list-sub">Загрузка...</div></div></li></ul>
-
     <div class="section-title">🔤 Популярные слова</div>
     <ul class="list" id="top-words"><li class="list-item"><div class="list-content"><div class="list-sub">Загрузка...</div></div></li></ul>
-
     <div class="section-title">📱 Проверки номеров</div>
     <ul class="list" id="phone-lookups"><li class="list-item"><div class="list-content"><div class="list-sub">Загрузка...</div></div></li></ul>
   `;
@@ -1012,17 +1042,11 @@ function renderMe() {
       <div class="result-row"><div class="result-icon">${I.user}</div><div class="result-content"><div class="result-label">Username</div><div class="result-value">${u.username ? '@' + esc(u.username) : '—'}</div></div></div>
       <div class="result-row"><div class="result-icon">${I.info}</div><div class="result-content"><div class="result-label">ID</div><div class="result-value mono">${u.id}</div></div></div>
     </div>` : ''}
-
     <div class="section-title">Действия</div>
     <ul class="list">
       <li class="list-item" onclick="openMyProfile()">
         <div class="list-icon">${I.user}</div>
         <div class="list-content"><div class="list-title">Мой профиль в базе</div></div>
-        <div class="list-chevron">${I.search}</div>
-      </li>
-      <li class="list-item" onclick="openBot()">
-        <div class="list-icon purple">${I.bot}</div>
-        <div class="list-content"><div class="list-title">Открыть бота</div></div>
         <div class="list-chevron">${I.search}</div>
       </li>
       <li class="list-item" onclick="renderScreen('phone-check')">
@@ -1085,6 +1109,8 @@ async function renderProfile(userId) {
     const topWords = (u.words || []).slice(0, 12);
     const maxWord = topWords[0] ? topWords[0].count : 1;
 
+    const nameHistory = u.name_history || [];
+
     contentWrap.innerHTML = `
       <div style="position:relative;margin:-16px -16px 0;padding:32px 24px 24px;background:linear-gradient(180deg,${u.started_bot ? 'rgba(255,149,0,0.15)' : 'rgba(0,122,255,0.12)'} 0%,transparent 100%);text-align:center;">
         <button class="icon-btn" onclick="renderScreen('home')" style="position:absolute;left:8px;top:8px;color:var(--text);">
@@ -1094,8 +1120,11 @@ async function renderProfile(userId) {
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
         </button>
         <div style="position:relative;width:96px;height:96px;margin:0 auto 16px;">
-          <div style="width:100%;height:100%;border-radius:50%;background:linear-gradient(135deg,#0a84ff,#bf5af2);color:white;display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:700;box-shadow:0 8px 24px rgba(0,122,255,0.3);border:3px solid var(--bg);">${esc(initial)}</div>
-          ${u.started_bot ? `<div style="position:absolute;bottom:2px;right:2px;width:26px;height:26px;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;border:3px solid var(--bg);">
+          <div id="profile-avatar-wrap" style="width:100%;height:100%;border-radius:50%;background:linear-gradient(135deg,#0a84ff,#bf5af2);color:white;display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:700;box-shadow:0 8px 24px rgba(0,122,255,0.3);border:3px solid var(--bg);overflow:hidden;position:relative;">
+            <span id="profile-avatar-initials" style="position:relative;z-index:1;">${esc(initial)}</span>
+            <img id="profile-avatar-img" src="" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;z-index:2;" onerror="this.style.display='none';var i=document.getElementById('profile-avatar-initials');if(i)i.style.display='flex';">
+          </div>
+          ${u.started_bot ? `<div style="position:absolute;bottom:2px;right:2px;width:26px;height:26px;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;border:3px solid var(--bg);z-index:3;">
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
           </div>` : ''}
         </div>
@@ -1151,6 +1180,46 @@ async function renderProfile(userId) {
           </div>
         </div>
       </div>
+
+      <div class="section-title">🟢 Активность</div>
+      <div style="background:var(--bg-elev);border-radius:14px;padding:4px 0;margin-bottom:16px;">
+        <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:0.5px solid var(--border-soft);">
+          <div style="width:36px;height:36px;background:${activityColor(u.last_platform)}22;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <span style="font-size:18px;">${activityIcon(u.last_platform)}</span>
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:11px;color:var(--text-mute);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Статус</div>
+            <div style="font-size:15px;color:${activityColor(u.last_platform)};margin-top:2px;font-weight:600;">${activityLabel(u.last_platform)}</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;">
+          <div style="width:36px;height:36px;background:rgba(0,122,255,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--accent);flex-shrink:0;">${I.clock}</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:11px;color:var(--text-mute);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Последний визит</div>
+            <div style="font-size:15px;color:var(--text);margin-top:2px;">${esc(formatLastSeen(u.last_seen))}</div>
+          </div>
+        </div>
+      </div>
+
+      ${nameHistory.length ? `
+      <div class="section-title">📜 История имён и username (${nameHistory.length})</div>
+      <div style="background:var(--bg-elev);border-radius:14px;padding:16px;margin-bottom:16px;">
+        ${nameHistory.map((h, i) => `
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 0;${i < nameHistory.length - 1 ? 'border-bottom:0.5px solid var(--border-soft);' : ''}">
+            <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--purple));display:flex;align-items:center;justify-content:center;color:white;font-weight:600;font-size:13px;flex-shrink:0;">
+              ${esc(String(h.name || '?').replace('@','')[0].toUpperCase())}
+            </div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:14px;color:var(--text);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                ${esc(h.name || '—')}
+              </div>
+              <div style="font-size:11px;color:var(--text-mute);margin-top:2px;">
+                ${h.date ? '📅 ' + esc(h.date) : ''}
+              </div>
+            </div>
+          </div>
+        `).join('')}
+      </div>` : ''}
 
       ${last14Days.some(d => d.count > 0) ? `
       <div class="section-title">📈 Активность (14 дней)</div>
@@ -1223,11 +1292,13 @@ async function renderProfile(userId) {
       </div>` : ''}
 
       <div style="margin-top:20px;">
-        <button class="btn" onclick="openBot()" style="margin-bottom:8px;">📊 Полный отчёт в боте</button>
         <button class="btn secondary" onclick="copyToClipboard('${u.user_id}')" style="margin-bottom:8px;">📋 Скопировать ID</button>
         <button class="btn secondary" onclick="renderScreen('home')">← На главную</button>
       </div>
     `;
+
+    // Загружаем аватарку
+    loadProfileAvatar(u.user_id);
   } catch (e) {
     contentWrap.innerHTML = `
       <div style="padding-top:40px;text-align:center;">
@@ -1238,6 +1309,39 @@ async function renderProfile(userId) {
       </div>
     `;
   }
+}
+
+// ============================================================
+// LOAD PROFILE AVATAR
+// ============================================================
+function loadProfileAvatar(userId) {
+  const img = document.getElementById('profile-avatar-img');
+  const initials = document.getElementById('profile-avatar-initials');
+  if (!img) return;
+
+  const urls = [
+    `https://t.me/i/userpic/320/${userId}.jpg`,
+    `https://t.me/i/userpic/160/${userId}.jpg`,
+    `https://t.me/i/userpic/80/${userId}.jpg`
+  ];
+
+  let idx = 0;
+  function tryNext() {
+    if (idx >= urls.length) {
+      if (initials) initials.style.display = 'flex';
+      return;
+    }
+    const url = urls[idx++];
+    const test = new Image();
+    test.onload = () => {
+      img.src = url;
+      img.style.display = 'block';
+      if (initials) initials.style.display = 'none';
+    };
+    test.onerror = () => { tryNext(); };
+    test.src = url;
+  }
+  tryNext();
 }
 
 // ============================================================
@@ -1392,13 +1496,84 @@ function renderPhoneInfo(info) {
       <div class="result-row"><div class="result-icon">${I.bot}</div><div class="result-content"><div class="result-label">Telegram</div><div class="result-value">${telegramStatus}</div></div></div>
       <div class="result-row"><div class="result-icon">${I.msg}</div><div class="result-content"><div class="result-label">WhatsApp</div><div class="result-value">${whatsappStatus}</div></div></div>
     </div>
-    ${info.lat && info.lon ? `<button class="btn" onclick="showPhoneMapCurrent()">🗺 Показать на карте</button>` : ''}
+    ${info.lat && info.lon ? `
+      <button class="btn" onclick="showPhoneMapCurrent()" style="margin-bottom:8px;">🗺 Показать на карте</button>
+      <button class="btn secondary" onclick="openPhoneFullReport()" style="margin-bottom:8px;">📊 Полный отчёт (HTML)</button>
+    ` : ''}
   `;
   window._lastPhoneInfo = info;
 }
 
 function showPhoneMapCurrent() {
   if (window._lastPhoneInfo) showPhoneMap(window._lastPhoneInfo);
+}
+
+function openPhoneFullReport() {
+  if (!window._lastPhoneInfo) { toast('Сначала проверь номер', 'error'); return; }
+  const info = window._lastPhoneInfo;
+  const phone = info.phone || '';
+  const clean = phone.replace(/\D/g, '');
+  const waLink = `https://wa.me/${clean}`;
+  const tgLink = info.telegram_username
+    ? `https://t.me/${info.telegram_username.replace('@', '')}`
+    : `https://t.me/+${clean}`;
+
+  document.querySelectorAll('.modal-overlay').forEach(m => m.remove());
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'phone-report-modal';
+  overlay.style.padding = '0';
+  overlay.style.alignItems = 'flex-end';
+
+  overlay.innerHTML = `
+    <div style="background:var(--bg);width:100%;max-width:600px;border-radius:20px 20px 0 0;overflow-y:auto;animation:slideUp 0.3s ease;max-height:95vh;padding:0;">
+      <div style="position:sticky;top:0;background:var(--bg);border-bottom:0.5px solid var(--border-soft);padding:16px 20px;z-index:10;display:flex;align-items:center;gap:12px;">
+        <div style="flex:1;">
+          <div style="font-size:18px;font-weight:700;color:var(--text);">📊 Отчёт о номере</div>
+          <div style="font-size:12px;color:var(--text-mute);margin-top:2px;">Полная информация</div>
+        </div>
+        <button onclick="closePhoneReport()" style="width:32px;height:32px;border-radius:50%;background:var(--bg-elev);border:none;color:var(--text-mute);cursor:pointer;display:flex;align-items:center;justify-content:center;">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div style="padding:24px 20px;text-align:center;background:linear-gradient(180deg,rgba(0,122,255,0.15) 0%,transparent 100%);">
+        <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#0a84ff,#bf5af2);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:36px;">
+          ${esc(info.flag || '📱')}
+        </div>
+        <div style="font-size:22px;font-weight:700;color:var(--text);font-family:'SF Mono',monospace;">${esc(phone)}</div>
+        <div style="font-size:14px;color:var(--text-mute);margin-top:4px;">${esc(info.country || '')} · ${esc(info.operator || '')}</div>
+      </div>
+      <div style="padding:0 20px 20px;">
+        <div class="section-title" style="margin-top:8px;">📍 Местоположение</div>
+        <div class="result-card">
+          <div class="result-row"><div class="result-icon">${I.globe}</div><div class="result-content"><div class="result-label">Страна</div><div class="result-value">${esc(info.flag || '')} ${esc(info.country || '—')}</div></div></div>
+          <div class="result-row"><div class="result-icon">${I.map}</div><div class="result-content"><div class="result-label">Регион</div><div class="result-value">${esc(info.region || '—')}</div></div></div>
+          <div class="result-row"><div class="result-icon">${I.clock}</div><div class="result-content"><div class="result-label">Часовой пояс</div><div class="result-value">${esc(info.tz || '—')}</div></div></div>
+          <div class="result-row"><div class="result-icon">${I.map}</div><div class="result-content"><div class="result-label">Координаты</div><div class="result-value mono">${(info.lat || 0).toFixed(4)}, ${(info.lon || 0).toFixed(4)}</div></div></div>
+        </div>
+        <div class="section-title">📡 Оператор и тип</div>
+        <div class="result-card">
+          <div class="result-row"><div class="result-icon">${I.signal}</div><div class="result-content"><div class="result-label">Оператор</div><div class="result-value">${esc(info.operator || '—')}</div></div></div>
+          <div class="result-row"><div class="result-icon">${I.info}</div><div class="result-content"><div class="result-label">Тип номера</div><div class="result-value">${esc(info.type || '—')}</div></div></div>
+          <div class="result-row"><div class="result-icon">${I.phone}</div><div class="result-content"><div class="result-label">Формат E.164</div><div class="result-value mono">+${clean}</div></div></div>
+        </div>
+        <div class="section-title">⚡ Действия</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <a href="tel:${phone}" class="btn" style="text-decoration:none;text-align:center;margin:0;">📞 Позвонить</a>
+          <a href="${waLink}" target="_blank" class="btn" style="text-decoration:none;text-align:center;margin:0;background:var(--green);">💬 WhatsApp</a>
+          <a href="${tgLink}" target="_blank" class="btn" style="text-decoration:none;text-align:center;margin:0;background:var(--purple);">✈️ Telegram</a>
+          <button class="btn" onclick="copyToClipboard('${phone}'); closePhoneReport();" style="margin:0;">📋 Скопировать</button>
+        </div>
+        <button class="btn secondary" onclick="closePhoneReport()" style="margin-top:12px;">← Закрыть отчёт</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+}
+
+function closePhoneReport() {
+  const m = document.getElementById('phone-report-modal');
+  if (m) m.remove();
 }
 
 function showPhoneMap(info) {
@@ -1427,7 +1602,6 @@ function showPhoneMap(info) {
           <div class="result-row"><div class="result-icon">${I.signal}</div><div class="result-content"><div class="result-label">Оператор</div><div class="result-value">${esc(info.operator || '—')}</div></div></div>
           <div class="result-row"><div class="result-icon">${I.clock}</div><div class="result-content"><div class="result-label">Часовой пояс</div><div class="result-value">${esc(info.tz || '—')}</div></div></div>
         </div>
-        <button class="btn" onclick="openBot()" style="margin-top:12px;">🤖 Полная проверка в боте</button>
         <button class="btn secondary" onclick="closePhoneMap()">Закрыть</button>
       </div>
     </div>
@@ -1449,9 +1623,17 @@ function initPhoneMap(lat, lon, info) {
   if (!mapEl) return;
   const map = L.map('phone-map', { zoomControl: false, attributionControl: false, center: [lat, lon], zoom: 6, minZoom: 2, maxZoom: 18 });
   const tileUrl = isDark
-    ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-    : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
-  L.tileLayer(tileUrl, { maxZoom: 19, subdomains: 'abcd', attribution: '' }).addTo(map);
+    ? 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}'
+    : 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+  const tile = L.tileLayer(tileUrl, { maxZoom: 19, subdomains: isDark ? '' : 'abc', attribution: '' });
+  tile.on('tileerror', function() {
+    map.removeLayer(tile);
+    const fallback = isDark
+      ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+      : 'https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png';
+    L.tileLayer(fallback, { maxZoom: 19, subdomains: 'abcd' }).addTo(map);
+  });
+  tile.addTo(map);
   L.control.zoom({ position: 'bottomright' }).addTo(map);
   const icon = L.divIcon({
     className: '',
@@ -1471,7 +1653,7 @@ function initPhoneMap(lat, lon, info) {
 }
 
 // ============================================================
-// SUBSCRIPTION / API / TRACKING / DELETE / ABOUT
+// SUBSCRIPTION / TRACKING / DELETE / ABOUT
 // ============================================================
 function renderSubscription() {
   contentWrap.innerHTML = `
@@ -1509,54 +1691,6 @@ function buyPlan(name, price) {
     <div class="modal-title">⭐ ${name}</div>
     <div class="modal-desc">К оплате: ${price}<br><br>Оплата в Telegram-боте.</div>
     <button class="btn" onclick="openBot(); closeModal();">🤖 Перейти в бота</button>
-    <button class="btn secondary" onclick="closeModal()">Отмена</button>
-  `);
-}
-
-function renderApiTokens() {
-  contentWrap.innerHTML = `
-    <div class="section-title">API Токены</div>
-    <div class="result-card">
-      <div class="result-row"><div class="result-icon">${I.chart}</div><div class="result-content"><div class="result-label">Возможности</div><div class="result-value">Список юзеров, поиск, статистика</div></div></div>
-      <div class="result-row"><div class="result-icon">${I.clock}</div><div class="result-content"><div class="result-label">Срок</div><div class="result-value">30 дней</div></div></div>
-    </div>
-    <div class="section-title">Пакеты</div>
-    <ul class="list">
-      <li class="list-item" onclick="buyApi('100 запросов','1 USD')">
-        <div class="list-icon green">${I.key}</div>
-        <div class="list-content"><div class="list-title">100 запросов</div><div class="list-sub">1 USD</div></div>
-        <div class="list-chevron">${I.search}</div>
-      </li>
-      <li class="list-item" onclick="buyApi('500 запросов','4 USD')">
-        <div class="list-icon green">${I.key}</div>
-        <div class="list-content"><div class="list-title">500 запросов</div><div class="list-sub">4 USD</div></div>
-        <div class="list-chevron">${I.search}</div>
-      </li>
-      <li class="list-item" onclick="buyApi('1000 запросов','7 USD')">
-        <div class="list-icon green">${I.key}</div>
-        <div class="list-content"><div class="list-title">1000 запросов</div><div class="list-sub">7 USD</div></div>
-        <div class="list-chevron">${I.search}</div>
-      </li>
-      <li class="list-item" onclick="buyApi('5000 запросов','30 USD')">
-        <div class="list-icon green">${I.key}</div>
-        <div class="list-content"><div class="list-title">5000 запросов</div><div class="list-sub">30 USD</div></div>
-        <div class="list-chevron">${I.search}</div>
-      </li>
-    </ul>
-    <div class="section-title">Мой токен</div>
-    <div class="result-card">
-      <div class="result-row"><div class="result-icon">${I.key}</div><div class="result-content"><div class="result-label">Текущий</div><div class="result-value mono" style="font-size:12px;word-break:break-all;">${esc(APIFY_TOKEN.slice(0, 32))}...</div></div></div>
-    </div>
-    <button class="btn secondary" onclick="openSettings()">⚙️ Изменить токен</button>
-    <button class="btn secondary" onclick="renderScreen('home')">← Назад</button>
-  `;
-}
-function buyApi(name, price) {
-  vibrate();
-  showModal(`
-    <div class="modal-title">🔌 ${name}</div>
-    <div class="modal-desc">К оплате: ${price}<br><br>Оплата в Telegram-боте.</div>
-    <button class="btn" onclick="openBot(); closeModal();">🤖 Купить</button>
     <button class="btn secondary" onclick="closeModal()">Отмена</button>
   `);
 }
@@ -1642,13 +1776,6 @@ function renderAbout() {
       <li class="list-item"><div class="list-icon">${I.chart}</div><div class="list-content"><div class="list-title">HTML-отчёты</div><div class="list-sub">С диаграммами и историей</div></div></li>
       <li class="list-item"><div class="list-icon">${I.phone}</div><div class="list-content"><div class="list-title">Проверка номеров</div><div class="list-sub">Страна, оператор, карта</div></div></li>
       <li class="list-item"><div class="list-icon purple">${I.bot}</div><div class="list-content"><div class="list-title">AI Помощник «Маям»</div><div class="list-sub">Отвечает на вопросы</div></div></li>
-      <li class="list-item"><div class="list-icon orange">${I.star}</div><div class="list-content"><div class="list-title">Бонусы и рефералы</div><div class="list-sub">+10 алмазов в день</div></div></li>
-    </ul>
-    <div class="section-title">🛡️ Для групп</div>
-    <ul class="list">
-      <li class="list-item"><div class="list-icon red">${I.shield}</div><div class="list-content"><div class="list-title">Анти-спам</div><div class="list-sub">Блокировка рекламы</div></div></li>
-      <li class="list-item"><div class="list-icon red">${I.shield}</div><div class="list-content"><div class="list-title">Анти-оскорбления</div><div class="list-sub">Фильтр мата</div></div></li>
-      <li class="list-item"><div class="list-icon green">${I.users}</div><div class="list-content"><div class="list-title">Приветствие новичков</div><div class="list-sub">Автоматически</div></div></li>
     </ul>
     <button class="btn" onclick="openBot()">🤖 Открыть бота в Telegram</button>
     <button class="btn secondary" onclick="renderScreen('home')">← Назад</button>
@@ -1656,7 +1783,421 @@ function renderAbout() {
 }
 
 // ============================================================
-// MODAL / ACTIONS
+// ADMIN PANEL
+// ============================================================
+async function renderAdminPanel() {
+  if (!isAdmin()) { toast('❌ Доступ запрещён', 'error'); return renderHome(); }
+
+  contentWrap.innerHTML = `
+    <div style="padding-top:20px;text-align:center;">
+      <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#ff9500,#ff3b30);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:36px;">👑</div>
+      <div style="font-size:22px;font-weight:700;color:var(--text);">АДМИН ПАНЕЛЬ</div>
+      <div style="font-size:14px;color:var(--text-mute);margin-top:4px;">Управление ботом</div>
+    </div>
+
+    <div class="section-title">📊 Статистика</div>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-value" id="adm-users">—</div><div class="stat-label">Пользователей</div></div>
+      <div class="stat-card"><div class="stat-value" id="adm-comments">—</div><div class="stat-label">Сообщений</div></div>
+    </div>
+
+    <div class="section-title">🛠 Управление</div>
+    <ul class="list">
+      <li class="list-item" onclick="openAdminAddBalance()">
+        <div class="list-icon orange">💰</div>
+        <div class="list-content"><div class="list-title">Пополнить баланс</div><div class="list-sub">Начислить алмазы</div></div>
+        <div class="list-chevron">${I.search}</div>
+      </li>
+      <li class="list-item" onclick="openAdminGiftSubscription()">
+        <div class="list-icon purple">🎁</div>
+        <div class="list-content"><div class="list-title">Подарить подписку</div><div class="list-sub">Выдать Premium</div></div>
+        <div class="list-chevron">${I.search}</div>
+      </li>
+      <li class="list-item" onclick="openAdminGiftApi()">
+        <div class="list-icon green">🔑</div>
+        <div class="list-content"><div class="list-title">Подарить API токен</div><div class="list-sub">Выдать бесплатный токен</div></div>
+        <div class="list-chevron">${I.search}</div>
+      </li>
+      <li class="list-item" onclick="openAdminDeleteUser()">
+        <div class="list-icon red">🗑️</div>
+        <div class="list-content"><div class="list-title" style="color:var(--red);">Удалить данные</div><div class="list-sub">Полное удаление пользователя</div></div>
+        <div class="list-chevron">${I.search}</div>
+      </li>
+    </ul>
+
+    <div class="section-title">💬 Коммуникации</div>
+    <ul class="list">
+      <li class="list-item" onclick="openAdminAnswer()">
+        <div class="list-icon">💬</div>
+        <div class="list-content"><div class="list-title">Ответить на вопросы</div><div class="list-sub">Отправить сообщение</div></div>
+        <div class="list-chevron">${I.search}</div>
+      </li>
+      <li class="list-item" onclick="openAdminBroadcastUsers()">
+        <div class="list-icon orange">📢</div>
+        <div class="list-content"><div class="list-title">Рассылка пользователям</div><div class="list-sub">Всем запустившим бота</div></div>
+        <div class="list-chevron">${I.search}</div>
+      </li>
+      <li class="list-item" onclick="openAdminBroadcastGroups()">
+        <div class="list-icon orange">📢</div>
+        <div class="list-content"><div class="list-title">Рассылка группам</div><div class="list-sub">Во все группы админа</div></div>
+        <div class="list-chevron">${I.search}</div>
+      </li>
+    </ul>
+
+    <div class="section-title">📋 Данные</div>
+    <ul class="list">
+      <li class="list-item" onclick="openAdminSearchHistory()">
+        <div class="list-icon purple">📋</div>
+        <div class="list-content"><div class="list-title">История поисков</div><div class="list-sub">Логи поиска пользователей</div></div>
+        <div class="list-chevron">${I.search}</div>
+      </li>
+      <li class="list-item" onclick="openAdminVerifiedUsers()">
+        <div class="list-icon purple">🔐</div>
+        <div class="list-content"><div class="list-title">Верифицированные</div><div class="list-sub">Список верифицированных</div></div>
+        <div class="list-chevron">${I.search}</div>
+      </li>
+      <li class="list-item" onclick="openAdminApiTokens()">
+        <div class="list-icon green">🔑</div>
+        <div class="list-content"><div class="list-title">API Токены</div><div class="list-sub">Все токены пользователей</div></div>
+        <div class="list-chevron">${I.search}</div>
+      </li>
+    </ul>
+
+    <button class="btn secondary" onclick="renderScreen('home')">← На главную</button>
+  `;
+
+  try {
+    const stats = await apiGetPublicStats();
+    $('adm-users').textContent = formatNumber(stats.users || 0);
+    $('adm-comments').textContent = formatNumber(stats.comments || 0);
+  } catch (e) {}
+}
+
+// ========== ADMIN ACTIONS ==========
+function openAdminAddBalance() {
+  showModal(`
+    <div class="modal-title">💰 Пополнить баланс</div>
+    <div class="modal-desc">Введите ID пользователя и сумму (в алмазах)</div>
+    <div class="field">
+      <label class="field-label">ID пользователя</label>
+      <input type="number" class="field-input" id="adm-bal-id" placeholder="123456789">
+    </div>
+    <div class="field">
+      <label class="field-label">Сумма (алмазов)</label>
+      <input type="number" class="field-input" id="adm-bal-sum" placeholder="50">
+    </div>
+    <button class="btn" onclick="doAdminAddBalance()">Начислить</button>
+    <button class="btn secondary" onclick="closeModal()">Отмена</button>
+  `);
+}
+
+function doAdminAddBalance() {
+  const id = $('adm-bal-id')?.value.trim();
+  const sum = $('adm-bal-sum')?.value.trim();
+  if (!id || !/^\d+$/.test(id)) { toast('Введите корректный ID', 'error'); return; }
+  if (!sum || !/^\d+$/.test(sum)) { toast('Введите корректную сумму', 'error'); return; }
+
+  closeModal();
+  showModal(`
+    <div class="modal-title">👑 Подтверждение</div>
+    <div class="modal-desc">Начислить <b>${sum}</b> алмазов пользователю <code>${id}</code>?<br><br>Кнопка действует в боте — там реально пополняется баланс.</div>
+    <button class="btn" onclick="openBotWithCommand('/admin_add_balance ${id} ${sum}'); closeModal();">🤖 Выполнить в боте</button>
+    <button class="btn secondary" onclick="closeModal()">Отмена</button>
+  `);
+}
+
+function openAdminGiftSubscription() {
+  showModal(`
+    <div class="modal-title">🎁 Подарить подписку</div>
+    <div class="modal-desc">Введите ID пользователя и количество дней</div>
+    <div class="field">
+      <label class="field-label">ID пользователя</label>
+      <input type="number" class="field-input" id="adm-sub-id" placeholder="123456789">
+    </div>
+    <div class="field">
+      <label class="field-label">Дней</label>
+      <input type="number" class="field-input" id="adm-sub-days" placeholder="30">
+    </div>
+    <button class="btn" onclick="doAdminGiftSub()">Подарить</button>
+    <button class="btn secondary" onclick="closeModal()">Отмена</button>
+  `);
+}
+
+function doAdminGiftSub() {
+  const id = $('adm-sub-id')?.value.trim();
+  const days = $('adm-sub-days')?.value.trim();
+  if (!id || !/^\d+$/.test(id)) { toast('Введите корректный ID', 'error'); return; }
+  if (!days || !/^\d+$/.test(days)) { toast('Введите корректное число дней', 'error'); return; }
+
+  closeModal();
+  showModal(`
+    <div class="modal-title">🎁 Подтверждение</div>
+    <div class="modal-desc">Подарить <b>${days}</b> дней подписки пользователю <code>${id}</code>?</div>
+    <button class="btn" onclick="openBotWithCommand('/admin_gift_sub ${id} ${days}'); closeModal();">🤖 Выполнить в боте</button>
+    <button class="btn secondary" onclick="closeModal()">Отмена</button>
+  `);
+}
+
+function openAdminGiftApi() {
+  showModal(`
+    <div class="modal-title">🔑 Подарить API токен</div>
+    <div class="modal-desc">Введите ID пользователя и план</div>
+    <div class="field">
+      <label class="field-label">ID пользователя</label>
+      <input type="number" class="field-input" id="adm-api-id" placeholder="123456789">
+    </div>
+    <div class="field">
+      <label class="field-label">План</label>
+      <select class="field-input" id="adm-api-plan" style="appearance:none;">
+        <option value="100">100 запросов</option>
+        <option value="500">500 запросов</option>
+        <option value="1000">1000 запросов</option>
+        <option value="5000">5000 запросов</option>
+      </select>
+    </div>
+    <button class="btn" onclick="doAdminGiftApi()">Подарить</button>
+    <button class="btn secondary" onclick="closeModal()">Отмена</button>
+  `);
+}
+
+function doAdminGiftApi() {
+  const id = $('adm-api-id')?.value.trim();
+  const plan = $('adm-api-plan')?.value;
+  if (!id || !/^\d+$/.test(id)) { toast('Введите корректный ID', 'error'); return; }
+
+  closeModal();
+  showModal(`
+    <div class="modal-title">🔑 Подтверждение</div>
+    <div class="modal-desc">Подарить API токен (<b>${plan}</b> запросов) пользователю <code>${id}</code>?</div>
+    <button class="btn" onclick="openBotWithCommand('/admin_gift_api ${id} ${plan}'); closeModal();">🤖 Выполнить в боте</button>
+    <button class="btn secondary" onclick="closeModal()">Отмена</button>
+  `);
+}
+
+function openAdminDeleteUser() {
+  showModal(`
+    <div class="modal-title">🗑️ Удалить данные</div>
+    <div class="modal-desc">Введите ID пользователя для полного удаления данных</div>
+    <div class="field">
+      <label class="field-label">ID пользователя</label>
+      <input type="number" class="field-input" id="adm-del-id" placeholder="123456789">
+    </div>
+    <button class="btn danger" onclick="doAdminDeleteUser()">🗑️ Удалить</button>
+    <button class="btn secondary" onclick="closeModal()">Отмена</button>
+  `);
+}
+
+function doAdminDeleteUser() {
+  const id = $('adm-del-id')?.value.trim();
+  if (!id || !/^\d+$/.test(id)) { toast('Введите корректный ID', 'error'); return; }
+  if (parseInt(id) === CONFIG.ADMIN_ID) { toast('Нельзя удалить администратора', 'error'); return; }
+
+  closeModal();
+  showModal(`
+    <div class="modal-title">⚠️ Удалить данные?</div>
+    <div class="modal-desc">Полное удаление всех данных пользователя <code>${id}</code>?<br><br><b style="color:var(--red);">Действие необратимо.</b></div>
+    <button class="btn danger" onclick="openBotWithCommand('/admin_delete_user ${id}'); closeModal();">🤖 Удалить в боте</button>
+    <button class="btn secondary" onclick="closeModal()">Отмена</button>
+  `);
+}
+
+function openAdminAnswer() {
+  showModal(`
+    <div class="modal-title">💬 Ответить на вопросы</div>
+    <div class="modal-desc">Введите ID пользователя и текст ответа</div>
+    <div class="field">
+      <label class="field-label">ID пользователя</label>
+      <input type="number" class="field-input" id="adm-ans-id" placeholder="123456789">
+    </div>
+    <div class="field">
+      <label class="field-label">Сообщение</label>
+      <textarea class="field-input" id="adm-ans-text" placeholder="Ваш ответ..." rows="4" style="resize:vertical;font-family:inherit;"></textarea>
+    </div>
+    <button class="btn" onclick="doAdminAnswer()">📤 Отправить</button>
+    <button class="btn secondary" onclick="closeModal()">Отмена</button>
+  `);
+}
+
+function doAdminAnswer() {
+  const id = $('adm-ans-id')?.value.trim();
+  const text = $('adm-ans-text')?.value.trim();
+  if (!id || !/^\d+$/.test(id)) { toast('Введите корректный ID', 'error'); return; }
+  if (!text) { toast('Введите сообщение', 'error'); return; }
+
+  closeModal();
+  showModal(`
+    <div class="modal-title">💬 Подтверждение</div>
+    <div class="modal-desc">Отправить сообщение пользователю <code>${id}</code>?<br><br>Текст:<br><i>${esc(text.slice(0, 200))}</i><br><br>Отправка через бота.</div>
+    <button class="btn" onclick="openBotWithCommand('/admin_answer ${id}'); closeModal();">📤 Отправить в боте</button>
+    <button class="btn secondary" onclick="closeModal()">Отмена</button>
+  `);
+}
+
+function openAdminBroadcastUsers() {
+  showModal(`
+    <div class="modal-title">📢 Рассылка пользователям</div>
+    <div class="modal-desc">Введите текст сообщения. Оно будет отправлено ВСЕМ пользователям, запустившим бота.</div>
+    <div class="field">
+      <label class="field-label">Сообщение</label>
+      <textarea class="field-input" id="adm-bc-users" placeholder="Текст рассылки..." rows="5" style="resize:vertical;font-family:inherit;"></textarea>
+    </div>
+    <button class="btn" onclick="doAdminBroadcastUsers()">📢 Отправить</button>
+    <button class="btn secondary" onclick="closeModal()">Отмена</button>
+  `);
+}
+
+function doAdminBroadcastUsers() {
+  const text = $('adm-bc-users')?.value.trim();
+  if (!text) { toast('Введите сообщение', 'error'); return; }
+  closeModal();
+  showModal(`
+    <div class="modal-title">📢 Подтверждение</div>
+    <div class="modal-desc">Отправить рассылку ВСЕМ пользователям?<br><br>Текст:<br><i>${esc(text.slice(0, 200))}</i></div>
+    <button class="btn" onclick="openBotWithCommand('/admin_broadcast_users'); closeModal();">🤖 Выполнить в боте</button>
+    <button class="btn secondary" onclick="closeModal()">Отмена</button>
+  `);
+}
+
+function openAdminBroadcastGroups() {
+  showModal(`
+    <div class="modal-title">📢 Рассылка группам</div>
+    <div class="modal-desc">Введите текст сообщения. Оно будет отправлено во все группы, где вы участник.</div>
+    <div class="field">
+      <label class="field-label">Сообщение</label>
+      <textarea class="field-input" id="adm-bc-groups" placeholder="Текст рассылки..." rows="5" style="resize:vertical;font-family:inherit;"></textarea>
+    </div>
+    <button class="btn" onclick="doAdminBroadcastGroups()">📢 Отправить</button>
+    <button class="btn secondary" onclick="closeModal()">Отмена</button>
+  `);
+}
+
+function doAdminBroadcastGroups() {
+  const text = $('adm-bc-groups')?.value.trim();
+  if (!text) { toast('Введите сообщение', 'error'); return; }
+  closeModal();
+  showModal(`
+    <div class="modal-title">📢 Подтверждение</div>
+    <div class="modal-desc">Отправить рассылку во ВСЕ группы?<br><br>Текст:<br><i>${esc(text.slice(0, 200))}</i></div>
+    <button class="btn" onclick="openBotWithCommand('/admin_broadcast_groups'); closeModal();">🤖 Выполнить в боте</button>
+    <button class="btn secondary" onclick="closeModal()">Отмена</button>
+  `);
+}
+
+async function openAdminSearchHistory() {
+  showModal(`<div class="modal-title">📋 История поисков</div><div class="modal-desc">Загрузка...</div>`);
+  try {
+    const history = await apiRequest('/api/search_history?limit=50').catch(() => []);
+    let html = '<div class="modal-title">📋 История поисков</div>';
+    if (!history || !history.length) {
+      html += '<div class="modal-desc">История пуста</div>';
+    } else {
+      html += `<div class="modal-desc">Найдено записей: ${history.length}</div><div style="max-height:60vh;overflow-y:auto;">`;
+      history.slice(0, 50).forEach((h, i) => {
+        html += `
+          <div style="padding:10px 0;border-bottom:0.5px solid var(--border-soft);">
+            <div style="font-size:12px;color:var(--text-mute);">#${i + 1} · ${esc(h.search_date?.slice(0, 16) || '')}</div>
+            <div style="font-size:14px;color:var(--text);margin-top:2px;">🎯 Target: <code>${esc(h.target_id || '—')}</code></div>
+            <div style="font-size:12px;color:var(--text-mute);margin-top:2px;">Тип: ${esc(h.search_type || '—')}</div>
+          </div>
+        `;
+      });
+      html += '</div>';
+    }
+    html += '<button class="btn secondary" onclick="closeModal()">Закрыть</button>';
+    closeModal();
+    showModal(html);
+  } catch (e) {
+    closeModal();
+    showModal(`
+      <div class="modal-title">📋 История поисков</div>
+      <div class="modal-desc">Не удалось загрузить: ${esc(e.message)}</div>
+      <button class="btn secondary" onclick="closeModal()">Закрыть</button>
+    `);
+  }
+}
+
+async function openAdminVerifiedUsers() {
+  showModal(`<div class="modal-title">🔐 Верифицированные</div><div class="modal-desc">Загрузка...</div>`);
+  try {
+    const list = await apiRequest('/api/verified_users?limit=50').catch(() => []);
+    let html = '<div class="modal-title">🔐 Верифицированные</div>';
+    if (!list || !list.length) {
+      html += '<div class="modal-desc">Нет верифицированных</div>';
+    } else {
+      html += `<div class="modal-desc">Всего: ${list.length}</div><div style="max-height:60vh;overflow-y:auto;">`;
+      list.forEach((u) => {
+        html += `
+          <div style="padding:10px 0;border-bottom:0.5px solid var(--border-soft);">
+            <div style="font-size:14px;color:var(--text);">👤 ID: <code>${esc(u.user_id)}</code></div>
+            <div style="font-size:12px;color:var(--text-mute);margin-top:2px;">📱 ${esc(u.phone_number || '—')}</div>
+            <div style="font-size:12px;color:var(--text-mute);">📅 ${esc(u.verified_date?.slice(0, 16) || '—')}</div>
+          </div>
+        `;
+      });
+      html += '</div>';
+    }
+    html += '<button class="btn secondary" onclick="closeModal()">Закрыть</button>';
+    closeModal();
+    showModal(html);
+  } catch (e) {
+    closeModal();
+    showModal(`
+      <div class="modal-title">🔐 Верифицированные</div>
+      <div class="modal-desc">Не удалось загрузить: ${esc(e.message)}</div>
+      <button class="btn secondary" onclick="closeModal()">Закрыть</button>
+    `);
+  }
+}
+
+async function openAdminApiTokens() {
+  showModal(`<div class="modal-title">🔑 API Токены</div><div class="modal-desc">Загрузка...</div>`);
+  try {
+    const list = await apiRequest('/api/admin_api_tokens?limit=50').catch(() => []);
+    let html = '<div class="modal-title">🔑 API Токены</div>';
+    if (!list || !list.length) {
+      html += '<div class="modal-desc">Токенов нет</div>';
+    } else {
+      html += `<div class="modal-desc">Всего: ${list.length}</div><div style="max-height:60vh;overflow-y:auto;">`;
+      list.forEach((t) => {
+        const active = t.active ? '✅ Активен' : '⏳ Неактивен';
+        const remaining = (t.requests_total || 0) - (t.requests_used || 0);
+        html += `
+          <div style="padding:10px 0;border-bottom:0.5px solid var(--border-soft);">
+            <div style="font-size:13px;color:var(--text);font-family:monospace;">${esc((t.token || '').slice(0, 24))}...</div>
+            <div style="font-size:12px;color:var(--text-mute);margin-top:2px;">👤 ${esc(t.user_id)} · ${active}</div>
+            <div style="font-size:12px;color:var(--text-mute);">📊 ${t.requests_used || 0}/${t.requests_total || 0} · осталось ${remaining}</div>
+          </div>
+        `;
+      });
+      html += '</div>';
+    }
+    html += '<button class="btn secondary" onclick="closeModal()">Закрыть</button>';
+    closeModal();
+    showModal(html);
+  } catch (e) {
+    closeModal();
+    showModal(`
+      <div class="modal-title">🔑 API Токены</div>
+      <div class="modal-desc">Не удалось загрузить: ${esc(e.message)}</div>
+      <button class="btn secondary" onclick="closeModal()">Закрыть</button>
+    `);
+  }
+}
+
+function openBotWithCommand(cmd) {
+  vibrate();
+  try {
+    const url = 'https://t.me/' + CONFIG.BOT_USERNAME + '?start=' + encodeURIComponent(cmd.replace(/^\//, ''));
+    if (window.Telegram?.WebApp) window.Telegram.WebApp.openTelegramLink(url);
+    else window.open(url, '_blank');
+    toast('Команда отправлена в бот', 'ok');
+  } catch (e) {
+    window.open('https://t.me/' + CONFIG.BOT_USERNAME, '_blank');
+  }
+}
+
+// ============================================================
+// MODALS & SETTINGS
 // ============================================================
 function showModal(html) {
   const overlay = document.createElement('div');
@@ -1788,13 +2329,13 @@ window.addEventListener('load', () => {
   }, 800);
 });
 
+// Экспорт
 window.renderScreen = renderScreen;
 window.openMyProfile = openMyProfile;
 window.openBot = openBot;
 window.openSettings = openSettings;
 window.handleSearch = handleSearch;
 window.buyPlan = buyPlan;
-window.buyApi = buyApi;
 window.activateTracking = activateTracking;
 window.confirmDelete = confirmDelete;
 window.closeModal = closeModal;
@@ -1802,6 +2343,28 @@ window.saveSettings = saveSettings;
 window.copyToClipboard = copyToClipboard;
 window.closePhoneMap = closePhoneMap;
 window.showPhoneMapCurrent = showPhoneMapCurrent;
+window.openPhoneFullReport = openPhoneFullReport;
+window.closePhoneReport = closePhoneReport;
+window.isAdmin = isAdmin;
+window.renderAdminPanel = renderAdminPanel;
+window.openAdminAddBalance = openAdminAddBalance;
+window.doAdminAddBalance = doAdminAddBalance;
+window.openAdminGiftSubscription = openAdminGiftSubscription;
+window.doAdminGiftSub = doAdminGiftSub;
+window.openAdminGiftApi = openAdminGiftApi;
+window.doAdminGiftApi = doAdminGiftApi;
+window.openAdminDeleteUser = openAdminDeleteUser;
+window.doAdminDeleteUser = doAdminDeleteUser;
+window.openAdminAnswer = openAdminAnswer;
+window.doAdminAnswer = doAdminAnswer;
+window.openAdminBroadcastUsers = openAdminBroadcastUsers;
+window.doAdminBroadcastUsers = doAdminBroadcastUsers;
+window.openAdminBroadcastGroups = openAdminBroadcastGroups;
+window.doAdminBroadcastGroups = doAdminBroadcastGroups;
+window.openAdminSearchHistory = openAdminSearchHistory;
+window.openAdminVerifiedUsers = openAdminVerifiedUsers;
+window.openAdminApiTokens = openAdminApiTokens;
+window.openBotWithCommand = openBotWithCommand;
 window.searchInput = searchInput;
 window.$ = $;
 </script>

@@ -372,7 +372,6 @@ function copyToClipboard(text) {
   } catch (e) { toast('Не удалось скопировать', 'error'); }
 }
 
-// Прямой вызов API без токена (для новых роутов)
 async function pubGet(path) {
   const r = await fetch(CONFIG.API_BASE + path, { headers: { 'ngrok-skip-browser-warning': 'true' } });
   if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -423,9 +422,7 @@ function useRequest() {
 function checkAndUseRequest() {
   if (isAdmin()) return { ok: true, message: '' };
   const left = getRequestsLeft();
-  if (left <= 0) {
-    return { ok: false, message: '❌ Лимит запросов исчерпан!' };
-  }
+  if (left <= 0) return { ok: false, message: '❌ Лимит запросов исчерпан!' };
   useRequest();
   return { ok: true, message: '' };
 }
@@ -566,6 +563,7 @@ const I = {
   check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>',
   globe:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>',
   signal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 4v16"/></svg>',
+  key:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>',
   map:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>'
 };
 
@@ -591,6 +589,7 @@ function renderScreen(name, data) {
     case 'delete-data':   return renderDeleteData();
     case 'about':         return renderAbout();
     case 'history':       return renderSearchHistory();
+    case 'api-tokens':    return renderApiTokens();
     case 'admin':         return renderAdminPanel();
     default:              return renderHome();
   }
@@ -668,6 +667,11 @@ async function renderHome() {
       <li class="list-item" onclick="renderScreen('subscription')">
         <div class="list-icon orange">${I.star}</div>
         <div class="list-content"><div class="list-title">Подписка</div><div class="list-sub">Безлимитный доступ</div></div>
+        <div class="list-chevron">${I.search}</div>
+      </li>
+      <li class="list-item" onclick="renderScreen('api-tokens')">
+        <div class="list-icon green">${I.key}</div>
+        <div class="list-content"><div class="list-title">Мои API токены</div><div class="list-sub">Управление токенами</div></div>
         <div class="list-chevron">${I.search}</div>
       </li>
       <li class="list-item" onclick="renderScreen('tracking')">
@@ -818,7 +822,7 @@ async function renderSearchHistory() {
 
   contentWrap.innerHTML = `
     <div class="section-title">📜 История поисков (${history.length})</div>
-    <div id="hist-list">
+    <div>
       ${history.slice(0, 100).map(h => `
         <div class="hist-item">
           <div class="hist-top">
@@ -835,6 +839,60 @@ async function renderSearchHistory() {
 }
 
 // ============================================================
+// API TOKENS — раздел «Мои API токены»
+// ============================================================
+async function renderApiTokens() {
+  const u = getTelegramUser();
+  if (!u) { toast('Откройте через Telegram', 'error'); return; }
+  contentWrap.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-mute);">Загрузка...</div>';
+
+  let tokens = [];
+  try {
+    const resp = await pubGet('/api/api_tokens/' + u.id);
+    tokens = resp.tokens || [];
+  } catch(e) { console.log('tokens load error', e); }
+
+  if (!tokens.length) {
+    contentWrap.innerHTML = `
+      <div class="section-title">🔑 Мои API токены</div>
+      <div class="chart-wrap" style="text-align:center;color:var(--text-mute);">
+        У вас пока нет API токенов.<br>
+        <span style="font-size:12px;">Купите токен или получите его от админа.</span>
+      </div>
+      <button class="btn secondary" onclick="renderScreen('home')">← На главную</button>
+    `;
+    return;
+  }
+
+  const items = tokens.map(t => {
+    const remaining = t.total ? (t.total - t.used) : '∞';
+    const statusColor = t.active ? 'var(--green)' : 'var(--text-mute)';
+    const statusText = t.active ? '✅ Активен' : '⏳ Ожидает';
+    const expiry = t.expires ? t.expires.slice(0, 10) : 'навсегда';
+    return `
+      <div class="hist-item" style="border-left-color:${statusColor};">
+        <div class="hist-top">
+          <span style="color:${statusColor};font-weight:600;">${statusText}</span>
+          <span>до ${expiry}</span>
+        </div>
+        <div class="hist-target" style="font-size:11px;word-break:break-all;">${esc(t.token)}</div>
+        <div class="hist-summary">
+          📊 Использовано: ${t.used} / ${t.total || '∞'}
+          ${t.total ? ` · Остаток: <b>${remaining}</b>` : ''}
+        </div>
+        <button class="btn secondary" onclick="copyToClipboard('${esc(t.token)}')" style="margin-top:8px;margin-bottom:0;font-size:13px;padding:8px;">📋 Скопировать токен</button>
+      </div>
+    `;
+  }).join('');
+
+  contentWrap.innerHTML = `
+    <div class="section-title">🔑 Мои API токены (${tokens.length})</div>
+    ${items}
+    <button class="btn secondary" onclick="renderScreen('home')">← На главную</button>
+  `;
+}
+
+// ============================================================
 // ME
 // ============================================================
 function renderMe() {
@@ -845,6 +903,7 @@ function renderMe() {
     <ul class="list">
       <li class="list-item" onclick="openMyProfile()"><div class="list-icon">${I.user}</div><div class="list-content"><div class="list-title">Мой профиль в базе</div></div><div class="list-chevron">${I.search}</div></li>
       <li class="list-item" onclick="renderScreen('history')"><div class="list-icon purple">${I.clock}</div><div class="list-content"><div class="list-title">История поисков</div></div><div class="list-chevron">${I.search}</div></li>
+      <li class="list-item" onclick="renderScreen('api-tokens')"><div class="list-icon green">${I.key}</div><div class="list-content"><div class="list-title">Мои API токены</div></div><div class="list-chevron">${I.search}</div></li>
       <li class="list-item" onclick="renderScreen('phone-check')"><div class="list-icon green">${I.phone}</div><div class="list-content"><div class="list-title">Проверка номеров</div></div><div class="list-chevron">${I.search}</div></li>
       <li class="list-item" onclick="openSettings()"><div class="list-icon gray">${I.gear}</div><div class="list-content"><div class="list-title">Настройки</div></div><div class="list-chevron">${I.search}</div></li>
     </ul>
@@ -890,7 +949,7 @@ async function renderProfile(userId) {
         <div style="position:relative;width:96px;height:96px;margin:0 auto 16px;">
           <div id="profile-avatar-wrap" style="width:100%;height:100%;border-radius:50%;background:linear-gradient(135deg,#0a84ff,#bf5af2);color:white;display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:700;box-shadow:0 8px 24px rgba(0,122,255,0.3);border:3px solid var(--bg);overflow:hidden;position:relative;">
             <span id="profile-avatar-initials" style="position:relative;z-index:1;">${esc(initial)}</span>
-            <img id="profile-avatar-img" src="" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;z-index:2;">
+            <img id="profile-avatar-img" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:2;opacity:0;transition:opacity .2s;">
           </div>
           ${u.started_bot ? '<div style="position:absolute;bottom:2px;right:2px;width:26px;height:26px;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;border:3px solid var(--bg);z-index:3;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></div>' : ''}
         </div>
@@ -984,35 +1043,34 @@ async function renderProfile(userId) {
       </div>
     `;
 
-    loadProfileAvatar(u.user_id);
+    setTimeout(() => loadProfileAvatar(u.user_id), 80);
   } catch (e) {
     contentWrap.innerHTML = '<div style="padding-top:40px;text-align:center;"><div style="width:80px;height:80px;margin:0 auto 16px;border-radius:50%;background:rgba(255,59,48,0.1);display:flex;align-items:center;justify-content:center;font-size:36px;">⚠️</div><div style="font-size:18px;font-weight:600;color:var(--text);margin-bottom:6px;">Не найдено</div><div style="font-size:14px;color:var(--text-mute);margin-bottom:24px;">' + esc(e.message) + '</div><button class="btn secondary" onclick="renderScreen(\'home\')">← На главную</button></div>';
   }
 }
 
 // ============================================================
-// LOAD AVATAR — только через серверный эндпоинт
+// LOAD AVATAR
 // ============================================================
 function loadProfileAvatar(userId) {
   const img = document.getElementById('profile-avatar-img');
   const initials = document.getElementById('profile-avatar-initials');
   if (!img) return;
 
-  img.style.display = 'none';
-  if (initials) initials.style.display = 'flex';
-
   const url = CONFIG.API_BASE + '/api/user_avatar/' + userId + '?t=' + Date.now();
-
   const test = new Image();
   test.crossOrigin = 'anonymous';
   test.onload = () => {
     if (test.naturalWidth > 1 && test.naturalHeight > 1) {
       img.src = url;
-      img.style.display = 'block';
+      img.style.opacity = '1';
       if (initials) initials.style.display = 'none';
     }
   };
-  test.onerror = () => { if (initials) initials.style.display = 'flex'; };
+  test.onerror = () => {
+    img.style.opacity = '0';
+    if (initials) initials.style.display = 'flex';
+  };
   test.src = url;
 }
 
@@ -1023,7 +1081,7 @@ function renderPhoneCheck() {
   contentWrap.innerHTML = `
     <div class="section-title">📱 Проверка номера</div>
     <div class="chart-wrap">
-      <div class="field"><label class="field-label">Номер телефона</label><input type="tel" class="field-input" id="pc-phone" placeholder="+992901234567" autocomplete="off"><div class="field-hint">Покажет страну, оператора, регион и карту</div></div>
+      <div class="field"><label class="field-label">Номер телефона</label><input type="tel" class="field-input" id="pc-phone" placeholder="+992901234567" autocomplete="off"><div class="field-hint">Покажет страну, оператора, регион</div></div>
       <button class="btn" id="pc-check">📱 Проверить</button>
     </div>
     <div id="pc-result"></div>
@@ -1058,9 +1116,9 @@ function analyzePhoneNumber(phone) {
   if (clean.length === 11 && clean.startsWith('8')) clean = '7' + clean.slice(1);
   const countries = {
     '992': { country: 'Таджикистан', flag: '🇹🇯', region: 'Таджикистан', tz: 'UTC+5', type: 'Мобильный', operators: { '90': 'Beeline TJ', '91': 'Beeline TJ', '92': 'Megafon TJ', '93': 'MegaFon TJ', '50': 'Tcell', '55': 'Tcell', '77': 'Tcell', '88': 'Tcell', '98': 'Babilon Mobile', '99': 'Babilon Mobile' } },
-    '998': { country: 'Узбекистан', flag: '🇺🇿', region: 'Узбекистан', tz: 'UTC+5', type: 'Мобильный', operators: { '90': 'Beeline UZ', '91': 'Beeline UZ', '93': 'Ucell', '94': 'Ucell', '95': 'Ucell', '97': 'UMS', '98': 'UMS', '99': 'UMS', '88': 'Perfectum' } },
+    '998': { country: 'Узбекистан', flag: '🇺🇿', region: 'Узбекистан', tz: 'UTC+5', type: 'Мобильный', operators: { '90': 'Beeline UZ', '91': 'Beeline UZ', '93': 'Ucell', '94': 'Ucell', '95': 'Ucell', '97': 'UMS', '98': 'UMS', '99': 'UMS' } },
     '996': { country: 'Кыргызстан', flag: '🇰🇬', region: 'Кыргызстан', tz: 'UTC+6', type: 'Мобильный', operators: { '50': 'MegaCom', '55': 'MegaCom', '70': 'Beeline KG', '77': 'Beeline KG', '99': 'O!', '20': 'O!', '22': 'O!' } },
-    '7': { country: 'Россия', flag: '🇷🇺', region: 'Россия', tz: 'UTC+3', type: 'Мобильный', operators: { '900': 'Beeline', '901': 'Beeline', '902': 'MegaFon', '903': 'Beeline', '904': 'MegaFon', '905': 'Beeline', '906': 'Beeline', '908': 'MegaFon', '909': 'MegaFon', '910': 'MegaFon', '911': 'MegaFon', '912': 'MegaFon', '913': 'MegaFon', '914': 'MegaFon', '915': 'MegaFon', '916': 'MegaFon', '917': 'MegaFon', '918': 'MegaFon', '919': 'MegaFon', '920': 'MegaFon', '921': 'MegaFon', '922': 'MegaFon', '923': 'MegaFon', '924': 'MegaFon', '925': 'MegaFon', '926': 'MegaFon', '927': 'MegaFon', '928': 'MegaFon', '929': 'MegaFon', '930': 'MegaFon', '931': 'MegaFon', '932': 'MegaFon', '933': 'MegaFon', '934': 'MegaFon', '936': 'MegaFon', '937': 'MegaFon', '938': 'MegaFon', '939': 'MegaFon', '950': 'Tele2', '951': 'Tele2', '952': 'Tele2', '953': 'Tele2', '958': 'Tele2', '960': 'Beeline', '961': 'Beeline', '962': 'Beeline', '963': 'Beeline', '964': 'Beeline', '965': 'Beeline', '966': 'Beeline', '967': 'Beeline', '968': 'Beeline', '969': 'Beeline', '977': 'MegaFon', '978': 'MegaFon', '980': 'MTS', '981': 'MTS', '982': 'MTS', '983': 'MTS', '984': 'MTS', '985': 'MTS', '986': 'MTS', '987': 'MTS', '988': 'MTS', '989': 'MTS', '995': 'MTS', '996': 'MTS', '997': 'MTS', '999': 'MTS' } },
+    '7': { country: 'Россия', flag: '🇷🇺', region: 'Россия', tz: 'UTC+3', type: 'Мобильный', operators: { '900': 'Beeline', '901': 'Beeline', '902': 'MegaFon', '903': 'Beeline', '904': 'MegaFon', '905': 'Beeline', '906': 'Beeline', '908': 'MegaFon', '909': 'MegaFon', '910': 'MegaFon', '911': 'MegaFon', '912': 'MegaFon', '913': 'MegaFon', '914': 'MegaFon', '915': 'MegaFon', '916': 'MegaFon', '917': 'MegaFon', '918': 'MegaFon', '919': 'MegaFon', '950': 'Tele2', '951': 'Tele2', '952': 'Tele2', '958': 'Tele2', '960': 'Beeline', '961': 'Beeline', '962': 'Beeline', '963': 'Beeline', '964': 'Beeline', '965': 'Beeline', '966': 'Beeline', '967': 'Beeline', '968': 'Beeline', '969': 'Beeline', '980': 'MTS', '981': 'MTS', '982': 'MTS', '983': 'MTS', '984': 'MTS', '985': 'MTS', '986': 'MTS', '987': 'MTS', '988': 'MTS', '989': 'MTS', '995': 'MTS', '996': 'MTS', '997': 'MTS', '999': 'MTS' } },
     '1': { country: 'США/Канада', flag: '🇺🇸', region: 'США', tz: 'UTC-5', type: 'Мобильный' },
     '44': { country: 'Великобритания', flag: '🇬🇧', region: 'Англия', tz: 'UTC+0', type: 'Мобильный' },
     '49': { country: 'Германия', flag: '🇩🇪', region: 'Германия', tz: 'UTC+1', type: 'Мобильный' },
@@ -1087,8 +1145,8 @@ function renderPhoneInfo(info) {
   const clean = phone.replace(/\D/g, '');
   const waLink = 'https://wa.me/' + clean;
   const tgLink = info.telegram_username ? 'https://t.me/' + info.telegram_username.replace('@', '') : 'https://t.me/+' + clean;
-  const telegramStatus = info.telegram ? '<a href="' + tgLink + '" target="_blank" style="color:var(--accent);text-decoration:none;">✅ Открыть профиль</a>' : '⚠️ <a href="' + tgLink + '" target="_blank" style="color:var(--accent);text-decoration:none;">Проверить ссылку</a>';
-  const whatsappStatus = info.whatsapp ? '<a href="' + waLink + '" target="_blank" style="color:var(--green);text-decoration:none;">✅ Открыть чат</a>' : '⚠️ <a href="' + waLink + '" target="_blank" style="color:var(--green);text-decoration:none;">Проверить чат</a>';
+  const telegramStatus = info.telegram ? '<a href="' + tgLink + '" target="_blank" style="color:var(--accent);text-decoration:none;">✅ Открыть профиль</a>' : '⚠️ <a href="' + tgLink + '" target="_blank" style="color:var(--accent);text-decoration:none;">Проверить</a>';
+  const whatsappStatus = info.whatsapp ? '<a href="' + waLink + '" target="_blank" style="color:var(--green);text-decoration:none;">✅ Открыть чат</a>' : '⚠️ <a href="' + waLink + '" target="_blank" style="color:var(--green);text-decoration:none;">Проверить</a>';
   const result = $('pc-result');
   if (!result) return;
   result.innerHTML = '<div class="section-title">📱 Информация о номере</div><div class="result-card"><div class="result-row"><div class="result-icon">' + I.phone + '</div><div class="result-content"><div class="result-label">Номер</div><div class="result-value mono accent">' + esc(phone) + '</div></div></div><div class="result-row"><div class="result-icon">' + I.globe + '</div><div class="result-content"><div class="result-label">Страна</div><div class="result-value">' + esc(info.flag || '') + ' ' + esc(info.country || '—') + '</div></div></div><div class="result-row"><div class="result-icon">' + I.signal + '</div><div class="result-content"><div class="result-label">Оператор</div><div class="result-value">' + esc(info.operator || '—') + '</div></div></div><div class="result-row"><div class="result-icon">' + I.map + '</div><div class="result-content"><div class="result-label">Регион</div><div class="result-value">' + esc(info.region || '—') + '</div></div></div><div class="result-row"><div class="result-icon">' + I.clock + '</div><div class="result-content"><div class="result-label">Часовой пояс</div><div class="result-value">' + esc(info.tz || '—') + '</div></div></div><div class="result-row"><div class="result-icon">' + I.info + '</div><div class="result-content"><div class="result-label">Тип номера</div><div class="result-value">' + esc(info.type || '—') + '</div></div></div><div class="result-row"><div class="result-icon">' + I.bot + '</div><div class="result-content"><div class="result-label">Telegram</div><div class="result-value">' + telegramStatus + '</div></div></div><div class="result-row"><div class="result-icon">' + I.msg + '</div><div class="result-content"><div class="result-label">WhatsApp</div><div class="result-value">' + whatsappStatus + '</div></div></div></div>';
@@ -1098,25 +1156,168 @@ function renderPhoneInfo(info) {
 // ============================================================
 // SUBSCRIPTION
 // ============================================================
-function renderSubscription() {
+async function renderSubscription() {
+  const u = getTelegramUser();
+  contentWrap.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-mute);">Загрузка...</div>';
+
+  let status = { has_subscription: false, end_date: null, days_left: 0 };
+  let plans = [];
+  try {
+    if (u) status = await pubGet('/api/subscription/status/' + u.id);
+    const resp = await pubGet('/api/subscription/plans');
+    plans = resp.plans || [];
+  } catch(e) { console.log('sub load error', e); }
+
+  const activeBlock = status.has_subscription ? `
+    <div class="result-card" style="background:linear-gradient(135deg, rgba(52,199,89,0.15), rgba(52,199,89,0.05));border:1px solid rgba(52,199,89,0.3);">
+      <div class="result-row" style="border:none;">
+        <div class="result-icon" style="color:var(--green);">${I.check}</div>
+        <div class="result-content">
+          <div class="result-label">Подписка активна</div>
+          <div class="result-value" style="color:var(--green);">Осталось ${status.days_left} дн.</div>
+          <div style="font-size:12px;color:var(--text-mute);margin-top:2px;">до ${(status.end_date||'').slice(0,10)}</div>
+        </div>
+      </div>
+    </div>
+  ` : `
+    <div class="result-card">
+      <div class="result-row">
+        <div class="result-icon" style="color:var(--text-mute);">${I.star}</div>
+        <div class="result-content">
+          <div class="result-label">Подписка</div>
+          <div class="result-value" style="color:var(--text-mute);">Не активна</div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const planItems = plans.length ? plans.map(p => `
+    <li class="list-item" onclick="buyPlan('${p.key}','${p.label}',${p.price_usd})">
+      <div class="list-icon orange">${I.star}</div>
+      <div class="list-content">
+        <div class="list-title">${esc(p.label)}</div>
+        <div class="list-sub">${p.price_usd} USD</div>
+      </div>
+      <div class="list-chevron">${I.search}</div>
+    </li>
+  `).join('') : `
+    <li class="list-item" onclick="buyPlan('1_month','1 месяц',5)">
+      <div class="list-icon orange">${I.star}</div>
+      <div class="list-content"><div class="list-title">1 месяц</div><div class="list-sub">5 USD</div></div>
+      <div class="list-chevron">${I.search}</div>
+    </li>
+    <li class="list-item" onclick="buyPlan('6_months','6 месяцев',20)">
+      <div class="list-icon orange">${I.star}</div>
+      <div class="list-content"><div class="list-title">6 месяцев</div><div class="list-sub">20 USD</div></div>
+      <div class="list-chevron">${I.search}</div>
+    </li>
+    <li class="list-item" onclick="buyPlan('1_year','1 год',45)">
+      <div class="list-icon orange">${I.star}</div>
+      <div class="list-content"><div class="list-title">1 год</div><div class="list-sub">45 USD</div></div>
+      <div class="list-chevron">${I.search}</div>
+    </li>
+  `;
+
   contentWrap.innerHTML = `
     <div class="section-title">⭐ Подписка</div>
+    ${activeBlock}
     <div class="result-card">
       <div class="result-row"><div class="result-icon">${I.check}</div><div class="result-content"><div class="result-label">Лимит запросов</div><div class="result-value accent">Безлимит</div></div></div>
       <div class="result-row"><div class="result-icon">${I.chart}</div><div class="result-content"><div class="result-label">HTML отчёты</div><div class="result-value">✅ Да</div></div></div>
     </div>
     <div class="section-title">Планы</div>
-    <ul class="list">
-      <li class="list-item" onclick="buyPlan('1 месяц','5 USD')"><div class="list-icon orange">${I.star}</div><div class="list-content"><div class="list-title">1 месяц</div><div class="list-sub">5 USD</div></div><div class="list-chevron">${I.search}</div></li>
-      <li class="list-item" onclick="buyPlan('6 месяцев','20 USD')"><div class="list-icon orange">${I.star}</div><div class="list-content"><div class="list-title">6 месяцев</div><div class="list-sub">20 USD · выгода 33%</div></div><div class="list-chevron">${I.search}</div></li>
-      <li class="list-item" onclick="buyPlan('1 год','45 USD')"><div class="list-icon orange">${I.star}</div><div class="list-content"><div class="list-title">1 год</div><div class="list-sub">45 USD · выгода 40%</div></div><div class="list-chevron">${I.search}</div></li>
-    </ul>
+    <ul class="list">${planItems}</ul>
     <button class="btn secondary" onclick="renderScreen('home')">← Назад</button>
   `;
 }
-function buyPlan(name, price) {
+
+async function buyPlan(planKey, planLabel, priceUsd) {
+  const u = getTelegramUser();
+  if (!u) { toast('Откройте через Telegram', 'error'); return; }
   vibrate();
-  showModal('<div class="modal-title">⭐ ' + name + '</div><div class="modal-desc">К оплате: <b>' + price + '</b><br><br>Оплата доступна через раздел «Пополнить баланс» — пополните на нужную сумму в алмазах, затем оформите подписку.</div><button class="btn" onclick="closeModal(); renderScreen(\'home\');">💰 Пополнить баланс</button><button class="btn secondary" onclick="closeModal()">Отмена</button>');
+
+  showModal(`
+    <div class="modal-title">⭐ ${esc(planLabel)}</div>
+    <div class="modal-desc">К оплате: <b>${priceUsd} USD</b><br><br>Создаём счёт на оплату...</div>
+    <div style="text-align:center;padding:20px 0;"><div class="loading-bar" style="margin:0 auto;"></div></div>
+  `);
+
+  try {
+    const data = await pubPost('/api/subscription/create', { user_id: u.id, plan_key: planKey });
+
+    if (!data.success) {
+      closeModal();
+      showModal(`
+        <div class="modal-title">❌ Ошибка</div>
+        <div class="modal-desc">${esc(data.error || 'Не удалось создать счёт')}</div>
+        <button class="btn secondary" onclick="closeModal()">Закрыть</button>
+      `);
+      return;
+    }
+
+    closeModal();
+    const invoiceId = data.invoice_id;
+    const payUrl = data.pay_url;
+
+    showModal(`
+      <div class="modal-title">⭐ Оплата подписки</div>
+      <div class="modal-desc">
+        📋 План: <b>${esc(data.plan)}</b><br>
+        💰 К оплате: <b>${data.amount_usd} USD</b><br>
+        📝 Счёт: <code style="font-size:11px;">${esc(String(invoiceId).slice(0,20))}...</code>
+        <br><br>⏳ После оплаты нажми «Проверить оплату»
+      </div>
+      <button class="btn" id="sub-pay-btn">🏦 Перейти к оплате</button>
+      <button class="btn" id="sub-check-btn" style="background:var(--green);">✅ Проверить оплату</button>
+      <button class="btn secondary" onclick="closeModal()">Отмена</button>
+    `);
+
+    setTimeout(() => {
+      const payBtn = document.getElementById('sub-pay-btn');
+      if (payBtn) payBtn.addEventListener('click', () => {
+        try {
+          if (window.Telegram?.WebApp?.openLink) window.Telegram.WebApp.openLink(payUrl);
+          else if (window.Telegram?.WebApp?.openTelegramLink) window.Telegram.WebApp.openTelegramLink(payUrl);
+          else window.open(payUrl, '_blank');
+        } catch(e) { window.open(payUrl, '_blank'); }
+      });
+
+      const checkBtn = document.getElementById('sub-check-btn');
+      if (checkBtn) checkBtn.addEventListener('click', async () => {
+        checkBtn.disabled = true;
+        checkBtn.textContent = '⏳ Проверка...';
+        try {
+          const res = await pubGet('/api/subscription/check/' + invoiceId);
+          if (res.success && res.paid) {
+            closeModal();
+            toast('✅ Подписка активирована!', 'ok');
+            vibrate(50);
+            renderScreen('subscription');
+          } else if (res.success && !res.paid) {
+            checkBtn.disabled = false;
+            checkBtn.textContent = '✅ Проверить оплату';
+            toast('⏳ Оплата ещё не поступила. Попробуйте позже.', 'error');
+          } else {
+            checkBtn.disabled = false;
+            checkBtn.textContent = '✅ Проверить оплату';
+            toast('❌ ' + (res.error || 'Ошибка'), 'error');
+          }
+        } catch(e) {
+          checkBtn.disabled = false;
+          checkBtn.textContent = '✅ Проверить оплату';
+          toast('Ошибка сети', 'error');
+        }
+      });
+    }, 100);
+
+  } catch(e) {
+    closeModal();
+    showModal(`
+      <div class="modal-title">❌ Ошибка</div>
+      <div class="modal-desc">${esc(e.message || 'Сеть недоступна')}</div>
+      <button class="btn secondary" onclick="closeModal()">Закрыть</button>
+    `);
+  }
 }
 
 // ============================================================
@@ -1437,6 +1638,7 @@ window.copyToClipboard = copyToClipboard;
 window.isAdmin = isAdmin;
 window.removeTracking = removeTracking;
 window.activateTracking = activateTracking;
+window.renderApiTokens = renderApiTokens;
 window.openAdminAddBalance = openAdminAddBalance;
 window.openAdminGiftSubscription = openAdminGiftSubscription;
 window.openAdminGiftApi = openAdminGiftApi;

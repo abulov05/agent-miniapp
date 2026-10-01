@@ -63,7 +63,6 @@ input, textarea { user-select: text; -webkit-user-select: text; }
 
 ::-webkit-scrollbar { width: 0; height: 0; background: transparent; display: none; }
 * { scrollbar-width: none; -ms-overflow-style: none; }
-.content-wrap::-webkit-scrollbar, .panel-body::-webkit-scrollbar { display: none; width: 0; }
 
 #app { position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--bg); }
 
@@ -213,6 +212,11 @@ input, textarea { user-select: text; -webkit-user-select: text; }
 #phone-map .leaflet-popup-content-wrapper { background: var(--bg) !important; color: var(--text) !important; border-radius: 12px !important; box-shadow: 0 8px 24px rgba(0,0,0,0.15) !important; }
 #phone-map .leaflet-popup-tip { background: var(--bg) !important; }
 #phone-map .leaflet-control-attribution { display: none !important; }
+
+.hist-item { background: var(--bg-elev); border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; border-left: 3px solid var(--accent); }
+.hist-item .hist-top { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-mute); margin-bottom: 6px; gap: 8px; }
+.hist-item .hist-target { font-size: 14px; color: var(--text); font-family: 'SF Mono', monospace; word-break: break-all; }
+.hist-item .hist-summary { font-size: 13px; color: var(--text-dim); margin-top: 4px; }
 </style>
 </head>
 <body>
@@ -368,6 +372,22 @@ function copyToClipboard(text) {
   } catch (e) { toast('Не удалось скопировать', 'error'); }
 }
 
+// Прямой вызов API без токена (для новых роутов)
+async function pubGet(path) {
+  const r = await fetch(CONFIG.API_BASE + path, { headers: { 'ngrok-skip-browser-warning': 'true' } });
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  return r.json();
+}
+async function pubPost(path, body) {
+  const r = await fetch(CONFIG.API_BASE + path, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
+    body: JSON.stringify(body)
+  });
+  const data = await r.json().catch(() => ({}));
+  return data;
+}
+
 // ============================================================
 // DAILY LIMIT
 // ============================================================
@@ -492,7 +512,7 @@ function formatLastSeen(dateStr) {
 }
 
 // ============================================================
-// API
+// API (с токеном)
 // ============================================================
 async function apiRequest(path, opts = {}) {
   const headers = {
@@ -570,6 +590,7 @@ function renderScreen(name, data) {
     case 'tracking':      return renderTracking();
     case 'delete-data':   return renderDeleteData();
     case 'about':         return renderAbout();
+    case 'history':       return renderSearchHistory();
     case 'admin':         return renderAdminPanel();
     default:              return renderHome();
   }
@@ -639,6 +660,11 @@ async function renderHome() {
 
     <div class="section-title">Инструменты</div>
     <ul class="list">
+      <li class="list-item" onclick="renderScreen('history')">
+        <div class="list-icon purple">${I.clock}</div>
+        <div class="list-content"><div class="list-title">История поисков</div><div class="list-sub">Последние запросы</div></div>
+        <div class="list-chevron">${I.search}</div>
+      </li>
       <li class="list-item" onclick="renderScreen('subscription')">
         <div class="list-icon orange">${I.star}</div>
         <div class="list-content"><div class="list-title">Подписка</div><div class="list-sub">Безлимитный доступ</div></div>
@@ -704,7 +730,7 @@ function renderSearchTab() {
 }
 
 // ============================================================
-// STATS (БЕЗ "ПРОВЕРКИ НОМЕРОВ")
+// STATS
 // ============================================================
 async function renderStats() {
   contentWrap.innerHTML = `
@@ -772,6 +798,43 @@ function renderChart(activity) {
 }
 
 // ============================================================
+// SEARCH HISTORY
+// ============================================================
+async function renderSearchHistory() {
+  contentWrap.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-mute);">Загрузка истории...</div>';
+  let history = [];
+  try {
+    history = await pubGet('/api/search_history');
+  } catch(e) { history = []; }
+
+  if (!history || !history.length) {
+    contentWrap.innerHTML = `
+      <div class="section-title">📜 История поисков</div>
+      <div class="chart-wrap" style="text-align:center;color:var(--text-mute);">История пуста</div>
+      <button class="btn secondary" onclick="renderScreen('home')">← На главную</button>
+    `;
+    return;
+  }
+
+  contentWrap.innerHTML = `
+    <div class="section-title">📜 История поисков (${history.length})</div>
+    <div id="hist-list">
+      ${history.slice(0, 100).map(h => `
+        <div class="hist-item">
+          <div class="hist-top">
+            <span>#${h.searcher_id || '—'}</span>
+            <span>${esc((h.date || '').slice(0, 16))}</span>
+          </div>
+          <div class="hist-target">🎯 ${esc(h.target_id || '—')}</div>
+          <div class="hist-summary">${esc((h.result_summary || h.search_type || '').slice(0, 200))}</div>
+        </div>
+      `).join('')}
+    </div>
+    <button class="btn secondary" onclick="renderScreen('home')">← На главную</button>
+  `;
+}
+
+// ============================================================
 // ME
 // ============================================================
 function renderMe() {
@@ -781,6 +844,7 @@ function renderMe() {
     <div class="section-title">Действия</div>
     <ul class="list">
       <li class="list-item" onclick="openMyProfile()"><div class="list-icon">${I.user}</div><div class="list-content"><div class="list-title">Мой профиль в базе</div></div><div class="list-chevron">${I.search}</div></li>
+      <li class="list-item" onclick="renderScreen('history')"><div class="list-icon purple">${I.clock}</div><div class="list-content"><div class="list-title">История поисков</div></div><div class="list-chevron">${I.search}</div></li>
       <li class="list-item" onclick="renderScreen('phone-check')"><div class="list-icon green">${I.phone}</div><div class="list-content"><div class="list-title">Проверка номеров</div></div><div class="list-chevron">${I.search}</div></li>
       <li class="list-item" onclick="openSettings()"><div class="list-icon gray">${I.gear}</div><div class="list-content"><div class="list-title">Настройки</div></div><div class="list-chevron">${I.search}</div></li>
     </ul>
@@ -927,7 +991,7 @@ async function renderProfile(userId) {
 }
 
 // ============================================================
-// LOAD AVATAR — 6 источников
+// LOAD AVATAR — только через серверный эндпоинт
 // ============================================================
 function loadProfileAvatar(userId) {
   const img = document.getElementById('profile-avatar-img');
@@ -937,25 +1001,19 @@ function loadProfileAvatar(userId) {
   img.style.display = 'none';
   if (initials) initials.style.display = 'flex';
 
-  const sources = [
-    'https://t.me/i/userpic/320/' + userId + '.jpg',
-    'https://t.me/i/userpic/160/' + userId + '.jpg',
-    'https://t.me/i/userpic/80/' + userId + '.jpg',
-    CONFIG.API_BASE + '/api/user_avatar/' + userId,
-    'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://t.me/i/userpic/320/' + userId + '.jpg'),
-    'https://corsproxy.io/?url=' + encodeURIComponent('https://t.me/i/userpic/320/' + userId + '.jpg')
-  ];
+  const url = CONFIG.API_BASE + '/api/user_avatar/' + userId + '?t=' + Date.now();
 
-  let idx = 0;
-  function tryNext() {
-    if (idx >= sources.length) { if (initials) initials.style.display = 'flex'; img.style.display = 'none'; return; }
-    const url = sources[idx++];
-    const test = new Image();
-    test.onload = () => { img.src = url; img.style.display = 'block'; if (initials) initials.style.display = 'none'; };
-    test.onerror = () => { tryNext(); };
-    test.src = url;
-  }
-  tryNext();
+  const test = new Image();
+  test.crossOrigin = 'anonymous';
+  test.onload = () => {
+    if (test.naturalWidth > 1 && test.naturalHeight > 1) {
+      img.src = url;
+      img.style.display = 'block';
+      if (initials) initials.style.display = 'none';
+    }
+  };
+  test.onerror = () => { if (initials) initials.style.display = 'flex'; };
+  test.src = url;
 }
 
 // ============================================================
@@ -989,7 +1047,6 @@ function renderPhoneCheck() {
       } catch (e) {}
       if (dbInfo) { info.operator = dbInfo.carrier || info.operator; info.region = dbInfo.region || info.region; info.telegram = dbInfo.telegram; info.telegram_username = dbInfo.telegram_username; info.whatsapp = dbInfo.whatsapp; }
       renderPhoneInfo(info);
-      if (info.lat && info.lon) showPhoneMap(info);
     } catch (e) { toast(e.message, 'error'); }
     finally { btn.disabled = false; btn.textContent = '📱 Проверить'; }
   });
@@ -1000,45 +1057,21 @@ function analyzePhoneNumber(phone) {
   if (clean.startsWith('+')) clean = clean.slice(1);
   if (clean.length === 11 && clean.startsWith('8')) clean = '7' + clean.slice(1);
   const countries = {
-    '992': { country: 'Таджикистан', flag: '🇹🇯', region: 'Таджикистан', tz: 'UTC+5', type: 'Мобильный', lat: 38.8610, lon: 71.2761, operators: { '90': 'Beeline TJ', '91': 'Beeline TJ', '92': 'Megafon TJ', '93': 'MegaFon TJ', '50': 'Tcell', '55': 'Tcell', '77': 'Tcell', '88': 'Tcell', '98': 'Babilon Mobile', '99': 'Babilon Mobile' } },
-    '998': { country: 'Узбекистан', flag: '🇺🇿', region: 'Узбекистан', tz: 'UTC+5', type: 'Мобильный', lat: 41.3775, lon: 64.5853, operators: { '90': 'Beeline UZ', '91': 'Beeline UZ', '93': 'Ucell', '94': 'Ucell', '95': 'Ucell', '97': 'UMS', '98': 'UMS', '99': 'UMS', '88': 'Perfectum' } },
-    '996': { country: 'Кыргызстан', flag: '🇰🇬', region: 'Кыргызстан', tz: 'UTC+6', type: 'Мобильный', lat: 41.2044, lon: 74.7661, operators: { '50': 'MegaCom', '55': 'MegaCom', '70': 'Beeline KG', '77': 'Beeline KG', '99': 'O!', '20': 'O!', '22': 'O!' } },
-    '993': { country: 'Туркменистан', flag: '🇹🇲', region: 'Туркменистан', tz: 'UTC+5', type: 'Мобильный', lat: 38.9697, lon: 59.5563 },
-    '7': { country: 'Россия', flag: '🇷🇺', region: 'Россия', tz: 'UTC+3', type: 'Мобильный', lat: 55.7558, lon: 37.6173, operators: { '900': 'Beeline', '901': 'Beeline', '902': 'MegaFon', '903': 'Beeline', '904': 'MegaFon', '905': 'Beeline', '906': 'Beeline', '908': 'MegaFon', '909': 'MegaFon', '910': 'MegaFon', '911': 'MegaFon', '912': 'MegaFon', '913': 'MegaFon', '914': 'MegaFon', '915': 'MegaFon', '916': 'MegaFon', '917': 'MegaFon', '918': 'MegaFon', '919': 'MegaFon', '920': 'MegaFon', '921': 'MegaFon', '922': 'MegaFon', '923': 'MegaFon', '924': 'MegaFon', '925': 'MegaFon', '926': 'MegaFon', '927': 'MegaFon', '928': 'MegaFon', '929': 'MegaFon', '930': 'MegaFon', '931': 'MegaFon', '932': 'MegaFon', '933': 'MegaFon', '934': 'MegaFon', '936': 'MegaFon', '937': 'MegaFon', '938': 'MegaFon', '939': 'MegaFon', '950': 'Tele2', '951': 'Tele2', '952': 'Tele2', '953': 'Tele2', '958': 'Tele2', '960': 'Beeline', '961': 'Beeline', '962': 'Beeline', '963': 'Beeline', '964': 'Beeline', '965': 'Beeline', '966': 'Beeline', '967': 'Beeline', '968': 'Beeline', '969': 'Beeline', '977': 'MegaFon', '978': 'MegaFon', '980': 'MTS', '981': 'MTS', '982': 'MTS', '983': 'MTS', '984': 'MTS', '985': 'MTS', '986': 'MTS', '987': 'MTS', '988': 'MTS', '989': 'MTS', '995': 'MTS', '996': 'MTS', '997': 'MTS', '999': 'MTS' } },
-    '1': { country: 'США/Канада', flag: '🇺🇸', region: 'США', tz: 'UTC-5', type: 'Мобильный', lat: 38.9072, lon: -77.0369 },
-    '44': { country: 'Великобритания', flag: '🇬🇧', region: 'Англия', tz: 'UTC+0', type: 'Мобильный', lat: 51.5074, lon: -0.1278 },
-    '49': { country: 'Германия', flag: '🇩🇪', region: 'Германия', tz: 'UTC+1', type: 'Мобильный', lat: 52.5200, lon: 13.4050 },
-    '33': { country: 'Франция', flag: '🇫🇷', region: 'Франция', tz: 'UTC+1', type: 'Мобильный', lat: 48.8566, lon: 2.3522 },
-    '39': { country: 'Италия', flag: '🇮🇹', region: 'Италия', tz: 'UTC+1', type: 'Мобильный', lat: 41.9028, lon: 12.4964 },
-    '34': { country: 'Испания', flag: '🇪🇸', region: 'Испания', tz: 'UTC+1', type: 'Мобильный', lat: 40.4168, lon: -3.7038 },
-    '90': { country: 'Турция', flag: '🇹🇷', region: 'Турция', tz: 'UTC+3', type: 'Мобильный', lat: 41.0082, lon: 28.9784 },
-    '86': { country: 'Китай', flag: '🇨🇳', region: 'Китай', tz: 'UTC+8', type: 'Мобильный', lat: 39.9042, lon: 116.4074 },
-    '81': { country: 'Япония', flag: '🇯🇵', region: 'Япония', tz: 'UTC+9', type: 'Мобильный', lat: 35.6762, lon: 139.6503 },
-    '82': { country: 'Южная Корея', flag: '🇰🇷', region: 'Южная Корея', tz: 'UTC+9', type: 'Мобильный', lat: 37.5665, lon: 126.9780 },
-    '91': { country: 'Индия', flag: '🇮🇳', region: 'Индия', tz: 'UTC+5:30', type: 'Мобильный', lat: 28.6139, lon: 77.2090 },
-    '971': { country: 'ОАЭ', flag: '🇦🇪', region: 'ОАЭ', tz: 'UTC+4', type: 'Мобильный', lat: 25.2048, lon: 55.2708 },
-    '972': { country: 'Израиль', flag: '🇮🇱', region: 'Израиль', tz: 'UTC+2', type: 'Мобильный', lat: 31.7683, lon: 35.2137 },
-    '966': { country: 'Саудовская Аравия', flag: '🇸🇦', region: 'Саудовская Аравия', tz: 'UTC+3', type: 'Мобильный', lat: 24.7136, lon: 46.6753 },
-    '20': { country: 'Египет', flag: '🇪🇬', region: 'Египет', tz: 'UTC+2', type: 'Мобильный', lat: 30.0444, lon: 31.2357 },
-    '380': { country: 'Украина', flag: '🇺🇦', region: 'Украина', tz: 'UTC+2', type: 'Мобильный', lat: 50.4501, lon: 30.5234 },
-    '375': { country: 'Беларусь', flag: '🇧🇾', region: 'Беларусь', tz: 'UTC+3', type: 'Мобильный', lat: 53.9045, lon: 27.5615 },
-    '373': { country: 'Молдова', flag: '🇲🇩', region: 'Молдова', tz: 'UTC+2', type: 'Мобильный', lat: 47.0105, lon: 28.8638 },
-    '995': { country: 'Грузия', flag: '🇬🇪', region: 'Грузия', tz: 'UTC+4', type: 'Мобильный', lat: 41.7151, lon: 44.8271 },
-    '374': { country: 'Армения', flag: '🇦🇲', region: 'Армения', tz: 'UTC+4', type: 'Мобильный', lat: 40.1792, lon: 44.4991 },
-    '994': { country: 'Азербайджан', flag: '🇦🇿', region: 'Азербайджан', tz: 'UTC+4', type: 'Мобильный', lat: 40.4093, lon: 49.8671 },
-    '48': { country: 'Польша', flag: '🇵🇱', region: 'Польша', tz: 'UTC+1', type: 'Мобильный', lat: 52.2297, lon: 21.0122 },
-    '420': { country: 'Чехия', flag: '🇨🇿', region: 'Чехия', tz: 'UTC+1', type: 'Мобильный', lat: 50.0755, lon: 14.4378 },
-    '30': { country: 'Греция', flag: '🇬🇷', region: 'Греция', tz: 'UTC+2', type: 'Мобильный', lat: 37.9838, lon: 23.7275 },
-    '31': { country: 'Нидерланды', flag: '🇳🇱', region: 'Нидерланды', tz: 'UTC+1', type: 'Мобильный', lat: 52.3676, lon: 4.9041 },
-    '32': { country: 'Бельгия', flag: '🇧🇪', region: 'Бельгия', tz: 'UTC+1', type: 'Мобильный', lat: 50.8503, lon: 4.3517 },
-    '41': { country: 'Швейцария', flag: '🇨🇭', region: 'Швейцария', tz: 'UTC+1', type: 'Мобильный', lat: 46.9480, lon: 7.4474 },
-    '43': { country: 'Австрия', flag: '🇦🇹', region: 'Австрия', tz: 'UTC+1', type: 'Мобильный', lat: 48.2082, lon: 16.3738 },
-    '46': { country: 'Швеция', flag: '🇸🇪', region: 'Швеция', tz: 'UTC+1', type: 'Мобильный', lat: 59.3293, lon: 18.0686 },
-    '47': { country: 'Норвегия', flag: '🇳🇴', region: 'Норвегия', tz: 'UTC+1', type: 'Мобильный', lat: 59.9139, lon: 10.7522 },
-    '45': { country: 'Дания', flag: '🇩🇰', region: 'Дания', tz: 'UTC+1', type: 'Мобильный', lat: 55.6761, lon: 12.5683 },
-    '358': { country: 'Финляндия', flag: '🇫🇮', region: 'Финляндия', tz: 'UTC+2', type: 'Мобильный', lat: 60.1699, lon: 24.9384 },
-    '351': { country: 'Португалия', flag: '🇵🇹', region: 'Португалия', tz: 'UTC+0', type: 'Мобильный', lat: 38.7223, lon: -9.1393 },
-    '353': { country: 'Ирландия', flag: '🇮🇪', region: 'Ирландия', tz: 'UTC+0', type: 'Мобильный', lat: 53.3498, lon: -6.2603 }
+    '992': { country: 'Таджикистан', flag: '🇹🇯', region: 'Таджикистан', tz: 'UTC+5', type: 'Мобильный', operators: { '90': 'Beeline TJ', '91': 'Beeline TJ', '92': 'Megafon TJ', '93': 'MegaFon TJ', '50': 'Tcell', '55': 'Tcell', '77': 'Tcell', '88': 'Tcell', '98': 'Babilon Mobile', '99': 'Babilon Mobile' } },
+    '998': { country: 'Узбекистан', flag: '🇺🇿', region: 'Узбекистан', tz: 'UTC+5', type: 'Мобильный', operators: { '90': 'Beeline UZ', '91': 'Beeline UZ', '93': 'Ucell', '94': 'Ucell', '95': 'Ucell', '97': 'UMS', '98': 'UMS', '99': 'UMS', '88': 'Perfectum' } },
+    '996': { country: 'Кыргызстан', flag: '🇰🇬', region: 'Кыргызстан', tz: 'UTC+6', type: 'Мобильный', operators: { '50': 'MegaCom', '55': 'MegaCom', '70': 'Beeline KG', '77': 'Beeline KG', '99': 'O!', '20': 'O!', '22': 'O!' } },
+    '7': { country: 'Россия', flag: '🇷🇺', region: 'Россия', tz: 'UTC+3', type: 'Мобильный', operators: { '900': 'Beeline', '901': 'Beeline', '902': 'MegaFon', '903': 'Beeline', '904': 'MegaFon', '905': 'Beeline', '906': 'Beeline', '908': 'MegaFon', '909': 'MegaFon', '910': 'MegaFon', '911': 'MegaFon', '912': 'MegaFon', '913': 'MegaFon', '914': 'MegaFon', '915': 'MegaFon', '916': 'MegaFon', '917': 'MegaFon', '918': 'MegaFon', '919': 'MegaFon', '920': 'MegaFon', '921': 'MegaFon', '922': 'MegaFon', '923': 'MegaFon', '924': 'MegaFon', '925': 'MegaFon', '926': 'MegaFon', '927': 'MegaFon', '928': 'MegaFon', '929': 'MegaFon', '930': 'MegaFon', '931': 'MegaFon', '932': 'MegaFon', '933': 'MegaFon', '934': 'MegaFon', '936': 'MegaFon', '937': 'MegaFon', '938': 'MegaFon', '939': 'MegaFon', '950': 'Tele2', '951': 'Tele2', '952': 'Tele2', '953': 'Tele2', '958': 'Tele2', '960': 'Beeline', '961': 'Beeline', '962': 'Beeline', '963': 'Beeline', '964': 'Beeline', '965': 'Beeline', '966': 'Beeline', '967': 'Beeline', '968': 'Beeline', '969': 'Beeline', '977': 'MegaFon', '978': 'MegaFon', '980': 'MTS', '981': 'MTS', '982': 'MTS', '983': 'MTS', '984': 'MTS', '985': 'MTS', '986': 'MTS', '987': 'MTS', '988': 'MTS', '989': 'MTS', '995': 'MTS', '996': 'MTS', '997': 'MTS', '999': 'MTS' } },
+    '1': { country: 'США/Канада', flag: '🇺🇸', region: 'США', tz: 'UTC-5', type: 'Мобильный' },
+    '44': { country: 'Великобритания', flag: '🇬🇧', region: 'Англия', tz: 'UTC+0', type: 'Мобильный' },
+    '49': { country: 'Германия', flag: '🇩🇪', region: 'Германия', tz: 'UTC+1', type: 'Мобильный' },
+    '33': { country: 'Франция', flag: '🇫🇷', region: 'Франция', tz: 'UTC+1', type: 'Мобильный' },
+    '90': { country: 'Турция', flag: '🇹🇷', region: 'Турция', tz: 'UTC+3', type: 'Мобильный' },
+    '86': { country: 'Китай', flag: '🇨🇳', region: 'Китай', tz: 'UTC+8', type: 'Мобильный' },
+    '380': { country: 'Украина', flag: '🇺🇦', region: 'Украина', tz: 'UTC+2', type: 'Мобильный' },
+    '375': { country: 'Беларусь', flag: '🇧🇾', region: 'Беларусь', tz: 'UTC+3', type: 'Мобильный' },
+    '995': { country: 'Грузия', flag: '🇬🇪', region: 'Грузия', tz: 'UTC+4', type: 'Мобильный' },
+    '374': { country: 'Армения', flag: '🇦🇲', region: 'Армения', tz: 'UTC+4', type: 'Мобильный' },
+    '994': { country: 'Азербайджан', flag: '🇦🇿', region: 'Азербайджан', tz: 'UTC+4', type: 'Мобильный' },
   };
   let countryInfo = null;
   let countryCodeLen = 0;
@@ -1046,7 +1079,7 @@ function analyzePhoneNumber(phone) {
   if (!countryInfo) return { phone, country: 'Неизвестно', flag: '🏴', region: '—', operator: '—', tz: '—', type: 'Неизвестно' };
   let operator = '—';
   if (countryInfo.operators) { const afterCode = clean.slice(countryCodeLen); for (let opLen = 3; opLen >= 2; opLen--) { const opPrefix = afterCode.slice(0, opLen); if (countryInfo.operators[opPrefix]) { operator = countryInfo.operators[opPrefix]; break; } } }
-  return { phone, country: countryInfo.country, flag: countryInfo.flag, region: countryInfo.region, operator, tz: countryInfo.tz, type: countryInfo.type, lat: countryInfo.lat, lon: countryInfo.lon };
+  return { phone, country: countryInfo.country, flag: countryInfo.flag, region: countryInfo.region, operator, tz: countryInfo.tz, type: countryInfo.type };
 }
 
 function renderPhoneInfo(info) {
@@ -1058,98 +1091,138 @@ function renderPhoneInfo(info) {
   const whatsappStatus = info.whatsapp ? '<a href="' + waLink + '" target="_blank" style="color:var(--green);text-decoration:none;">✅ Открыть чат</a>' : '⚠️ <a href="' + waLink + '" target="_blank" style="color:var(--green);text-decoration:none;">Проверить чат</a>';
   const result = $('pc-result');
   if (!result) return;
-  result.innerHTML = '<div class="section-title">📱 Информация о номере</div><div class="result-card"><div class="result-row"><div class="result-icon">' + I.phone + '</div><div class="result-content"><div class="result-label">Номер</div><div class="result-value mono accent">' + esc(phone) + '</div></div></div><div class="result-row"><div class="result-icon">' + I.globe + '</div><div class="result-content"><div class="result-label">Страна</div><div class="result-value">' + esc(info.flag || '') + ' ' + esc(info.country || '—') + '</div></div></div><div class="result-row"><div class="result-icon">' + I.signal + '</div><div class="result-content"><div class="result-label">Оператор</div><div class="result-value">' + esc(info.operator || '—') + '</div></div></div><div class="result-row"><div class="result-icon">' + I.map + '</div><div class="result-content"><div class="result-label">Регион</div><div class="result-value">' + esc(info.region || '—') + '</div></div></div><div class="result-row"><div class="result-icon">' + I.clock + '</div><div class="result-content"><div class="result-label">Часовой пояс</div><div class="result-value">' + esc(info.tz || '—') + '</div></div></div><div class="result-row"><div class="result-icon">' + I.info + '</div><div class="result-content"><div class="result-label">Тип номера</div><div class="result-value">' + esc(info.type || '—') + '</div></div></div><div class="result-row"><div class="result-icon">' + I.bot + '</div><div class="result-content"><div class="result-label">Telegram</div><div class="result-value">' + telegramStatus + '</div></div></div><div class="result-row"><div class="result-icon">' + I.msg + '</div><div class="result-content"><div class="result-label">WhatsApp</div><div class="result-value">' + whatsappStatus + '</div></div></div></div>' + (info.lat && info.lon ? '<button class="btn" onclick="showPhoneMapCurrent()" style="margin-bottom:8px;">🗺 Показать на карте</button><button class="btn secondary" onclick="openPhoneFullReport()" style="margin-bottom:8px;">📊 Полный отчёт (HTML)</button>' : '');
+  result.innerHTML = '<div class="section-title">📱 Информация о номере</div><div class="result-card"><div class="result-row"><div class="result-icon">' + I.phone + '</div><div class="result-content"><div class="result-label">Номер</div><div class="result-value mono accent">' + esc(phone) + '</div></div></div><div class="result-row"><div class="result-icon">' + I.globe + '</div><div class="result-content"><div class="result-label">Страна</div><div class="result-value">' + esc(info.flag || '') + ' ' + esc(info.country || '—') + '</div></div></div><div class="result-row"><div class="result-icon">' + I.signal + '</div><div class="result-content"><div class="result-label">Оператор</div><div class="result-value">' + esc(info.operator || '—') + '</div></div></div><div class="result-row"><div class="result-icon">' + I.map + '</div><div class="result-content"><div class="result-label">Регион</div><div class="result-value">' + esc(info.region || '—') + '</div></div></div><div class="result-row"><div class="result-icon">' + I.clock + '</div><div class="result-content"><div class="result-label">Часовой пояс</div><div class="result-value">' + esc(info.tz || '—') + '</div></div></div><div class="result-row"><div class="result-icon">' + I.info + '</div><div class="result-content"><div class="result-label">Тип номера</div><div class="result-value">' + esc(info.type || '—') + '</div></div></div><div class="result-row"><div class="result-icon">' + I.bot + '</div><div class="result-content"><div class="result-label">Telegram</div><div class="result-value">' + telegramStatus + '</div></div></div><div class="result-row"><div class="result-icon">' + I.msg + '</div><div class="result-content"><div class="result-label">WhatsApp</div><div class="result-value">' + whatsappStatus + '</div></div></div></div>';
   window._lastPhoneInfo = info;
 }
 
-function showPhoneMapCurrent() { if (window._lastPhoneInfo) showPhoneMap(window._lastPhoneInfo); }
-
-function openPhoneFullReport() {
-  if (!window._lastPhoneInfo) { toast('Сначала проверь номер', 'error'); return; }
-  const info = window._lastPhoneInfo;
-  const phone = info.phone || '';
-  const clean = phone.replace(/\D/g, '');
-  const waLink = 'https://wa.me/' + clean;
-  const tgLink = info.telegram_username ? 'https://t.me/' + info.telegram_username.replace('@', '') : 'https://t.me/+' + clean;
-  document.querySelectorAll('.modal-overlay').forEach(m => m.remove());
-  const overlay = document.createElement('div');
-  overlay.className = 'modal-overlay';
-  overlay.id = 'phone-report-modal';
-  overlay.style.padding = '0';
-  overlay.style.alignItems = 'flex-end';
-  overlay.innerHTML = '<div style="background:var(--bg);width:100%;max-width:600px;border-radius:20px 20px 0 0;overflow-y:auto;animation:slideUp 0.3s ease;max-height:95vh;padding:0;"><div style="position:sticky;top:0;background:var(--bg);border-bottom:0.5px solid var(--border-soft);padding:16px 20px;z-index:10;display:flex;align-items:center;gap:12px;"><div style="flex:1;"><div style="font-size:18px;font-weight:700;color:var(--text);">📊 Отчёт о номере</div></div><button onclick="closePhoneReport()" style="width:32px;height:32px;border-radius:50%;background:var(--bg-elev);border:none;color:var(--text-mute);cursor:pointer;display:flex;align-items:center;justify-content:center;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div><div style="padding:24px 20px;text-align:center;"><div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#0a84ff,#bf5af2);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:36px;">' + esc(info.flag || '📱') + '</div><div style="font-size:22px;font-weight:700;color:var(--text);font-family:monospace;">' + esc(phone) + '</div><div style="font-size:14px;color:var(--text-mute);margin-top:4px;">' + esc(info.country || '') + ' · ' + esc(info.operator || '') + '</div></div><div style="padding:0 20px 20px;"><div class="result-card"><div class="result-row"><div class="result-icon">' + I.globe + '</div><div class="result-content"><div class="result-label">Страна</div><div class="result-value">' + esc(info.flag || '') + ' ' + esc(info.country || '—') + '</div></div></div><div class="result-row"><div class="result-icon">' + I.map + '</div><div class="result-content"><div class="result-label">Регион</div><div class="result-value">' + esc(info.region || '—') + '</div></div></div><div class="result-row"><div class="result-icon">' + I.clock + '</div><div class="result-content"><div class="result-label">Часовой пояс</div><div class="result-value">' + esc(info.tz || '—') + '</div></div></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;"><a href="tel:' + phone + '" class="btn" style="text-decoration:none;text-align:center;margin:0;">📞 Позвонить</a><a href="' + waLink + '" target="_blank" class="btn" style="text-decoration:none;text-align:center;margin:0;background:var(--green);">💬 WhatsApp</a><a href="' + tgLink + '" target="_blank" class="btn" style="text-decoration:none;text-align:center;margin:0;background:var(--purple);">✈️ Telegram</a><button class="btn" onclick="copyToClipboard(\'' + phone + '\'); closePhoneReport();" style="margin:0;">📋 Скопировать</button></div><button class="btn secondary" onclick="closePhoneReport()" style="margin-top:12px;">← Закрыть</button></div></div>';
-  document.body.appendChild(overlay);
-}
-
-function closePhoneReport() { const m = document.getElementById('phone-report-modal'); if (m) m.remove(); }
-
-function showPhoneMap(info) {
-  document.querySelectorAll('.modal-overlay').forEach(m => m.remove());
-  if (window._phoneMap) { window._phoneMap.remove(); window._phoneMap = null; }
-  const overlay = document.createElement('div');
-  overlay.className = 'modal-overlay';
-  overlay.id = 'phone-map-modal';
-  overlay.style.padding = '0';
-  overlay.style.alignItems = 'flex-end';
-  overlay.innerHTML = '<div style="background:var(--bg);width:100%;max-width:600px;border-radius:20px 20px 0 0;overflow:hidden;animation:slideUp 0.3s ease;max-height:95vh;display:flex;flex-direction:column;"><div style="padding:16px 20px;border-bottom:0.5px solid var(--border-soft);display:flex;align-items:center;gap:12px;"><div style="flex:1;"><div style="font-size:17px;font-weight:700;color:var(--text);">' + esc(info.flag || '') + ' ' + esc(info.phone || '') + '</div><div style="font-size:13px;color:var(--text-mute);margin-top:2px;">' + esc(info.country || '') + ' · ' + esc(info.operator || '') + '</div></div><button onclick="closePhoneMap()" style="width:32px;height:32px;border-radius:50%;background:var(--bg-elev);border:none;color:var(--text-mute);cursor:pointer;display:flex;align-items:center;justify-content:center;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div><div id="phone-map" style="height:340px;width:100%;background:var(--bg-elev);"></div><div style="padding:16px 20px;"><button class="btn secondary" onclick="closePhoneMap()">Закрыть</button></div></div>';
-  document.body.appendChild(overlay);
-  setTimeout(() => initPhoneMap(info.lat, info.lon, info), 150);
-}
-
-function closePhoneMap() {
-  const m = document.getElementById('phone-map-modal');
-  if (m) m.remove();
-  if (window._phoneMap) { window._phoneMap.remove(); window._phoneMap = null; }
-}
-
-function initPhoneMap(lat, lon, info) {
-  if (typeof L === 'undefined') { toast('Карта не загрузилась', 'error'); return; }
-  const isDark = currentTheme === 'dark';
-  const mapEl = document.getElementById('phone-map');
-  if (!mapEl) return;
-  const map = L.map('phone-map', { zoomControl: false, attributionControl: false, center: [lat, lon], zoom: 6, minZoom: 2, maxZoom: 18 });
-  const tileUrl = isDark ? 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}' : 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
-  const tile = L.tileLayer(tileUrl, { maxZoom: 19, subdomains: isDark ? '' : 'abc', attribution: '' });
-  tile.on('tileerror', function() { map.removeLayer(tile); const fallback = isDark ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png' : 'https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png'; L.tileLayer(fallback, { maxZoom: 19, subdomains: 'abcd' }).addTo(map); });
-  tile.addTo(map);
-  L.control.zoom({ position: 'bottomright' }).addTo(map);
-  const icon = L.divIcon({ className: '', html: '<div style="position:relative;width:28px;height:28px;"><div style="position:absolute;inset:0;border-radius:50%;background:#007aff;border:3px solid white;box-shadow:0 3px 12px rgba(0,122,255,0.6);"></div><div style="position:absolute;inset:-12px;border-radius:50%;border:2px solid #007aff;opacity:0.5;animation:pulsePin 2s ease-out infinite;"></div></div>', iconSize: [28, 28], iconAnchor: [14, 14] });
-  L.marker([lat, lon], { icon }).addTo(map).bindPopup('<div style="font-family:-apple-system,sans-serif;padding:4px;"><b style="font-size:14px;">' + esc(info.flag || '') + ' ' + esc(info.country || '') + '</b><br><span style="font-size:12px;color:#8e8e93;">' + esc(info.operator || '') + '</span></div>').openPopup();
-  window._phoneMap = map;
-  setTimeout(() => map.invalidateSize(), 250);
-}
-
 // ============================================================
-// SUBSCRIPTION / TRACKING / DELETE / ABOUT
+// SUBSCRIPTION
 // ============================================================
 function renderSubscription() {
-  contentWrap.innerHTML = '<div class="section-title">Подписка</div><div class="result-card"><div class="result-row"><div class="result-icon">' + I.check + '</div><div class="result-content"><div class="result-label">Лимит запросов</div><div class="result-value accent">Безлимит</div></div></div><div class="result-row"><div class="result-icon">' + I.chart + '</div><div class="result-content"><div class="result-label">HTML отчёты</div><div class="result-value">✅ Да</div></div></div></div><div class="section-title">Планы</div><ul class="list"><li class="list-item" onclick="buyPlan(\'1 месяц\',\'5 USD\')"><div class="list-icon orange">' + I.star + '</div><div class="list-content"><div class="list-title">1 месяц</div><div class="list-sub">5 USD</div></div><div class="list-chevron">' + I.search + '</div></li><li class="list-item" onclick="buyPlan(\'6 месяцев\',\'20 USD\')"><div class="list-icon orange">' + I.star + '</div><div class="list-content"><div class="list-title">6 месяцев</div><div class="list-sub">20 USD</div></div><div class="list-chevron">' + I.search + '</div></li><li class="list-item" onclick="buyPlan(\'1 год\',\'45 USD\')"><div class="list-icon orange">' + I.star + '</div><div class="list-content"><div class="list-title">1 год</div><div class="list-sub">45 USD</div></div><div class="list-chevron">' + I.search + '</div></li></ul><button class="btn secondary" onclick="renderScreen(\'home\')">← Назад</button>';
+  contentWrap.innerHTML = `
+    <div class="section-title">⭐ Подписка</div>
+    <div class="result-card">
+      <div class="result-row"><div class="result-icon">${I.check}</div><div class="result-content"><div class="result-label">Лимит запросов</div><div class="result-value accent">Безлимит</div></div></div>
+      <div class="result-row"><div class="result-icon">${I.chart}</div><div class="result-content"><div class="result-label">HTML отчёты</div><div class="result-value">✅ Да</div></div></div>
+    </div>
+    <div class="section-title">Планы</div>
+    <ul class="list">
+      <li class="list-item" onclick="buyPlan('1 месяц','5 USD')"><div class="list-icon orange">${I.star}</div><div class="list-content"><div class="list-title">1 месяц</div><div class="list-sub">5 USD</div></div><div class="list-chevron">${I.search}</div></li>
+      <li class="list-item" onclick="buyPlan('6 месяцев','20 USD')"><div class="list-icon orange">${I.star}</div><div class="list-content"><div class="list-title">6 месяцев</div><div class="list-sub">20 USD · выгода 33%</div></div><div class="list-chevron">${I.search}</div></li>
+      <li class="list-item" onclick="buyPlan('1 год','45 USD')"><div class="list-icon orange">${I.star}</div><div class="list-content"><div class="list-title">1 год</div><div class="list-sub">45 USD · выгода 40%</div></div><div class="list-chevron">${I.search}</div></li>
+    </ul>
+    <button class="btn secondary" onclick="renderScreen('home')">← Назад</button>
+  `;
 }
 function buyPlan(name, price) {
   vibrate();
-  showModal('<div class="modal-title">⭐ ' + name + '</div><div class="modal-desc">К оплате: ' + price + '<br><br>Оплата в Telegram-боте.</div><button class="btn" onclick="openBot(); closeModal();">🤖 Перейти в бота</button><button class="btn secondary" onclick="closeModal()">Отмена</button>');
+  showModal('<div class="modal-title">⭐ ' + name + '</div><div class="modal-desc">К оплате: <b>' + price + '</b><br><br>Оплата доступна через раздел «Пополнить баланс» — пополните на нужную сумму в алмазах, затем оформите подписку.</div><button class="btn" onclick="closeModal(); renderScreen(\'home\');">💰 Пополнить баланс</button><button class="btn secondary" onclick="closeModal()">Отмена</button>');
 }
 
-function renderTracking() {
-  contentWrap.innerHTML = '<div class="section-title">Отслеживание</div><div class="result-card"><div class="result-row"><div class="result-icon">' + I.bell + '</div><div class="result-content"><div class="result-label">Уведомления</div><div class="result-value">О новых сообщениях</div></div></div><div class="result-row"><div class="result-icon">' + I.gem + '</div><div class="result-content"><div class="result-label">Стоимость</div><div class="result-value accent">20 алмазов</div></div></div><div class="result-row"><div class="result-icon">' + I.clock + '</div><div class="result-content"><div class="result-label">Период</div><div class="result-value">7 дней</div></div></div></div><div class="chart-wrap"><div class="field"><label class="field-label">ID пользователя</label><input type="number" class="field-input" id="tr-id" placeholder="123456789"></div><button class="btn" onclick="activateTracking()">👀 Активировать</button></div><button class="btn secondary" onclick="renderScreen(\'home\')">← Назад</button>';
+// ============================================================
+// TRACKING
+// ============================================================
+async function renderTracking() {
+  const u = getTelegramUser();
+  contentWrap.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-mute);">Загрузка...</div>';
+  let me = { diamonds: '—' };
+  let trackList = [];
+  try { if (u) me = await pubGet('/api/me/' + u.id); } catch(e) {}
+  try { if (u) trackList = await pubGet('/api/tracking/' + u.id); } catch(e) {}
+
+  contentWrap.innerHTML = `
+    <div class="section-title">👀 Отслеживание</div>
+    <div class="result-card">
+      <div class="result-row"><div class="result-icon">${I.gem}</div><div class="result-content"><div class="result-label">Ваш баланс</div><div class="result-value accent">${me.diamonds ?? '—'} алмазов</div></div></div>
+      <div class="result-row"><div class="result-icon">${I.bell}</div><div class="result-content"><div class="result-label">Стоимость</div><div class="result-value">20 алмазов / 7 дней</div></div></div>
+    </div>
+    <div class="chart-wrap">
+      <div class="field"><label class="field-label">ID пользователя</label><input type="number" class="field-input" id="tr-id" placeholder="123456789"></div>
+      <button class="btn" id="tr-btn">👀 Активировать отслеживание</button>
+    </div>
+    <div class="section-title">📋 Активные отслеживания</div>
+    <ul class="list" id="tr-list">
+      ${trackList && trackList.length ? trackList.map(t => `<li class="list-item"><div class="list-icon purple">👤</div><div class="list-content"><div class="list-title">${t.target_user_id}</div><div class="list-sub">до ${(t.end_date||'').slice(0,10)} ${t.active ? '✅' : '⏸'}</div></div><button class="icon-btn" onclick="removeTracking(${t.target_user_id})" style="color:var(--red);">✕</button></li>`).join('') : '<li class="list-item"><div class="list-content"><div class="list-sub">Нет активных отслеживаний</div></div></li>'}
+    </ul>
+    <button class="btn secondary" onclick="renderScreen('home')">← Назад</button>
+  `;
+  $('tr-btn').addEventListener('click', activateTracking);
 }
-function activateTracking() {
+
+async function activateTracking() {
+  const u = getTelegramUser();
   const id = $('tr-id').value.trim();
-  if (!id || !/^\d+$/.test(id)) { toast('Введите ID', 'error'); return; }
-  vibrate();
-  showModal('<div class="modal-title">👀 Отслеживание</div><div class="modal-desc">Активируется в Telegram-боте.</div><button class="btn" onclick="openBot(); closeModal();">🤖 Открыть бота</button><button class="btn secondary" onclick="closeModal()">Отмена</button>');
+  if (!u) { toast('Откройте через Telegram', 'error'); return; }
+  if (!id || !/^\d+$/.test(id)) { toast('Введите корректный ID', 'error'); return; }
+  const btn = $('tr-btn'); btn.disabled = true; btn.textContent = '⏳ Активация...';
+  try {
+    const data = await pubPost('/api/tracking/add', { user_id: u.id, target_id: parseInt(id) });
+    if (data.success) {
+      toast('✅ Отслеживание активировано!', 'ok');
+      renderScreen('tracking');
+    } else {
+      toast('❌ ' + (data.error || 'Ошибка'), 'error');
+    }
+  } catch(e) { toast('Ошибка сети', 'error'); }
+  finally { btn.disabled = false; btn.textContent = '👀 Активировать отслеживание'; }
 }
 
-function renderDeleteData() {
-  contentWrap.innerHTML = '<div class="section-title">Удаление данных</div><div class="result-card"><div class="result-row"><div class="result-icon">' + I.gem + '</div><div class="result-content"><div class="result-label">Стоимость</div><div class="result-value accent">200 алмазов</div></div></div></div><div class="chart-wrap" style="background:rgba(255,59,48,0.08);border:1px solid rgba(255,59,48,0.2);"><div style="color:var(--red);font-weight:600;margin-bottom:12px;">⚠️ ВНИМАНИЕ</div><div style="color:var(--text-dim);font-size:14px;line-height:1.6;">• Удаляет ВСЕ ваши данные<br>• Очищает историю имён<br>• Удаляет список чатов<br>• Удаляет все сообщения<br><br>Данные будут собраны заново при следующей активности.</div></div><button class="btn danger" onclick="confirmDelete()">🗑️ Удалить данные</button><button class="btn secondary" onclick="renderScreen(\'home\')">← Назад</button>';
+async function removeTracking(targetId) {
+  const u = getTelegramUser();
+  if (!u) return;
+  try {
+    await pubPost('/api/tracking/remove', { user_id: u.id, target_id: targetId });
+    toast('Удалено', 'ok');
+    renderScreen('tracking');
+  } catch(e) { toast('Ошибка', 'error'); }
 }
+
+// ============================================================
+// DELETE DATA
+// ============================================================
+function renderDeleteData() {
+  contentWrap.innerHTML = `
+    <div class="section-title">🗑️ Удаление данных</div>
+    <div class="result-card">
+      <div class="result-row"><div class="result-icon">${I.gem}</div><div class="result-content"><div class="result-label">Стоимость</div><div class="result-value accent">200 алмазов</div></div></div>
+    </div>
+    <div class="chart-wrap" style="background:rgba(255,59,48,0.08);border:1px solid rgba(255,59,48,0.2);">
+      <div style="color:var(--red);font-weight:600;margin-bottom:12px;">⚠️ ВНИМАНИЕ</div>
+      <div style="color:var(--text-dim);font-size:14px;line-height:1.6;">• Удаляет ВСЕ ваши данные<br>• Очищает историю имён<br>• Удаляет список чатов<br>• Удаляет все сообщения</div>
+    </div>
+    <button class="btn danger" id="del-btn">🗑️ Удалить данные (200 💎)</button>
+    <button class="btn secondary" onclick="renderScreen('home')">← Назад</button>
+  `;
+  $('del-btn').addEventListener('click', confirmDelete);
+}
+
 function confirmDelete() {
   vibrate();
-  showModal('<div class="modal-title">⚠️ Удалить данные?</div><div class="modal-desc">Действие необратимо. Удаление доступно в Telegram-боте.</div><button class="btn" onclick="openBot(); closeModal();">🤖 Перейти в бота</button><button class="btn secondary" onclick="closeModal()">Отмена</button>');
+  showModal('<div class="modal-title">⚠️ Удалить данные?</div><div class="modal-desc">Действие необратимо. Спишется 200 алмазов.</div><button class="btn danger" id="del-confirm">🗑️ Да, удалить</button><button class="btn secondary" onclick="closeModal()">Отмена</button>');
+  setTimeout(() => {
+    const btn = document.getElementById('del-confirm');
+    if (btn) btn.addEventListener('click', async () => {
+      const u = getTelegramUser();
+      if (!u) { toast('Откройте через Telegram', 'error'); return; }
+      closeModal();
+      try {
+        const data = await pubPost('/api/delete_data', { user_id: u.id });
+        if (data.success) {
+          toast('✅ Данные удалены!', 'ok');
+          renderScreen('home');
+        } else {
+          toast('❌ ' + (data.error || 'Ошибка'), 'error');
+        }
+      } catch(e) { toast('Ошибка сети', 'error'); }
+    });
+  }, 50);
 }
 
+// ============================================================
+// ABOUT
+// ============================================================
 function renderAbout() {
-  contentWrap.innerHTML = '<div style="padding-top:20px;text-align:center;"><div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#60a5fa,#007aff);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:36px;">🤖</div><div style="font-size:22px;font-weight:700;color:var(--text);">AGENT ANALYTICS</div><div style="font-size:14px;color:var(--text-mute);margin-top:4px;">Версия 2.0</div></div><div class="section-title">📊 О проекте</div><div class="chart-wrap"><div style="color:var(--text-dim);font-size:14px;line-height:1.6;">Многофункциональный бот для анализа Telegram-активности. Работает в личных чатах и группах.</div></div><div class="section-title">🎯 Лимиты</div><div class="chart-wrap"><div style="color:var(--text-dim);font-size:14px;line-height:1.6;">Бесплатно: <b>' + CONFIG.DAILY_LIMIT + ' запросов в день</b><br>Сброс каждые 24 часа<br>Безлимит — с подпиской</div></div><button class="btn" onclick="openBot()">🤖 Открыть бота в Telegram</button><button class="btn secondary" onclick="renderScreen(\'home\')">← Назад</button>';
+  contentWrap.innerHTML = '<div style="padding-top:20px;text-align:center;"><div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#60a5fa,#007aff);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:36px;">🤖</div><div style="font-size:22px;font-weight:700;color:var(--text);">AGENT ANALYTICS</div><div style="font-size:14px;color:var(--text-mute);margin-top:4px;">Версия 2.0</div></div><div class="section-title">📊 О проекте</div><div class="chart-wrap"><div style="color:var(--text-dim);font-size:14px;line-height:1.6;">Многофункциональный бот для анализа Telegram-активности. Работает в личных чатах и группах.</div></div><div class="section-title">🎯 Лимиты</div><div class="chart-wrap"><div style="color:var(--text-dim);font-size:14px;line-height:1.6;">Бесплатно: <b>' + CONFIG.DAILY_LIMIT + ' запросов в день</b><br>Сброс каждые 24 часа<br>Безлимит — с подпиской</div></div><button class="btn secondary" onclick="renderScreen(\'home\')">← На главную</button>';
 }
 
 // ============================================================
@@ -1157,135 +1230,136 @@ function renderAbout() {
 // ============================================================
 async function renderAdminPanel() {
   if (!isAdmin()) { toast('❌ Доступ запрещён', 'error'); return renderHome(); }
-  contentWrap.innerHTML = '<div style="padding-top:20px;text-align:center;"><div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#ff9500,#ff3b30);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:36px;">👑</div><div style="font-size:22px;font-weight:700;color:var(--text);">АДМИН ПАНЕЛЬ</div><div style="font-size:14px;color:var(--text-mute);margin-top:4px;">Управление ботом</div></div><div class="section-title">📊 Статистика</div><div class="stats-row"><div class="stat-card"><div class="stat-value" id="adm-users">—</div><div class="stat-label">Пользователей</div></div><div class="stat-card"><div class="stat-value" id="adm-comments">—</div><div class="stat-label">Сообщений</div></div></div><div class="section-title">🛠 Управление</div><ul class="list"><li class="list-item" onclick="openAdminAddBalance()"><div class="list-icon orange">💰</div><div class="list-content"><div class="list-title">Пополнить баланс</div></div><div class="list-chevron">' + I.search + '</div></li><li class="list-item" onclick="openAdminGiftSubscription()"><div class="list-icon purple">🎁</div><div class="list-content"><div class="list-title">Подарить подписку</div></div><div class="list-chevron">' + I.search + '</div></li><li class="list-item" onclick="openAdminGiftApi()"><div class="list-icon green">🔑</div><div class="list-content"><div class="list-title">Подарить API токен</div></div><div class="list-chevron">' + I.search + '</div></li><li class="list-item" onclick="openAdminDeleteUser()"><div class="list-icon red">🗑️</div><div class="list-content"><div class="list-title" style="color:var(--red);">Удалить данные</div></div><div class="list-chevron">' + I.search + '</div></li></ul><div class="section-title">💬 Коммуникации</div><ul class="list"><li class="list-item" onclick="openAdminAnswer()"><div class="list-icon">💬</div><div class="list-content"><div class="list-title">Ответить на вопросы</div></div><div class="list-chevron">' + I.search + '</div></li><li class="list-item" onclick="openAdminBroadcastUsers()"><div class="list-icon orange">📢</div><div class="list-content"><div class="list-title">Рассылка пользователям</div></div><div class="list-chevron">' + I.search + '</div></li><li class="list-item" onclick="openAdminBroadcastGroups()"><div class="list-icon orange">📢</div><div class="list-content"><div class="list-title">Рассылка группам</div></div><div class="list-chevron">' + I.search + '</div></li></ul><div class="section-title">📋 Данные</div><ul class="list"><li class="list-item" onclick="openAdminSearchHistory()"><div class="list-icon purple">📋</div><div class="list-content"><div class="list-title">История поисков</div></div><div class="list-chevron">' + I.search + '</div></li><li class="list-item" onclick="openAdminVerifiedUsers()"><div class="list-icon purple">🔐</div><div class="list-content"><div class="list-title">Верифицированные</div></div><div class="list-chevron">' + I.search + '</div></li><li class="list-item" onclick="openAdminApiTokens()"><div class="list-icon green">🔑</div><div class="list-content"><div class="list-title">API Токены</div></div><div class="list-chevron">' + I.search + '</div></li></ul><button class="btn secondary" onclick="renderScreen(\'home\')">← На главную</button>';
+  contentWrap.innerHTML = '<div style="padding-top:20px;text-align:center;"><div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#ff9500,#ff3b30);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:36px;">👑</div><div style="font-size:22px;font-weight:700;color:var(--text);">АДМИН ПАНЕЛЬ</div></div><div class="section-title">📊 Статистика</div><div class="stats-row"><div class="stat-card"><div class="stat-value" id="adm-users">—</div><div class="stat-label">Пользователей</div></div><div class="stat-card"><div class="stat-value" id="adm-comments">—</div><div class="stat-label">Сообщений</div></div></div><div class="section-title">🛠 Управление</div><ul class="list"><li class="list-item" onclick="openAdminAddBalance()"><div class="list-icon orange">💰</div><div class="list-content"><div class="list-title">Пополнить баланс</div></div><div class="list-chevron">' + I.search + '</div></li><li class="list-item" onclick="openAdminGiftSubscription()"><div class="list-icon purple">🎁</div><div class="list-content"><div class="list-title">Подарить подписку</div></div><div class="list-chevron">' + I.search + '</div></li><li class="list-item" onclick="openAdminGiftApi()"><div class="list-icon green">🔑</div><div class="list-content"><div class="list-title">Подарить API токен</div></div><div class="list-chevron">' + I.search + '</div></li><li class="list-item" onclick="openAdminDeleteUser()"><div class="list-icon red">🗑️</div><div class="list-content"><div class="list-title" style="color:var(--red);">Удалить данные</div></div><div class="list-chevron">' + I.search + '</div></li></ul><div class="section-title">💬 Коммуникации</div><ul class="list"><li class="list-item" onclick="openAdminAnswer()"><div class="list-icon">💬</div><div class="list-content"><div class="list-title">Ответить на вопросы</div></div><div class="list-chevron">' + I.search + '</div></li><li class="list-item" onclick="openAdminBroadcastUsers()"><div class="list-icon orange">📢</div><div class="list-content"><div class="list-title">Рассылка пользователям</div></div><div class="list-chevron">' + I.search + '</div></li><li class="list-item" onclick="openAdminBroadcastGroups()"><div class="list-icon orange">📢</div><div class="list-content"><div class="list-title">Рассылка группам</div></div><div class="list-chevron">' + I.search + '</div></li></ul><div class="section-title">📋 Данные</div><ul class="list"><li class="list-item" onclick="openAdminSearchHistory()"><div class="list-icon purple">📋</div><div class="list-content"><div class="list-title">История поисков</div></div><div class="list-chevron">' + I.search + '</div></li></ul><button class="btn secondary" onclick="renderScreen(\'home\')">← На главную</button>';
   try { const stats = await apiGetPublicStats(); $('adm-users').textContent = formatNumber(stats.users || 0); $('adm-comments').textContent = formatNumber(stats.comments || 0); } catch (e) {}
 }
 
-function openAdminAddBalance() { showModal('<div class="modal-title">💰 Пополнить баланс</div><div class="field"><label class="field-label">ID пользователя</label><input type="number" class="field-input" id="adm-bal-id" placeholder="123456789"></div><div class="field"><label class="field-label">Сумма</label><input type="number" class="field-input" id="adm-bal-sum" placeholder="50"></div><button class="btn" onclick="doAdminAddBalance()">Начислить</button><button class="btn secondary" onclick="closeModal()">Отмена</button>'); }
-function doAdminAddBalance() {
-  const id = $('adm-bal-id')?.value.trim(); const sum = $('adm-bal-sum')?.value.trim();
-  if (!id || !/^\d+$/.test(id)) { toast('Введите ID', 'error'); return; }
-  if (!sum || !/^\d+$/.test(sum)) { toast('Введите сумму', 'error'); return; }
-  closeModal();
-  showModal('<div class="modal-title">👑 Подтверждение</div><div class="modal-desc">Начислить <b>' + sum + '</b> алмазов пользователю <code>' + id + '</code>?</div><button class="btn" onclick="openBotWithCommand(\'/admin_add_balance ' + id + ' ' + sum + '\'); closeModal();">🤖 Выполнить в боте</button><button class="btn secondary" onclick="closeModal()">Отмена</button>');
+function openAdminAddBalance() {
+  showModal('<div class="modal-title">💰 Пополнить баланс</div><div class="field"><label class="field-label">ID пользователя</label><input type="number" class="field-input" id="adm-bal-id" placeholder="123456789"></div><div class="field"><label class="field-label">Сумма (алмазов)</label><input type="number" class="field-input" id="adm-bal-sum" placeholder="50"></div><button class="btn" id="adm-bal-go">Начислить</button><button class="btn secondary" onclick="closeModal()">Отмена</button>');
+  setTimeout(() => document.getElementById('adm-bal-go')?.addEventListener('click', async () => {
+    const id = document.getElementById('adm-bal-id').value.trim();
+    const sum = document.getElementById('adm-bal-sum').value.trim();
+    if (!id || !/^\d+$/.test(id)) { toast('Введите ID', 'error'); return; }
+    if (!sum || !/^\d+$/.test(sum)) { toast('Введите сумму', 'error'); return; }
+    const u = getTelegramUser();
+    try {
+      const data = await pubPost('/api/admin/add_balance', { admin_id: u.id, user_id: parseInt(id), amount: parseInt(sum) });
+      if (data.success) { closeModal(); toast('✅ Начислено! Баланс: ' + data.new_balance, 'ok'); }
+      else toast('❌ ' + (data.error || 'Ошибка'), 'error');
+    } catch(e) { toast('Ошибка сети', 'error'); }
+  }), 50);
 }
 
-function openAdminGiftSubscription() { showModal('<div class="modal-title">🎁 Подарить подписку</div><div class="field"><label class="field-label">ID пользователя</label><input type="number" class="field-input" id="adm-sub-id" placeholder="123456789"></div><div class="field"><label class="field-label">Дней</label><input type="number" class="field-input" id="adm-sub-days" placeholder="30"></div><button class="btn" onclick="doAdminGiftSub()">Подарить</button><button class="btn secondary" onclick="closeModal()">Отмена</button>'); }
-function doAdminGiftSub() {
-  const id = $('adm-sub-id')?.value.trim(); const days = $('adm-sub-days')?.value.trim();
-  if (!id || !/^\d+$/.test(id)) { toast('Введите ID', 'error'); return; }
-  if (!days || !/^\d+$/.test(days)) { toast('Введите дни', 'error'); return; }
-  closeModal();
-  showModal('<div class="modal-title">🎁 Подтверждение</div><div class="modal-desc">Подарить <b>' + days + '</b> дней пользователю <code>' + id + '</code>?</div><button class="btn" onclick="openBotWithCommand(\'/admin_gift_sub ' + id + ' ' + days + '\'); closeModal();">🤖 Выполнить в боте</button><button class="btn secondary" onclick="closeModal()">Отмена</button>');
+function openAdminGiftSubscription() {
+  showModal('<div class="modal-title">🎁 Подарить подписку</div><div class="field"><label class="field-label">ID пользователя</label><input type="number" class="field-input" id="adm-sub-id" placeholder="123456789"></div><div class="field"><label class="field-label">Дней</label><input type="number" class="field-input" id="adm-sub-days" placeholder="30"></div><button class="btn" id="adm-sub-go">Подарить</button><button class="btn secondary" onclick="closeModal()">Отмена</button>');
+  setTimeout(() => document.getElementById('adm-sub-go')?.addEventListener('click', async () => {
+    const id = document.getElementById('adm-sub-id').value.trim();
+    const days = document.getElementById('adm-sub-days').value.trim();
+    if (!id || !/^\d+$/.test(id)) { toast('Введите ID', 'error'); return; }
+    if (!days || !/^\d+$/.test(days)) { toast('Введите дни', 'error'); return; }
+    const u = getTelegramUser();
+    try {
+      const data = await pubPost('/api/admin/gift_subscription', { admin_id: u.id, user_id: parseInt(id), days: parseInt(days) });
+      if (data.success) { closeModal(); toast('✅ Подписка подарена до ' + (data.end_date||'').slice(0,10), 'ok'); }
+      else toast('❌ ' + (data.error || 'Ошибка'), 'error');
+    } catch(e) { toast('Ошибка сети', 'error'); }
+  }), 50);
 }
 
-function openAdminGiftApi() { showModal('<div class="modal-title">🔑 Подарить API токен</div><div class="field"><label class="field-label">ID пользователя</label><input type="number" class="field-input" id="adm-api-id" placeholder="123456789"></div><div class="field"><label class="field-label">План</label><select class="field-input" id="adm-api-plan"><option value="100">100 запросов</option><option value="500">500 запросов</option><option value="1000">1000 запросов</option><option value="5000">5000 запросов</option></select></div><button class="btn" onclick="doAdminGiftApi()">Подарить</button><button class="btn secondary" onclick="closeModal()">Отмена</button>'); }
-function doAdminGiftApi() {
-  const id = $('adm-api-id')?.value.trim(); const plan = $('adm-api-plan')?.value;
-  if (!id || !/^\d+$/.test(id)) { toast('Введите ID', 'error'); return; }
-  closeModal();
-  showModal('<div class="modal-title">🔑 Подтверждение</div><div class="modal-desc">Подарить API токен (<b>' + plan + '</b>) пользователю <code>' + id + '</code>?</div><button class="btn" onclick="openBotWithCommand(\'/admin_gift_api ' + id + ' ' + plan + '\'); closeModal();">🤖 Выполнить в боте</button><button class="btn secondary" onclick="closeModal()">Отмена</button>');
+function openAdminGiftApi() {
+  showModal('<div class="modal-title">🔑 Подарить API токен</div><div class="field"><label class="field-label">ID пользователя</label><input type="number" class="field-input" id="adm-api-id" placeholder="123456789"></div><div class="field"><label class="field-label">План</label><select class="field-input" id="adm-api-plan"><option value="100">100 запросов</option><option value="500">500 запросов</option><option value="1000">1000 запросов</option><option value="5000">5000 запросов</option></select></div><button class="btn" id="adm-api-go">Подарить</button><button class="btn secondary" onclick="closeModal()">Отмена</button>');
+  setTimeout(() => document.getElementById('adm-api-go')?.addEventListener('click', async () => {
+    const id = document.getElementById('adm-api-id').value.trim();
+    const plan = document.getElementById('adm-api-plan').value;
+    if (!id || !/^\d+$/.test(id)) { toast('Введите ID', 'error'); return; }
+    const u = getTelegramUser();
+    try {
+      const data = await pubPost('/api/admin/gift_api', { admin_id: u.id, user_id: parseInt(id), plan_key: plan });
+      if (data.success) { closeModal(); toast('✅ Токен подарен: ' + data.token.slice(0,20) + '...', 'ok'); }
+      else toast('❌ ' + (data.error || 'Ошибка'), 'error');
+    } catch(e) { toast('Ошибка сети', 'error'); }
+  }), 50);
 }
 
-function openAdminDeleteUser() { showModal('<div class="modal-title">🗑️ Удалить данные</div><div class="field"><label class="field-label">ID пользователя</label><input type="number" class="field-input" id="adm-del-id" placeholder="123456789"></div><button class="btn danger" onclick="doAdminDeleteUser()">🗑️ Удалить</button><button class="btn secondary" onclick="closeModal()">Отмена</button>'); }
-function doAdminDeleteUser() {
-  const id = $('adm-del-id')?.value.trim();
-  if (!id || !/^\d+$/.test(id)) { toast('Введите ID', 'error'); return; }
-  if (parseInt(id) === CONFIG.ADMIN_ID) { toast('Нельзя удалить админа', 'error'); return; }
-  closeModal();
-  showModal('<div class="modal-title">⚠️ Удалить?</div><div class="modal-desc">Полное удаление <code>' + id + '</code>?<br><br><b style="color:var(--red);">Необратимо.</b></div><button class="btn danger" onclick="openBotWithCommand(\'/admin_delete_user ' + id + '\'); closeModal();">🤖 Удалить в боте</button><button class="btn secondary" onclick="closeModal()">Отмена</button>');
+function openAdminDeleteUser() {
+  showModal('<div class="modal-title">🗑️ Удалить данные</div><div class="field"><label class="field-label">ID пользователя</label><input type="number" class="field-input" id="adm-del-id" placeholder="123456789"></div><button class="btn danger" id="adm-del-go">🗑️ Удалить</button><button class="btn secondary" onclick="closeModal()">Отмена</button>');
+  setTimeout(() => document.getElementById('adm-del-go')?.addEventListener('click', async () => {
+    const id = document.getElementById('adm-del-id').value.trim();
+    if (!id || !/^\d+$/.test(id)) { toast('Введите ID', 'error'); return; }
+    if (parseInt(id) === CONFIG.ADMIN_ID) { toast('Нельзя удалить админа', 'error'); return; }
+    const u = getTelegramUser();
+    try {
+      const data = await pubPost('/api/admin/delete_user', { admin_id: u.id, user_id: parseInt(id) });
+      if (data.success) { closeModal(); toast('✅ Данные удалены', 'ok'); }
+      else toast('❌ ' + (data.error || 'Ошибка'), 'error');
+    } catch(e) { toast('Ошибка сети', 'error'); }
+  }), 50);
 }
 
-function openAdminAnswer() { showModal('<div class="modal-title">💬 Ответить</div><div class="field"><label class="field-label">ID пользователя</label><input type="number" class="field-input" id="adm-ans-id" placeholder="123456789"></div><div class="field"><label class="field-label">Сообщение</label><textarea class="field-input" id="adm-ans-text" rows="4" placeholder="Ваш ответ..." style="resize:vertical;font-family:inherit;"></textarea></div><button class="btn" onclick="doAdminAnswer()">📤 Отправить</button><button class="btn secondary" onclick="closeModal()">Отмена</button>'); }
-function doAdminAnswer() {
-  const id = $('adm-ans-id')?.value.trim(); const text = $('adm-ans-text')?.value.trim();
-  if (!id || !/^\d+$/.test(id)) { toast('Введите ID', 'error'); return; }
-  if (!text) { toast('Введите текст', 'error'); return; }
-  closeModal();
-  showModal('<div class="modal-title">💬 Подтверждение</div><div class="modal-desc">Отправить пользователю <code>' + id + '</code>?<br><br><i>' + esc(text.slice(0, 200)) + '</i></div><button class="btn" onclick="openBotWithCommand(\'/admin_answer ' + id + '\'); closeModal();">📤 Отправить в боте</button><button class="btn secondary" onclick="closeModal()">Отмена</button>');
+function openAdminAnswer() {
+  showModal('<div class="modal-title">💬 Ответить</div><div class="field"><label class="field-label">ID пользователя</label><input type="number" class="field-input" id="adm-ans-id" placeholder="123456789"></div><div class="field"><label class="field-label">Сообщение</label><textarea class="field-input" id="adm-ans-text" rows="4" placeholder="Ваш ответ..." style="resize:vertical;font-family:inherit;"></textarea></div><button class="btn" id="adm-ans-go">📤 Отправить</button><button class="btn secondary" onclick="closeModal()">Отмена</button>');
+  setTimeout(() => document.getElementById('adm-ans-go')?.addEventListener('click', async () => {
+    const id = document.getElementById('adm-ans-id').value.trim();
+    const text = document.getElementById('adm-ans-text').value.trim();
+    if (!id || !/^\d+$/.test(id)) { toast('Введите ID', 'error'); return; }
+    if (!text) { toast('Введите текст', 'error'); return; }
+    const u = getTelegramUser();
+    try {
+      const data = await pubPost('/api/admin/answer', { admin_id: u.id, user_id: parseInt(id), text: text });
+      if (data.success) { closeModal(); toast('✅ Отправлено', 'ok'); }
+      else toast('❌ ' + (data.error || 'Ошибка'), 'error');
+    } catch(e) { toast('Ошибка сети', 'error'); }
+  }), 50);
 }
 
-function openAdminBroadcastUsers() { showModal('<div class="modal-title">📢 Рассылка пользователям</div><div class="modal-desc">Всем запустившим бота</div><div class="field"><textarea class="field-input" id="adm-bc-users" rows="5" placeholder="Текст..." style="resize:vertical;font-family:inherit;"></textarea></div><button class="btn" onclick="doAdminBroadcastUsers()">📢 Отправить</button><button class="btn secondary" onclick="closeModal()">Отмена</button>'); }
-function doAdminBroadcastUsers() {
-  const text = $('adm-bc-users')?.value.trim();
-  if (!text) { toast('Введите сообщение', 'error'); return; }
-  closeModal();
-  showModal('<div class="modal-title">📢 Подтверждение</div><div class="modal-desc">Отправить ВСЕМ?<br><br><i>' + esc(text.slice(0, 200)) + '</i></div><button class="btn" onclick="openBotWithCommand(\'/admin_broadcast_users\'); closeModal();">🤖 Выполнить в боте</button><button class="btn secondary" onclick="closeModal()">Отмена</button>');
+function openAdminBroadcastUsers() {
+  showModal('<div class="modal-title">📢 Рассылка пользователям</div><div class="modal-desc">Всем запустившим бота</div><div class="field"><textarea class="field-input" id="adm-bc-users" rows="5" placeholder="Текст..." style="resize:vertical;font-family:inherit;"></textarea></div><button class="btn" id="adm-bc-go">📢 Отправить</button><button class="btn secondary" onclick="closeModal()">Отмена</button>');
+  setTimeout(() => document.getElementById('adm-bc-go')?.addEventListener('click', async () => {
+    const text = document.getElementById('adm-bc-users').value.trim();
+    if (!text) { toast('Введите сообщение', 'error'); return; }
+    const u = getTelegramUser();
+    try {
+      const data = await pubPost('/api/admin/broadcast_users', { admin_id: u.id, text: text });
+      if (data.success) { closeModal(); toast(`✅ Отправлено: ${data.sent}, ошибок: ${data.failed}`, 'ok'); }
+      else toast('❌ ' + (data.error || 'Ошибка'), 'error');
+    } catch(e) { toast('Ошибка сети', 'error'); }
+  }), 50);
 }
 
-function openAdminBroadcastGroups() { showModal('<div class="modal-title">📢 Рассылка группам</div><div class="modal-desc">Во все группы админа</div><div class="field"><textarea class="field-input" id="adm-bc-groups" rows="5" placeholder="Текст..." style="resize:vertical;font-family:inherit;"></textarea></div><button class="btn" onclick="doAdminBroadcastGroups()">📢 Отправить</button><button class="btn secondary" onclick="closeModal()">Отмена</button>'); }
-function doAdminBroadcastGroups() {
-  const text = $('adm-bc-groups')?.value.trim();
-  if (!text) { toast('Введите сообщение', 'error'); return; }
-  closeModal();
-  showModal('<div class="modal-title">📢 Подтверждение</div><div class="modal-desc">Отправить во ВСЕ группы?<br><br><i>' + esc(text.slice(0, 200)) + '</i></div><button class="btn" onclick="openBotWithCommand(\'/admin_broadcast_groups\'); closeModal();">🤖 Выполнить в боте</button><button class="btn secondary" onclick="closeModal()">Отмена</button>');
+function openAdminBroadcastGroups() {
+  showModal('<div class="modal-title">📢 Рассылка группам</div><div class="modal-desc">Во все группы админа</div><div class="field"><textarea class="field-input" id="adm-bc-groups" rows="5" placeholder="Текст..." style="resize:vertical;font-family:inherit;"></textarea></div><button class="btn" id="adm-bcg-go">📢 Отправить</button><button class="btn secondary" onclick="closeModal()">Отмена</button>');
+  setTimeout(() => document.getElementById('adm-bcg-go')?.addEventListener('click', async () => {
+    const text = document.getElementById('adm-bc-groups').value.trim();
+    if (!text) { toast('Введите сообщение', 'error'); return; }
+    const u = getTelegramUser();
+    try {
+      const data = await pubPost('/api/admin/broadcast_groups', { admin_id: u.id, text: text });
+      if (data.success) { closeModal(); toast(`✅ Отправлено: ${data.sent}/${data.total}`, 'ok'); }
+      else toast('❌ ' + (data.error || 'Ошибка'), 'error');
+    } catch(e) { toast('Ошибка сети', 'error'); }
+  }), 50);
 }
 
 async function openAdminSearchHistory() {
   showModal('<div class="modal-title">📋 История поисков</div><div class="modal-desc">Загрузка...</div>');
   try {
-    const history = await apiRequest('/api/search_history?limit=50').catch(() => []);
+    const history = await pubGet('/api/search_history').catch(() => []);
     let html = '<div class="modal-title">📋 История поисков</div>';
     if (!history || !history.length) html += '<div class="modal-desc">История пуста</div>';
     else {
       html += '<div class="modal-desc">Найдено: ' + history.length + '</div><div style="max-height:60vh;overflow-y:auto;">';
-      history.slice(0, 50).forEach((h, i) => { html += '<div style="padding:10px 0;border-bottom:0.5px solid var(--border-soft);"><div style="font-size:12px;color:var(--text-mute);">#' + (i+1) + ' · ' + esc(h.search_date?.slice(0, 16) || '') + '</div><div style="font-size:14px;color:var(--text);">🎯 <code>' + esc(h.target_id || '—') + '</code></div></div>'; });
+      history.slice(0, 50).forEach((h, i) => { html += '<div style="padding:10px 0;border-bottom:0.5px solid var(--border-soft);"><div style="font-size:12px;color:var(--text-mute);">#' + (i+1) + ' · ' + esc((h.date||'').slice(0, 16)) + '</div><div style="font-size:14px;color:var(--text);">🎯 <code>' + esc(h.target_id || '—') + '</code></div></div>'; });
       html += '</div>';
     }
     html += '<button class="btn secondary" onclick="closeModal()">Закрыть</button>';
     closeModal();
     showModal(html);
-  } catch (e) { closeModal(); showModal('<div class="modal-title">📋</div><div class="modal-desc">Ошибка: ' + esc(e.message) + '</div><button class="btn secondary" onclick="closeModal()">Закрыть</button>'); }
+  } catch (e) { closeModal(); toast('Ошибка загрузки', 'error'); }
 }
 
-async function openAdminVerifiedUsers() {
-  showModal('<div class="modal-title">🔐 Верифицированные</div><div class="modal-desc">Загрузка...</div>');
-  try {
-    const list = await apiRequest('/api/verified_users?limit=50').catch(() => []);
-    let html = '<div class="modal-title">🔐 Верифицированные</div>';
-    if (!list || !list.length) html += '<div class="modal-desc">Нет данных</div>';
-    else {
-      html += '<div class="modal-desc">Всего: ' + list.length + '</div><div style="max-height:60vh;overflow-y:auto;">';
-      list.forEach(u => { html += '<div style="padding:10px 0;border-bottom:0.5px solid var(--border-soft);"><div style="font-size:14px;color:var(--text);">👤 <code>' + esc(u.user_id) + '</code></div><div style="font-size:12px;color:var(--text-mute);">📱 ' + esc(u.phone_number || '—') + '</div></div>'; });
-      html += '</div>';
-    }
-    html += '<button class="btn secondary" onclick="closeModal()">Закрыть</button>';
-    closeModal();
-    showModal(html);
-  } catch (e) { closeModal(); showModal('<div class="modal-title">🔐</div><div class="modal-desc">Ошибка: ' + esc(e.message) + '</div><button class="btn secondary" onclick="closeModal()">Закрыть</button>'); }
-}
-
-async function openAdminApiTokens() {
-  showModal('<div class="modal-title">🔑 API Токены</div><div class="modal-desc">Загрузка...</div>');
-  try {
-    const list = await apiRequest('/api/admin_api_tokens?limit=50').catch(() => []);
-    let html = '<div class="modal-title">🔑 API Токены</div>';
-    if (!list || !list.length) html += '<div class="modal-desc">Токенов нет</div>';
-    else {
-      html += '<div class="modal-desc">Всего: ' + list.length + '</div><div style="max-height:60vh;overflow-y:auto;">';
-      list.forEach(t => {
-        const active = t.active ? '✅' : '⏳';
-        const remaining = (t.requests_total || 0) - (t.requests_used || 0);
-        html += '<div style="padding:10px 0;border-bottom:0.5px solid var(--border-soft);"><div style="font-size:13px;font-family:monospace;">' + esc((t.token || '').slice(0, 24)) + '...</div><div style="font-size:12px;color:var(--text-mute);">👤 ' + esc(t.user_id) + ' · ' + active + '</div><div style="font-size:12px;color:var(--text-mute);">📊 ' + (t.requests_used || 0) + '/' + (t.requests_total || 0) + ' · ост. ' + remaining + '</div></div>';
-      });
-      html += '</div>';
-    }
-    html += '<button class="btn secondary" onclick="closeModal()">Закрыть</button>';
-    closeModal();
-    showModal(html);
-  } catch (e) { closeModal(); showModal('<div class="modal-title">🔑</div><div class="modal-desc">Ошибка: ' + esc(e.message) + '</div><button class="btn secondary" onclick="closeModal()">Закрыть</button>'); }
-}
-
-function openBotWithCommand(cmd) {
-  vibrate();
-  try {
-    const url = 'https://t.me/' + CONFIG.BOT_USERNAME + '?start=' + encodeURIComponent(cmd.replace(/^\//, ''));
-    if (window.Telegram?.WebApp) window.Telegram.WebApp.openTelegramLink(url);
-    else window.open(url, '_blank');
-    toast('Команда отправлена в бот', 'ok');
-  } catch (e) { window.open('https://t.me/' + CONFIG.BOT_USERNAME, '_blank'); }
-}
-
+// ============================================================
+// MODALS / SETTINGS
+// ============================================================
 function showModal(html) {
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay';
@@ -1305,11 +1379,6 @@ function saveSettings() {
   closeModal();
   toast('Сохранено', 'ok');
   renderScreen(currentScreen.name, currentScreen.data);
-}
-function openBot() {
-  vibrate();
-  const url = 'https://t.me/' + CONFIG.BOT_USERNAME;
-  try { window.Telegram?.WebApp?.openTelegramLink(url); } catch (e) { window.open(url, '_blank'); }
 }
 function openMyProfile() {
   const u = getTelegramUser();
@@ -1358,38 +1427,24 @@ window.addEventListener('load', () => {
 
 window.renderScreen = renderScreen;
 window.openMyProfile = openMyProfile;
-window.openBot = openBot;
 window.openSettings = openSettings;
 window.handleSearch = handleSearch;
 window.buyPlan = buyPlan;
-window.activateTracking = activateTracking;
 window.confirmDelete = confirmDelete;
 window.closeModal = closeModal;
 window.saveSettings = saveSettings;
 window.copyToClipboard = copyToClipboard;
-window.closePhoneMap = closePhoneMap;
-window.showPhoneMapCurrent = showPhoneMapCurrent;
-window.openPhoneFullReport = openPhoneFullReport;
-window.closePhoneReport = closePhoneReport;
 window.isAdmin = isAdmin;
+window.removeTracking = removeTracking;
+window.activateTracking = activateTracking;
 window.openAdminAddBalance = openAdminAddBalance;
-window.doAdminAddBalance = doAdminAddBalance;
 window.openAdminGiftSubscription = openAdminGiftSubscription;
-window.doAdminGiftSub = doAdminGiftSub;
 window.openAdminGiftApi = openAdminGiftApi;
-window.doAdminGiftApi = doAdminGiftApi;
 window.openAdminDeleteUser = openAdminDeleteUser;
-window.doAdminDeleteUser = doAdminDeleteUser;
 window.openAdminAnswer = openAdminAnswer;
-window.doAdminAnswer = doAdminAnswer;
 window.openAdminBroadcastUsers = openAdminBroadcastUsers;
-window.doAdminBroadcastUsers = doAdminBroadcastUsers;
 window.openAdminBroadcastGroups = openAdminBroadcastGroups;
-window.doAdminBroadcastGroups = doAdminBroadcastGroups;
 window.openAdminSearchHistory = openAdminSearchHistory;
-window.openAdminVerifiedUsers = openAdminVerifiedUsers;
-window.openAdminApiTokens = openAdminApiTokens;
-window.openBotWithCommand = openBotWithCommand;
 window.getRequestsLeft = getRequestsLeft;
 window.checkAndUseRequest = checkAndUseRequest;
 window.showLimitModal = showLimitModal;

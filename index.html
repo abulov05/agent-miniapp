@@ -1456,14 +1456,22 @@ function openAdminGiftSubscription() {
   setTimeout(() => document.getElementById('adm-sub-go')?.addEventListener('click', async () => {
     const id = document.getElementById('adm-sub-id').value.trim();
     const days = document.getElementById('adm-sub-days').value.trim();
+    console.log('[GIFT_SUB] id=', id, 'days=', days);
     if (!id || !/^\d+$/.test(id)) { toast('Введите ID', 'error'); return; }
     if (!days || !/^\d+$/.test(days)) { toast('Введите дни', 'error'); return; }
     const u = getTelegramUser();
+    const payload = { admin_id: u.id, user_id: parseInt(id), days: parseInt(days) };
+    console.log('[GIFT_SUB] sending payload=', payload);
+    console.log('[GIFT_SUB] url=', CONFIG.API_BASE + '/api/admin/gift_subscription');
     try {
-      const data = await pubPost('/api/admin/gift_subscription', { admin_id: u.id, user_id: parseInt(id), days: parseInt(days) });
+      const data = await pubPost('/api/admin/gift_subscription', payload);
+      console.log('[GIFT_SUB] response=', data);
       if (data.success) { closeModal(); toast('✅ Подписка подарена до ' + (data.end_date||'').slice(0,10), 'ok'); }
       else toast('❌ ' + (data.error || 'Ошибка'), 'error');
-    } catch(e) { toast('Ошибка сети', 'error'); }
+    } catch(e) {
+      console.log('[GIFT_SUB] error=', e);
+      toast('Ошибка сети: ' + e.message, 'error');
+    }
   }), 50);
 }
 

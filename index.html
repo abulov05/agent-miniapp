@@ -46,23 +46,10 @@ html[data-theme="dark"] {
   --accent-dim: #0066d6;
 }
 
-html, body {
-  width: 100%; height: 100%;
-  overflow: hidden;
-  background: var(--bg);
-  color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
-  font-size: 17px; line-height: 1.3;
-  -webkit-font-smoothing: antialiased;
-  -webkit-text-size-adjust: 100%;
-  user-select: none; -webkit-user-select: none;
-  transition: background-color 0.3s, color 0.3s;
-}
-
+html, body { width: 100%; height: 100%; overflow: hidden; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif; font-size: 17px; line-height: 1.3; -webkit-font-smoothing: antialiased; -webkit-text-size-adjust: 100%; user-select: none; -webkit-user-select: none; transition: background-color 0.3s, color 0.3s; }
 input, textarea { user-select: text; -webkit-user-select: text; }
 ::-webkit-scrollbar { width: 0; height: 0; background: transparent; display: none; }
 * { scrollbar-width: none; -ms-overflow-style: none; }
-
 #app { position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--bg); }
 
 .header { display: flex; align-items: center; gap: 12px; padding: calc(env(safe-area-inset-top, 0px) + 8px) 16px 8px; background: var(--bg); border-bottom: 0.5px solid var(--border-soft); flex-shrink: 0; z-index: 100; }
@@ -73,9 +60,10 @@ input, textarea { user-select: text; -webkit-user-select: text; }
 .brand-name { font-size: 15px; font-weight: 600; letter-spacing: 0.3px; color: var(--text); }
 .brand-sub { font-size: 11px; font-weight: 400; letter-spacing: 0.5px; color: var(--text-mute); margin-top: 1px; }
 .header-actions { margin-left: auto; display: flex; gap: 6px; }
-.icon-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: transparent; border: none; border-radius: 50%; color: var(--accent); cursor: pointer; }
+.icon-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: transparent; border: none; border-radius: 50%; color: var(--accent); cursor: pointer; position: relative; }
 .icon-btn:active { background: rgba(120, 120, 128, 0.16); }
 .icon-btn svg { width: 22px; height: 22px; stroke-width: 2; }
+.notif-badge { position: absolute; top: 2px; right: 2px; min-width: 16px; height: 16px; border-radius: 8px; background: var(--red); color: white; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; padding: 0 4px; }
 
 .search-wrap { padding: 8px 16px 12px; background: var(--bg); flex-shrink: 0; z-index: 90; }
 .search-bar { display: flex; align-items: center; gap: 8px; background: var(--bg-elev); border: none; border-radius: 12px; padding: 6px 6px 6px 12px; min-height: 44px; }
@@ -186,6 +174,20 @@ input, textarea { user-select: text; -webkit-user-select: text; }
 .hist-item .hist-top { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-mute); margin-bottom: 6px; gap: 8px; }
 .hist-item .hist-target { font-size: 14px; color: var(--text); font-family: 'SF Mono', monospace; word-break: break-all; }
 .hist-item .hist-summary { font-size: 13px; color: var(--text-dim); margin-top: 4px; }
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+@keyframes pulsePin { 0% { transform: scale(0.7); opacity: 0.6; } 100% { transform: scale(1.6); opacity: 0; } }
+#phone-map .leaflet-control-zoom a { background: var(--bg) !important; color: var(--accent) !important; border: none !important; width: 36px !important; height: 36px !important; line-height: 34px !important; font-size: 18px !important; }
+#phone-map .leaflet-control-zoom-in { border-radius: 10px 10px 0 0 !important; }
+#phone-map .leaflet-control-zoom-out { border-radius: 0 0 10px 10px !important; }
+#phone-map .leaflet-popup-content-wrapper { background: var(--bg) !important; color: var(--text) !important; border-radius: 12px !important; box-shadow: 0 8px 24px rgba(0,0,0,0.15) !important; }
+#phone-map .leaflet-popup-tip { background: var(--bg) !important; }
+#phone-map .leaflet-control-attribution { display: none !important; }
+
+.chat-messages { display: flex; flex-direction: column; gap: 12px; }
+.chat-msg { max-width: 80%; padding: 10px 14px; border-radius: 14px; font-size: 14px; line-height: 1.4; word-break: break-word; }
+.chat-msg.user { align-self: flex-end; background: var(--accent); color: white; border-bottom-right-radius: 4px; }
+.chat-msg.admin { align-self: flex-start; background: var(--bg-elev); color: var(--text); border-bottom-left-radius: 4px; }
+.chat-msg-time { font-size: 10px; opacity: 0.7; margin-top: 4px; text-align: right; }
 </style>
 </head>
 <body>
@@ -224,6 +226,10 @@ input, textarea { user-select: text; -webkit-user-select: text; }
       <span class="brand-sub">ANALYTICS</span>
     </div>
     <div class="header-actions">
+      <button class="icon-btn" id="notif-btn" title="Уведомления" style="color:var(--accent);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <div class="notif-badge" id="notif-badge" style="display:none;">0</div>
+      </button>
       <button class="icon-btn" id="refresh-btn" title="Обновить">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
       </button>
@@ -303,9 +309,8 @@ const contentWrap = $('content-wrap');
 let APIFY_TOKEN = localStorage.getItem('aa_token') || CONFIG.API_KEY;
 let currentTab = 'home';
 let currentScreen = { name: 'home', data: null };
-
-// Кэш статуса /api/me на 5 секунд, чтобы не дёргать сервер при каждом поиске
 let _meCache = { userId: null, data: null, ts: 0 };
+let _notifCount = 0;
 
 // ============================================================
 // HELPERS
@@ -322,6 +327,17 @@ function formatDate(iso) {
     const yyyy = d.getFullYear();
     return dd + '.' + mm + '.' + yyyy;
   } catch(e) { return String(iso).slice(0, 10); }
+}
+function formatTime(iso) {
+  if (!iso) return '';
+  try {
+    const d = new Date(iso);
+    const dd = String(d.getDate()).padStart(2, '0');
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const hh = String(d.getHours()).padStart(2, '0');
+    const mi = String(d.getMinutes()).padStart(2, '0');
+    return dd + '.' + mm + ' ' + hh + ':' + mi;
+  } catch(e) { return String(iso).slice(0, 16); }
 }
 function toast(msg, type = '') {
   const el = document.createElement('div');
@@ -368,8 +384,6 @@ async function pubPost(path, body) {
   const data = await r.json().catch(() => ({}));
   return data;
 }
-
-// 🔥 Универсальная функция получения статуса пользователя (с кэшем)
 async function getMe(force = false) {
   const u = getTelegramUser();
   if (!u) return { diamonds: 0, has_subscription: false, days_left: 0, subscription_end: null };
@@ -387,7 +401,7 @@ async function getMe(force = false) {
 }
 
 // ============================================================
-// DAILY LIMIT (с учётом подписки!)
+// DAILY LIMIT
 // ============================================================
 function todayStr() {
   const d = new Date();
@@ -417,39 +431,24 @@ function useRequest() {
   saveDailyUsage(u);
   return true;
 }
-
-// 🔥 Проверяет подписку И лимит
 async function checkAndUseRequest() {
   if (isAdmin()) return { ok: true, message: '' };
-
-  // Проверяем подписку (с кэшем)
   const me = await getMe();
-  if (me && me.has_subscription) {
-    return { ok: true, message: '' };  // подписка = безлимит
-  }
-
-  // Обычный лимит
+  if (me && me.has_subscription) return { ok: true, message: '' };
   const left = getRequestsLeft();
-  if (left <= 0) {
-    return { ok: false, message: '❌ Лимит запросов исчерпан! Купите подписку для безлимита.' };
-  }
+  if (left <= 0) return { ok: false, message: '❌ Лимит запросов исчерпан! Купите подписку для безлимита.' };
   useRequest();
   return { ok: true, message: '' };
 }
-
-// 🔥 Обновляет badge, учитывая подписку
 async function updateRequestsBadge() {
   const badge = document.getElementById('requests-badge');
   if (!badge) return;
-
   if (isAdmin()) {
     badge.textContent = '👑 Безлимит';
     badge.style.background = 'rgba(255,149,0,0.15)';
     badge.style.color = 'var(--orange)';
     return;
   }
-
-  // Проверяем подписку
   const me = await getMe();
   if (me && me.has_subscription) {
     badge.textContent = '⭐ Безлимит';
@@ -457,78 +456,49 @@ async function updateRequestsBadge() {
     badge.style.color = 'var(--green)';
     return;
   }
-
-  // Обычный лимит
   const left = getRequestsLeft();
   badge.textContent = '📊 ' + left + '/' + CONFIG.DAILY_LIMIT;
-  if (left === 0) {
-    badge.style.background = 'rgba(255,59,48,0.15)';
-    badge.style.color = 'var(--red)';
-  } else if (left <= 2) {
-    badge.style.background = 'rgba(255,149,0,0.15)';
-    badge.style.color = 'var(--orange)';
-  } else {
-    badge.style.background = 'rgba(52,199,89,0.15)';
-    badge.style.color = 'var(--green)';
-  }
+  if (left === 0) { badge.style.background = 'rgba(255,59,48,0.15)'; badge.style.color = 'var(--red)'; }
+  else if (left <= 2) { badge.style.background = 'rgba(255,149,0,0.15)'; badge.style.color = 'var(--orange)'; }
+  else { badge.style.background = 'rgba(52,199,89,0.15)'; badge.style.color = 'var(--green)'; }
 }
-
 function showLimitModal() {
   vibrate();
   showModal('<div class="modal-title">❌ Лимит запросов исчерпан</div><div class="modal-desc">Вы использовали все <b>' + CONFIG.DAILY_LIMIT + '</b> бесплатных запросов на сегодня.<br><br>⏰ Лимит автоматически обновится через 24 часа.<br><br>⭐ Или купите подписку для безлимитного доступа.</div><button class="btn" onclick="closeModal(); renderScreen(\'subscription\');">⭐ Купить подписку</button><button class="btn secondary" onclick="closeModal()">Понятно</button>');
 }
 
+// 🔔 Обновляет бейдж уведомлений
+async function updateNotifBadge() {
+  const u = getTelegramUser();
+  if (!u) return;
+  try {
+    const data = await pubGet('/api/notifications/' + u.id);
+    const count = (data.notifications || []).length;
+    _notifCount = count;
+    const badge = document.getElementById('notif-badge');
+    if (badge) {
+      if (count > 0) { badge.textContent = count > 99 ? '99+' : String(count); badge.style.display = 'flex'; }
+      else badge.style.display = 'none';
+    }
+  } catch(e) {}
+}
+
 // ============================================================
 // ACTIVITY HELPERS
 // ============================================================
-function activityLabel(status) {
-  if (!status) return 'Неизвестно';
-  const s = String(status).toLowerCase();
-  if (s.includes('online')) return 'В сети';
-  if (s.includes('recently')) return 'Недавно';
-  if (s.includes('lastweek') || s.includes('last_week')) return 'На прошлой неделе';
-  if (s.includes('lastmonth') || s.includes('last_month')) return 'Давно';
-  if (s.includes('offline')) return 'Оффлайн';
-  return status;
-}
-function activityIcon(status) {
-  if (!status) return '❓';
-  const s = String(status).toLowerCase();
-  if (s.includes('online')) return '🟢';
-  if (s.includes('recently')) return '🟡';
-  if (s.includes('lastweek') || s.includes('last_week')) return '🟠';
-  if (s.includes('lastmonth') || s.includes('last_month')) return '🔴';
-  if (s.includes('offline')) return '⚫';
-  return '❓';
-}
-function activityColor(status) {
-  if (!status) return 'var(--text-mute)';
-  const s = String(status).toLowerCase();
-  if (s.includes('online')) return 'var(--green)';
-  if (s.includes('recently')) return 'var(--orange)';
-  if (s.includes('lastweek') || s.includes('last_week')) return 'var(--orange)';
-  if (s.includes('lastmonth') || s.includes('last_month')) return 'var(--red)';
-  return 'var(--text-mute)';
-}
+function activityLabel(status) { if (!status) return 'Неизвестно'; const s = String(status).toLowerCase(); if (s.includes('online')) return 'В сети'; if (s.includes('recently')) return 'Недавно'; if (s.includes('lastweek') || s.includes('last_week')) return 'На прошлой неделе'; if (s.includes('lastmonth') || s.includes('last_month')) return 'Давно'; if (s.includes('offline')) return 'Оффлайн'; return status; }
+function activityIcon(status) { if (!status) return '❓'; const s = String(status).toLowerCase(); if (s.includes('online')) return '🟢'; if (s.includes('recently')) return '🟡'; if (s.includes('lastweek') || s.includes('last_week')) return '🟠'; if (s.includes('lastmonth') || s.includes('last_month')) return '🔴'; if (s.includes('offline')) return '⚫'; return '❓'; }
+function activityColor(status) { if (!status) return 'var(--text-mute)'; const s = String(status).toLowerCase(); if (s.includes('online')) return 'var(--green)'; if (s.includes('recently')) return 'var(--orange)'; if (s.includes('lastweek') || s.includes('last_week')) return 'var(--orange)'; if (s.includes('lastmonth') || s.includes('last_month')) return 'var(--red)'; return 'var(--text-mute)'; }
 function formatLastSeen(dateStr) {
   if (!dateStr) return '—';
   try {
-    const date = new Date(dateStr);
-    if (isNaN(date.getTime())) return dateStr;
-    const now = new Date();
-    const diffMs = now - date;
-    const diffMin = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-    if (diffMin < 1) return 'Только что';
-    if (diffMin < 60) return diffMin + ' мин назад';
-    if (diffHours < 24) return diffHours + ' ч назад';
-    if (diffDays < 7) return diffDays + ' дн назад';
-    const d = String(date.getDate()).padStart(2, '0');
-    const m = String(date.getMonth() + 1).padStart(2, '0');
-    const y = date.getFullYear();
-    const hh = String(date.getHours()).padStart(2, '0');
-    const mm = String(date.getMinutes()).padStart(2, '0');
+    const date = new Date(dateStr); if (isNaN(date.getTime())) return dateStr;
+    const now = new Date(); const diffMs = now - date;
+    const diffMin = Math.floor(diffMs / 60000); const diffHours = Math.floor(diffMs / 3600000); const diffDays = Math.floor(diffMs / 86400000);
+    if (diffMin < 1) return 'Только что'; if (diffMin < 60) return diffMin + ' мин назад';
+    if (diffHours < 24) return diffHours + ' ч назад'; if (diffDays < 7) return diffDays + ' дн назад';
+    const d = String(date.getDate()).padStart(2, '0'); const m = String(date.getMonth() + 1).padStart(2, '0');
+    const y = date.getFullYear(); const hh = String(date.getHours()).padStart(2, '0'); const mm = String(date.getMinutes()).padStart(2, '0');
     return d + '.' + m + '.' + y + ' ' + hh + ':' + mm;
   } catch (e) { return dateStr; }
 }
@@ -537,18 +507,10 @@ function formatLastSeen(dateStr) {
 // API (с токеном)
 // ============================================================
 async function apiRequest(path, opts = {}) {
-  const headers = {
-    'Authorization': 'Bearer ' + APIFY_TOKEN,
-    'Content-Type': 'application/json',
-    'ngrok-skip-browser-warning': 'true',
-    ...(opts.headers || {})
-  };
+  const headers = { 'Authorization': 'Bearer ' + APIFY_TOKEN, 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true', ...(opts.headers || {}) };
   const r = await fetch(CONFIG.API_BASE + path, { ...opts, headers });
   if (r.status === 401) throw new Error('Неверный API-токен');
-  if (r.status === 403) {
-    let d = ''; try { d = (await r.json()).error || ''; } catch (e) {}
-    throw new Error(d || 'Доступ запрещён');
-  }
+  if (r.status === 403) { let d = ''; try { d = (await r.json()).error || ''; } catch (e) {} throw new Error(d || 'Доступ запрещён'); }
   if (!r.ok) throw new Error('HTTP ' + r.status);
   return r.json();
 }
@@ -558,11 +520,8 @@ const apiGetWords = () => apiRequest('/api/words');
 const apiGetTopInterlocutors = () => apiRequest('/api/top_interlocutors');
 const apiGetPhoneLookups = () => apiRequest('/api/phone_lookups');
 const apiGetUser = (id, inc='all', lim=20) => apiRequest('/api/v1/users/' + id + '?include=' + inc + '&limit=' + lim);
-
 async function apiGetPublicStats() {
-  const r = await fetch(CONFIG.API_BASE + '/api/public/stats', {
-    headers: { 'ngrok-skip-browser-warning': 'true' }
-  });
+  const r = await fetch(CONFIG.API_BASE + '/api/public/stats', { headers: { 'ngrok-skip-browser-warning': 'true' } });
   if (!r.ok) throw new Error('Не удалось');
   return r.json();
 }
@@ -589,17 +548,18 @@ const I = {
   globe:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>',
   signal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 4v16"/></svg>',
   key:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>',
-  map:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>'
+  map:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>',
+  gift:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>',
+  share:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>',
+  support:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 10h.01M12 10h.01M16 10h.01"/></svg>',
+  robot:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4M8 16h.01M16 16h.01"/></svg>'
 };
 
 // ============================================================
 // NAVIGATION
 // ============================================================
 function renderScreen(name, data) {
-  if (name === 'admin' && !isAdmin()) {
-    toast('❌ Доступ запрещён', 'error');
-    return renderHome();
-  }
+  if (name === 'admin' && !isAdmin()) { toast('❌ Доступ запрещён', 'error'); return renderHome(); }
   currentScreen = { name, data };
   contentWrap.scrollTop = 0;
   switch (name) {
@@ -615,6 +575,11 @@ function renderScreen(name, data) {
     case 'about':         return renderAbout();
     case 'history':       return renderSearchHistory();
     case 'api-tokens':    return renderApiTokens();
+    case 'referral':      return renderReferral();
+    case 'bonus':         return renderBonus();
+    case 'notifications': return renderNotifications();
+    case 'support':       return renderSupport();
+    case 'maryam':        return renderMaryam();
     case 'admin':         return renderAdminPanel();
     default:              return renderHome();
   }
@@ -684,11 +649,48 @@ async function renderHome() {
       </button>
     </div>
 
+    <div class="section-title">🎁 Бонусы и связь</div>
+    <div class="quick-grid">
+      <button class="quick-card" onclick="renderScreen('bonus')">
+        <div class="quick-card-icon orange">${I.gift}</div>
+        <div>
+          <div class="quick-card-title">Бонус</div>
+          <div class="quick-card-sub">+10 алмазов в день</div>
+        </div>
+      </button>
+      <button class="quick-card" onclick="renderScreen('referral')">
+        <div class="quick-card-icon purple">${I.share}</div>
+        <div>
+          <div class="quick-card-title">Реферал</div>
+          <div class="quick-card-sub">Приглашай и получай</div>
+        </div>
+      </button>
+      <button class="quick-card" onclick="renderScreen('maryam')">
+        <div class="quick-card-icon pink">${I.robot}</div>
+        <div>
+          <div class="quick-card-title">Марыям</div>
+          <div class="quick-card-sub">AI помощник</div>
+        </div>
+      </button>
+      <button class="quick-card" onclick="renderScreen('support')">
+        <div class="quick-card-icon green">${I.support}</div>
+        <div>
+          <div class="quick-card-title">Связь с админом</div>
+          <div class="quick-card-sub">Написать сообщение</div>
+        </div>
+      </button>
+    </div>
+
     <div class="section-title">Инструменты</div>
     <ul class="list">
       <li class="list-item" onclick="renderScreen('history')">
         <div class="list-icon purple">${I.clock}</div>
         <div class="list-content"><div class="list-title">История поисков</div><div class="list-sub">Последние запросы</div></div>
+        <div class="list-chevron">${I.search}</div>
+      </li>
+      <li class="list-item" onclick="renderScreen('notifications')">
+        <div class="list-icon red">${I.bell}</div>
+        <div class="list-content"><div class="list-title">Уведомления</div><div class="list-sub">Новые события</div></div>
         <div class="list-chevron">${I.search}</div>
       </li>
       <li class="list-item" onclick="renderScreen('subscription')">
@@ -720,48 +722,443 @@ async function renderHome() {
   `;
 
   updateRequestsBadge();
+  updateNotifBadge();
 
   if (tgUser) {
     try {
       const me = await getMe(true);
-      console.log('[HOME] me =', me);
       const meBlock = document.getElementById('me-block');
       if (meBlock) {
         const subLine = me.has_subscription
-          ? `<div style="display:flex;justify-content:space-between;padding:10px 0;">
-               <span style="color:var(--text-mute);">⭐ Подписка</span>
-               <span style="color:var(--green);font-weight:600;">активна до ${formatDate(me.subscription_end)}</span>
-             </div>`
-          : `<div style="display:flex;justify-content:space-between;padding:10px 0;">
-               <span style="color:var(--text-mute);">⭐ Подписка</span>
-               <span style="color:var(--red);font-weight:600;">не активна</span>
-             </div>`;
-        meBlock.innerHTML = `
-          <div style="background:var(--bg-elev);border-radius:14px;padding:12px 16px;margin-bottom:12px;">
-            ${subLine}
-            <div style="display:flex;justify-content:space-between;padding:10px 0;border-top:0.5px solid var(--border-soft);">
-              <span style="color:var(--text-mute);">💎 Баланс</span>
-              <span style="color:var(--orange);font-weight:600;">${me.diamonds} алмазов</span>
-            </div>
-          </div>
-        `;
+          ? `<div style="display:flex;justify-content:space-between;padding:10px 0;"><span style="color:var(--text-mute);">⭐ Подписка</span><span style="color:var(--green);font-weight:600;">активна до ${formatDate(me.subscription_end)}</span></div>`
+          : `<div style="display:flex;justify-content:space-between;padding:10px 0;"><span style="color:var(--text-mute);">⭐ Подписка</span><span style="color:var(--red);font-weight:600;">не активна</span></div>`;
+        meBlock.innerHTML = `<div style="background:var(--bg-elev);border-radius:14px;padding:12px 16px;margin-bottom:12px;">${subLine}<div style="display:flex;justify-content:space-between;padding:10px 0;border-top:0.5px solid var(--border-soft);"><span style="color:var(--text-mute);">💎 Баланс</span><span style="color:var(--orange);font-weight:600;">${me.diamonds} алмазов</span></div></div>`;
       }
-    } catch(e) { console.log('[HOME] me error:', e); }
+    } catch(e) {}
 
     try {
       const u = await apiGetUser(tgUser.id, 'all', 100).catch(() => null);
       if (u && !u.error) {
         $('my-comments').textContent = formatNumber((u.comments || []).length);
         $('my-chats').textContent = formatNumber((u.chats || []).length);
-      } else {
-        $('my-comments').textContent = '0';
-        $('my-chats').textContent = '0';
-      }
-    } catch (e) {
-      $('my-comments').textContent = '—';
-      $('my-chats').textContent = '—';
-    }
+      } else { $('my-comments').textContent = '0'; $('my-chats').textContent = '0'; }
+    } catch (e) { $('my-comments').textContent = '—'; $('my-chats').textContent = '—'; }
   }
+}
+
+// ============================================================
+// 🎁 БОНУС
+// ============================================================
+async function renderBonus() {
+  const u = getTelegramUser();
+  if (!u) { toast('Откройте через Telegram', 'error'); return; }
+  contentWrap.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-mute);">Загрузка...</div>';
+
+  let status = { can_claim: true, last_bonus_date: null, today: '' };
+  try {
+    status = await pubGet('/api/bonus/status/' + u.id);
+  } catch(e) {}
+
+  const me = await getMe(true);
+
+  const canClaim = status.can_claim;
+
+  contentWrap.innerHTML = `
+    <div class="section-title">🎁 Ежедневный бонус</div>
+    <div class="result-card" style="background:linear-gradient(135deg, rgba(255,149,0,0.15), rgba(255,59,48,0.05));border:1px solid rgba(255,149,0,0.3);">
+      <div class="result-row" style="border:none;">
+        <div class="result-icon" style="color:var(--orange);font-size:32px;width:48px;height:48px;">🎁</div>
+        <div class="result-content">
+          <div class="result-label" style="font-size:14px;">Ежедневный бонус</div>
+          <div class="result-value" style="color:var(--orange);font-size:22px;font-weight:700;">+10 алмазов</div>
+          <div style="font-size:12px;color:var(--text-mute);margin-top:4px;">Раз в 24 часа</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:var(--bg-elev);border-radius:14px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px;">
+      <div style="font-size:24px;">💎</div>
+      <div style="flex:1;">
+        <div style="font-size:13px;color:var(--text-mute);text-transform:uppercase;font-weight:600;">Текущий баланс</div>
+        <div style="font-size:22px;color:var(--orange);font-weight:700;margin-top:2px;">${me.diamonds} алмазов</div>
+      </div>
+    </div>
+
+    ${canClaim ? `
+      <div style="background:rgba(52,199,89,0.1);border:1px solid rgba(52,199,89,0.3);border-radius:14px;padding:14px;text-align:center;margin-bottom:16px;color:var(--green);font-weight:600;">
+        ✅ Бонус доступен! Нажмите кнопку ниже
+      </div>
+      <button class="btn" id="bonus-btn" style="background:linear-gradient(135deg,#34c759,#30b14e);">🎁 ЗАБРАТЬ +10 АЛМАЗОВ</button>
+    ` : `
+      <div style="background:rgba(255,59,48,0.1);border:1px solid rgba(255,59,48,0.3);border-radius:14px;padding:14px;text-align:center;margin-bottom:16px;color:var(--red);font-weight:600;">
+        ⏰ Бонус уже получен сегодня<br>
+        <span style="font-size:12px;color:var(--text-mute);font-weight:400;">Возвращайтесь завтра</span>
+      </div>
+    `}
+
+    <div class="section-title">📋 Информация</div>
+    <div class="result-card">
+      <div class="result-row"><div class="result-icon">${I.clock}</div><div class="result-content"><div class="result-label">Периодичность</div><div class="result-value">Раз в 24 часа</div></div></div>
+      <div class="result-row"><div class="result-icon">${I.gem}</div><div class="result-content"><div class="result-label">Награда</div><div class="result-value accent">+10 алмазов</div></div></div>
+      ${status.last_bonus_date ? `<div class="result-row"><div class="result-icon">${I.check}</div><div class="result-content"><div class="result-label">Последний бонус</div><div class="result-value">${esc(status.last_bonus_date)}</div></div></div>` : ''}
+    </div>
+
+    <button class="btn secondary" onclick="renderScreen('home')">← На главную</button>
+  `;
+
+  if (canClaim) {
+    $('bonus-btn').addEventListener('click', async () => {
+      const btn = $('bonus-btn');
+      btn.disabled = true;
+      btn.textContent = '⏳ Получаем...';
+      try {
+        const data = await pubPost('/api/bonus/claim', { user_id: u.id });
+        if (data.success) {
+          toast('🎁 +10 алмазов получено!', 'ok');
+          vibrate(50);
+          _meCache = { userId: null, data: null, ts: 0 };
+          renderScreen('bonus');
+        } else {
+          toast('❌ ' + (data.error || 'Не удалось'), 'error');
+          btn.disabled = false;
+          btn.textContent = '🎁 ЗАБРАТЬ +10 АЛМАЗОВ';
+        }
+      } catch(e) { toast('Ошибка сети', 'error'); btn.disabled = false; btn.textContent = '🎁 ЗАБРАТЬ +10 АЛМАЗОВ'; }
+    });
+  }
+}
+
+// ============================================================
+// 🤝 РЕФЕРАЛ
+// ============================================================
+async function renderReferral() {
+  const u = getTelegramUser();
+  if (!u) { toast('Откройте через Telegram', 'error'); return; }
+  contentWrap.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-mute);">Загрузка...</div>';
+
+  let info = { referral_code: '', referral_link: '', referrals_count: 0, bonus_total: 0 };
+  try {
+    info = await pubGet('/api/referral/info/' + u.id);
+  } catch(e) {}
+
+  const me = await getMe(true);
+
+  contentWrap.innerHTML = `
+    <div class="section-title">🤝 Реферальная программа</div>
+
+    <div class="result-card" style="background:linear-gradient(135deg, rgba(175,82,222,0.15), rgba(0,122,255,0.05));border:1px solid rgba(175,82,222,0.3);">
+      <div class="result-row" style="border:none;">
+        <div class="result-icon" style="color:var(--purple);font-size:32px;width:48px;height:48px;">🤝</div>
+        <div class="result-content">
+          <div class="result-label" style="font-size:14px;">Приглашай друзей</div>
+          <div class="result-value" style="color:var(--purple);font-size:22px;font-weight:700;">+50 алмазов</div>
+          <div style="font-size:12px;color:var(--text-mute);margin-top:4px;">за 1-го друга, +20 за остальных</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+      <div style="background:var(--bg-elev);border-radius:14px;padding:16px;text-align:center;">
+        <div style="font-size:28px;font-weight:700;color:var(--purple);">${info.referrals_count}</div>
+        <div style="font-size:11px;color:var(--text-mute);text-transform:uppercase;letter-spacing:0.5px;margin-top:4px;font-weight:600;">Приглашено</div>
+      </div>
+      <div style="background:var(--bg-elev);border-radius:14px;padding:16px;text-align:center;">
+        <div style="font-size:28px;font-weight:700;color:var(--orange);">${me.diamonds}</div>
+        <div style="font-size:11px;color:var(--text-mute);text-transform:uppercase;letter-spacing:0.5px;margin-top:4px;font-weight:600;">Баланс</div>
+      </div>
+    </div>
+
+    <div class="section-title">🔗 Ваша ссылка</div>
+    <div style="background:var(--bg-elev);border-radius:14px;padding:14px;margin-bottom:16px;">
+      <div style="font-size:11px;color:var(--text-mute);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;font-weight:600;">Реферальный код</div>
+      <div style="font-family:'SF Mono',monospace;font-size:16px;color:var(--accent);margin-bottom:12px;word-break:break-all;">${esc(info.referral_code)}</div>
+      <div style="font-size:11px;color:var(--text-mute);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;font-weight:600;">Ссылка для друзей</div>
+      <div style="font-family:'SF Mono',monospace;font-size:12px;color:var(--text);word-break:break-all;margin-bottom:12px;">${esc(info.referral_link)}</div>
+      <button class="btn" id="copy-ref-btn">📋 Скопировать ссылку</button>
+      <button class="btn" id="share-ref-btn" style="background:linear-gradient(135deg,#af52de,#007aff);">📤 Поделиться в Telegram</button>
+    </div>
+
+    <div class="section-title">📋 Как это работает</div>
+    <div class="result-card">
+      <div class="result-row"><div class="result-icon">${I.check}</div><div class="result-content"><div class="result-label">1-е приглашение</div><div class="result-value accent">+50 алмазов</div></div></div>
+      <div class="result-row"><div class="result-icon">${I.check}</div><div class="result-content"><div class="result-label">2-е и далее</div><div class="result-value accent">+20 алмазов</div></div></div>
+      <div class="result-row"><div class="result-icon">${I.gift}</div><div class="result-content"><div class="result-label">Друг получает</div><div class="result-value accent">+20 алмазов</div></div></div>
+    </div>
+
+    <button class="btn secondary" onclick="renderScreen('home')">← На главную</button>
+  `;
+
+  $('copy-ref-btn').addEventListener('click', () => copyToClipboard(info.referral_link));
+
+  $('share-ref-btn').addEventListener('click', () => {
+    const shareText = `🤖 Попробуй AGENT ANALYTICS — анализ Telegram!\n\nПереходи по моей ссылке и получи +20 алмазов:\n${info.referral_link}`;
+    const tgShare = `https://t.me/share/url?url=${encodeURIComponent(info.referral_link)}&text=${encodeURIComponent('🤖 Попробуй AGENT ANALYTICS и получи +20 алмазов!')}`;
+    try {
+      if (window.Telegram?.WebApp?.openTelegramLink) window.Telegram.WebApp.openTelegramLink(tgShare);
+      else window.open(tgShare, '_blank');
+    } catch(e) { window.open(tgShare, '_blank'); }
+  });
+}
+
+// ============================================================
+// 🔔 УВЕДОМЛЕНИЯ
+// ============================================================
+async function renderNotifications() {
+  const u = getTelegramUser();
+  if (!u) { toast('Откройте через Telegram', 'error'); return; }
+  contentWrap.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-mute);">Загрузка...</div>';
+
+  let notifications = [];
+  try {
+    const data = await pubGet('/api/notifications/' + u.id);
+    notifications = data.notifications || [];
+  } catch(e) {}
+
+  if (!notifications.length) {
+    contentWrap.innerHTML = `
+      <div class="section-title">🔔 Уведомления</div>
+      <div class="chart-wrap" style="text-align:center;color:var(--text-mute);">
+        <div style="font-size:48px;margin-bottom:12px;">🔕</div>
+        Нет новых уведомлений
+      </div>
+      <button class="btn secondary" onclick="renderScreen('home')">← На главную</button>
+    `;
+    updateNotifBadge();
+    return;
+  }
+
+  const notifIcons = {
+    'new_chat': '💬',
+    'subscription_expiry': '⚠️',
+    'api_token_gifted': '🎁',
+    'tracking': '👀',
+    'payment': '💰',
+    'info': 'ℹ️',
+    'message': '💬'
+  };
+
+  contentWrap.innerHTML = `
+    <div class="section-title">🔔 Уведомления (${notifications.length})</div>
+    <ul class="list">
+      ${notifications.map(n => {
+        const icon = notifIcons[n.type] || '🔔';
+        const colorClass = n.type === 'subscription_expiry' ? 'red' : (n.type === 'api_token_gifted' ? 'green' : '');
+        return `<li class="list-item" style="cursor:default;">
+          <div class="list-icon ${colorClass}">${icon}</div>
+          <div class="list-content">
+            <div class="list-title" style="font-size:14px;">${esc(n.message || '')}</div>
+            <div class="list-sub">${formatTime(n.created_at)}</div>
+          </div>
+        </li>`;
+      }).join('')}
+    </ul>
+    <button class="btn secondary" id="mark-read-btn">✅ Прочитать все</button>
+    <button class="btn secondary" onclick="renderScreen('home')">← На главную</button>
+  `;
+
+  $('mark-read-btn').addEventListener('click', async () => {
+    try {
+      await pubPost('/api/notifications/read', { user_id: u.id });
+      toast('✅ Прочитано', 'ok');
+      updateNotifBadge();
+      renderScreen('notifications');
+    } catch(e) { toast('Ошибка', 'error'); }
+  });
+
+  // Помечаем прочитанными и обновляем бейдж
+  try {
+    await pubPost('/api/notifications/read', { user_id: u.id });
+    updateNotifBadge();
+  } catch(e) {}
+}
+
+// ============================================================
+// 💬 СВЯЗЬ С АДМИНОМ
+// ============================================================
+async function renderSupport() {
+  const u = getTelegramUser();
+  if (!u) { toast('Откройте через Telegram', 'error'); return; }
+  contentWrap.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-mute);">Загрузка...</div>';
+
+  let messages = [];
+  try {
+    const data = await pubGet('/api/support/messages/' + u.id);
+    messages = data.messages || [];
+  } catch(e) {}
+
+  contentWrap.innerHTML = `
+    <div class="section-title">💬 Связь с администратором</div>
+    <div class="chart-wrap" style="background:var(--bg-elev);border-radius:14px;padding:12px;max-height:60vh;overflow-y:auto;" id="chat-scroll">
+      <div class="chat-messages" id="chat-messages">
+        ${messages.length ? messages.map(m => `
+          <div class="chat-msg ${m.direction === 'user_to_admin' ? 'user' : 'admin'}">
+            ${esc(m.message)}
+            <div class="chat-msg-time">${formatTime(m.created_at)}</div>
+          </div>
+        `).join('') : '<div style="text-align:center;color:var(--text-mute);padding:20px;font-size:14px;">💬 Напишите сообщение — админ ответит</div>'}
+      </div>
+    </div>
+
+    <div class="chart-wrap" style="margin-top:12px;">
+      <div class="field" style="margin-bottom:8px;">
+        <textarea class="field-input" id="support-text" rows="3" placeholder="Введите сообщение..." style="resize:vertical;font-family:inherit;"></textarea>
+      </div>
+      <button class="btn" id="support-send-btn">📤 Отправить</button>
+    </div>
+
+    <button class="btn secondary" onclick="renderScreen('home')">← На главную</button>
+  `;
+
+  // Автоскролл вниз
+  setTimeout(() => {
+    const scroll = document.getElementById('chat-scroll');
+    if (scroll) scroll.scrollTop = scroll.scrollHeight;
+  }, 100);
+
+  $('support-send-btn').addEventListener('click', async () => {
+    const text = $('support-text').value.trim();
+    if (!text) { toast('Введите сообщение', 'error'); return; }
+    const btn = $('support-send-btn');
+    btn.disabled = true;
+    btn.textContent = '⏳ Отправка...';
+    try {
+      const data = await pubPost('/api/support/send', { user_id: u.id, text });
+      if (data.success) {
+        toast('✅ Сообщение отправлено!', 'ok');
+        vibrate(20);
+        renderScreen('support');
+      } else {
+        toast('❌ ' + (data.error || 'Ошибка'), 'error');
+        btn.disabled = false;
+        btn.textContent = '📤 Отправить';
+      }
+    } catch(e) { toast('Ошибка сети', 'error'); btn.disabled = false; btn.textContent = '📤 Отправить'; }
+  });
+}
+
+// ============================================================
+// 🤖 МАРЫЯМ (AI ПОМОЩНИК)
+// ============================================================
+async function renderMaryam() {
+  const u = getTelegramUser();
+  if (!u) { toast('Откройте через Telegram', 'error'); return; }
+
+  // Если ещё нет истории — показываем приветствие
+  if (!window._maryamHistory) window._maryamHistory = [];
+
+  contentWrap.innerHTML = `
+    <div class="section-title">🤖 Марыям — AI помощник</div>
+
+    <div class="chart-wrap" style="background:var(--bg-elev);border-radius:14px;padding:12px;max-height:55vh;overflow-y:auto;" id="maryam-scroll">
+      <div class="chat-messages" id="maryam-messages">
+        <div class="chat-msg admin">
+          Привет! Я Марыям — AI-помощник бота AGENT ANALYTICS 👋<br><br>
+          Спроси меня о чём угодно:<br>
+          • 📊 Статистика бота<br>
+          • 👤 Найти пользователя по ID<br>
+          • 📱 Проверить номер телефона<br>
+          • 💎 Баланс и подписка<br>
+          • 🎁 Как получить бонус<br>
+          • 🤝 Реферальная программа
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-wrap" style="margin-top:12px;">
+      <div class="field" style="margin-bottom:8px;">
+        <textarea class="field-input" id="maryam-text" rows="2" placeholder="Напишите вопрос..." style="resize:vertical;font-family:inherit;"></textarea>
+      </div>
+      <button class="btn" id="maryam-send-btn">📤 Отправить</button>
+    </div>
+
+    <div class="section-title">💡 Примеры вопросов</div>
+    <ul class="list">
+      <li class="list-item" onclick="maryamQuick('расскажи о боте')">
+        <div class="list-icon">${I.info}</div>
+        <div class="list-content"><div class="list-title">Что умеет бот?</div></div>
+      </li>
+      <li class="list-item" onclick="maryamQuick('как получить бонус')">
+        <div class="list-icon orange">${I.gift}</div>
+        <div class="list-content"><div class="list-title">Как получить бонус?</div></div>
+      </li>
+      <li class="list-item" onclick="maryamQuick('расскажи про реферальную программу')">
+        <div class="list-icon purple">${I.share}</div>
+        <div class="list-content"><div class="list-title">Реферальная программа</div></div>
+      </li>
+      <li class="list-item" onclick="maryamQuick('расскажи про подписку')">
+        <div class="list-icon green">${I.star}</div>
+        <div class="list-content"><div class="list-title">Про подписку</div></div>
+      </li>
+    </ul>
+
+    <button class="btn secondary" onclick="renderScreen('home')">← На главную</button>
+  `;
+
+  const sendBtn = $('maryam-send-btn');
+  const textarea = $('maryam-text');
+
+  sendBtn.addEventListener('click', async () => {
+    const text = textarea.value.trim();
+    if (!text) { toast('Введите вопрос', 'error'); return; }
+    textarea.value = '';
+    await maryamSend(text);
+  });
+
+  textarea.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendBtn.click(); }
+  });
+}
+
+async function maryamSend(text) {
+  const u = getTelegramUser();
+  if (!u) return;
+
+  const messagesEl = document.getElementById('maryam-messages');
+  if (!messagesEl) return;
+
+  // Добавляем сообщение пользователя
+  const userMsg = document.createElement('div');
+  userMsg.className = 'chat-msg user';
+  userMsg.textContent = text;
+  messagesEl.appendChild(userMsg);
+
+  // Скролл вниз
+  const scroll = document.getElementById('maryam-scroll');
+  if (scroll) scroll.scrollTop = scroll.scrollHeight;
+
+  // Индикатор печати
+  const loadingMsg = document.createElement('div');
+  loadingMsg.className = 'chat-msg admin';
+  loadingMsg.innerHTML = '<span style="opacity:0.6;">печатает...</span>';
+  loadingMsg.id = 'maryam-loading';
+  messagesEl.appendChild(loadingMsg);
+  if (scroll) scroll.scrollTop = scroll.scrollHeight;
+
+  try {
+    const data = await pubPost('/api/maryam/ask', { user_id: u.id, text });
+    const loading = document.getElementById('maryam-loading');
+    if (loading) loading.remove();
+
+    const botMsg = document.createElement('div');
+    botMsg.className = 'chat-msg admin';
+    botMsg.innerHTML = (data.answer || 'Не удалось получить ответ').replace(/\n/g, '<br>');
+    messagesEl.appendChild(botMsg);
+    if (scroll) scroll.scrollTop = scroll.scrollHeight;
+    vibrate(10);
+  } catch(e) {
+    const loading = document.getElementById('maryam-loading');
+    if (loading) loading.remove();
+    const botMsg = document.createElement('div');
+    botMsg.className = 'chat-msg admin';
+    botMsg.textContent = '❌ Ошибка: ' + (e.message || 'сеть недоступна');
+    messagesEl.appendChild(botMsg);
+  }
+}
+
+function maryamQuick(text) {
+  const textarea = $('maryam-text');
+  if (textarea) { textarea.value = text; }
+  maryamSend(text);
 }
 
 // ============================================================
@@ -799,9 +1196,7 @@ async function renderStats() {
       <div class="stat-card"><div class="stat-value" id="bs-active">—</div><div class="stat-label">Активных</div></div>
     </div>
     <div class="section-title">📈 Активность (30 дней)</div>
-    <div class="chart-wrap">
-      <div class="chart-canvas-wrap"><canvas id="activityChart"></canvas></div>
-    </div>
+    <div class="chart-wrap"><div class="chart-canvas-wrap"><canvas id="activityChart"></canvas></div></div>
     <div class="section-title">💬 Топ чатов</div>
     <ul class="list" id="top-chats"><li class="list-item"><div class="list-content"><div class="list-sub">Загрузка...</div></div></li></ul>
     <div class="section-title">🔤 Популярные слова</div>
@@ -818,19 +1213,11 @@ async function renderStats() {
     $('bs-comments').textContent = formatNumber(stats.comments || 0);
     $('bs-chats').textContent = formatNumber(stats.chats || 0);
     $('bs-active').textContent = formatNumber(stats.started_bot || 0);
-
-    $('top-chats').innerHTML = chats.length
-      ? chats.slice(0, 10).map(c => '<li class="list-item"><div class="list-icon">' + I.msg + '</div><div class="list-content"><div class="list-title">' + esc((c.chat || '').slice(0, 28)) + '</div><div class="list-sub">' + formatNumber(c.messages) + ' сообщений</div></div></li>').join('')
-      : '<li class="list-item"><div class="list-content"><div class="list-sub">Нет данных</div></div></li>';
-
-    $('top-words').innerHTML = words.length
-      ? words.slice(0, 15).map(w => '<li class="list-item"><div class="list-icon purple">#</div><div class="list-content"><div class="list-title">' + esc(w.word) + '</div></div><div class="list-chevron">' + formatNumber(w.count) + '</div></li>').join('')
-      : '<li class="list-item"><div class="list-content"><div class="list-sub">Нет данных</div></div></li>';
-
+    $('top-chats').innerHTML = chats.length ? chats.slice(0, 10).map(c => '<li class="list-item"><div class="list-icon">' + I.msg + '</div><div class="list-content"><div class="list-title">' + esc((c.chat || '').slice(0, 28)) + '</div><div class="list-sub">' + formatNumber(c.messages) + ' сообщений</div></div></li>').join('') : '<li class="list-item"><div class="list-content"><div class="list-sub">Нет данных</div></div></li>';
+    $('top-words').innerHTML = words.length ? words.slice(0, 15).map(w => '<li class="list-item"><div class="list-icon purple">#</div><div class="list-content"><div class="list-title">' + esc(w.word) + '</div></div><div class="list-chevron">' + formatNumber(w.count) + '</div></li>').join('') : '<li class="list-item"><div class="list-content"><div class="list-sub">Нет данных</div></div></li>';
     renderChart(activity);
   } catch (e) { toast(e.message, 'error'); }
 }
-
 function renderChart(activity) {
   const canvas = $('activityChart');
   if (!canvas || !activity || !activity.length || typeof Chart === 'undefined') return;
@@ -839,18 +1226,8 @@ function renderChart(activity) {
   const gridColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
   window._currentChart = new Chart(canvas, {
     type: 'bar',
-    data: {
-      labels: activity.map(x => (x.date || '').slice(5)),
-      datasets: [{ data: activity.map(x => x.count), backgroundColor: isDark ? 'rgba(10,132,255,0.6)' : 'rgba(0,122,255,0.6)', borderColor: isDark ? '#0a84ff' : '#007aff', borderWidth: 0, borderRadius: 4, barThickness: 8 }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: '#8e8e93', font: { size: 10 }, maxTicksLimit: 5 } },
-        x: { grid: { display: false }, ticks: { color: '#8e8e93', font: { size: 9 }, maxTicksLimit: 8 } }
-      }
-    }
+    data: { labels: activity.map(x => (x.date || '').slice(5)), datasets: [{ data: activity.map(x => x.count), backgroundColor: isDark ? 'rgba(10,132,255,0.6)' : 'rgba(0,122,255,0.6)', borderColor: isDark ? '#0a84ff' : '#007aff', borderWidth: 0, borderRadius: 4, barThickness: 8 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: '#8e8e93', font: { size: 10 }, maxTicksLimit: 5 } }, x: { grid: { display: false }, ticks: { color: '#8e8e93', font: { size: 9 }, maxTicksLimit: 8 } } } }
   });
 }
 
@@ -861,30 +1238,13 @@ async function renderSearchHistory() {
   contentWrap.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-mute);">Загрузка истории...</div>';
   let history = [];
   try { history = await pubGet('/api/search_history'); } catch(e) { history = []; }
-
   if (!history || !history.length) {
-    contentWrap.innerHTML = `
-      <div class="section-title">📜 История поисков</div>
-      <div class="chart-wrap" style="text-align:center;color:var(--text-mute);">История пуста</div>
-      <button class="btn secondary" onclick="renderScreen('home')">← На главную</button>
-    `;
+    contentWrap.innerHTML = `<div class="section-title">📜 История поисков</div><div class="chart-wrap" style="text-align:center;color:var(--text-mute);">История пуста</div><button class="btn secondary" onclick="renderScreen('home')">← На главную</button>`;
     return;
   }
-
   contentWrap.innerHTML = `
     <div class="section-title">📜 История поисков (${history.length})</div>
-    <div>
-      ${history.slice(0, 100).map(h => `
-        <div class="hist-item">
-          <div class="hist-top">
-            <span>#${h.searcher_id || '—'}</span>
-            <span>${esc((h.date || '').slice(0, 16))}</span>
-          </div>
-          <div class="hist-target">🎯 ${esc(h.target_id || '—')}</div>
-          <div class="hist-summary">${esc((h.result_summary || h.search_type || '').slice(0, 200))}</div>
-        </div>
-      `).join('')}
-    </div>
+    <div>${history.slice(0, 100).map(h => `<div class="hist-item"><div class="hist-top"><span>#${h.searcher_id || '—'}</span><span>${esc((h.date || '').slice(0, 16))}</span></div><div class="hist-target">🎯 ${esc(h.target_id || '—')}</div><div class="hist-summary">${esc((h.result_summary || h.search_type || '').slice(0, 200))}</div></div>`).join('')}</div>
     <button class="btn secondary" onclick="renderScreen('home')">← На главную</button>
   `;
 }
@@ -896,51 +1256,20 @@ async function renderApiTokens() {
   const u = getTelegramUser();
   if (!u) { toast('Откройте через Telegram', 'error'); return; }
   contentWrap.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-mute);">Загрузка...</div>';
-
   let tokens = [];
-  try {
-    const resp = await pubGet('/api/api_tokens/' + u.id);
-    tokens = resp.tokens || [];
-  } catch(e) { console.log('tokens load error', e); }
-
+  try { const resp = await pubGet('/api/api_tokens/' + u.id); tokens = resp.tokens || []; } catch(e) {}
   if (!tokens.length) {
-    contentWrap.innerHTML = `
-      <div class="section-title">🔑 Мои API токены</div>
-      <div class="chart-wrap" style="text-align:center;color:var(--text-mute);">
-        У вас пока нет API токенов.<br>
-        <span style="font-size:12px;">Купите токен или получите его от админа.</span>
-      </div>
-      <button class="btn secondary" onclick="renderScreen('home')">← На главную</button>
-    `;
+    contentWrap.innerHTML = `<div class="section-title">🔑 Мои API токены</div><div class="chart-wrap" style="text-align:center;color:var(--text-mute);">У вас пока нет API токенов.<br><span style="font-size:12px;">Купите токен или получите его от админа.</span></div><button class="btn secondary" onclick="renderScreen('home')">← На главную</button>`;
     return;
   }
-
   const items = tokens.map(t => {
     const remaining = t.total ? (t.total - t.used) : '∞';
     const statusColor = t.active ? 'var(--green)' : 'var(--text-mute)';
     const statusText = t.active ? '✅ Активен' : '⏳ Ожидает';
     const expiry = t.expires ? t.expires.slice(0, 10) : 'навсегда';
-    return `
-      <div class="hist-item" style="border-left-color:${statusColor};">
-        <div class="hist-top">
-          <span style="color:${statusColor};font-weight:600;">${statusText}</span>
-          <span>до ${expiry}</span>
-        </div>
-        <div class="hist-target" style="font-size:11px;word-break:break-all;">${esc(t.token)}</div>
-        <div class="hist-summary">
-          📊 Использовано: ${t.used} / ${t.total || '∞'}
-          ${t.total ? ` · Остаток: <b>${remaining}</b>` : ''}
-        </div>
-        <button class="btn secondary" onclick="copyToClipboard('${esc(t.token)}')" style="margin-top:8px;margin-bottom:0;font-size:13px;padding:8px;">📋 Скопировать токен</button>
-      </div>
-    `;
+    return `<div class="hist-item" style="border-left-color:${statusColor};"><div class="hist-top"><span style="color:${statusColor};font-weight:600;">${statusText}</span><span>до ${expiry}</span></div><div class="hist-target" style="font-size:11px;word-break:break-all;">${esc(t.token)}</div><div class="hist-summary">📊 Использовано: ${t.used} / ${t.total || '∞'} ${t.total ? ` · Остаток: <b>${remaining}</b>` : ''}</div><button class="btn secondary" onclick="copyToClipboard('${esc(t.token)}')" style="margin-top:8px;margin-bottom:0;font-size:13px;padding:8px;">📋 Скопировать токен</button></div>`;
   }).join('');
-
-  contentWrap.innerHTML = `
-    <div class="section-title">🔑 Мои API токены (${tokens.length})</div>
-    ${items}
-    <button class="btn secondary" onclick="renderScreen('home')">← На главную</button>
-  `;
+  contentWrap.innerHTML = `<div class="section-title">🔑 Мои API токены (${tokens.length})</div>${items}<button class="btn secondary" onclick="renderScreen('home')">← На главную</button>`;
 }
 
 // ============================================================
@@ -953,9 +1282,12 @@ function renderMe() {
     <div class="section-title">Действия</div>
     <ul class="list">
       <li class="list-item" onclick="openMyProfile()"><div class="list-icon">${I.user}</div><div class="list-content"><div class="list-title">Мой профиль в базе</div></div><div class="list-chevron">${I.search}</div></li>
+      <li class="list-item" onclick="renderScreen('bonus')"><div class="list-icon orange">${I.gift}</div><div class="list-content"><div class="list-title">Бонус</div><div class="list-sub">+10 алмазов</div></div><div class="list-chevron">${I.search}</div></li>
+      <li class="list-item" onclick="renderScreen('referral')"><div class="list-icon purple">${I.share}</div><div class="list-content"><div class="list-title">Реферал</div></div><div class="list-chevron">${I.search}</div></li>
+      <li class="list-item" onclick="renderScreen('maryam')"><div class="list-icon pink">${I.robot}</div><div class="list-content"><div class="list-title">Марыям AI</div></div><div class="list-chevron">${I.search}</div></li>
+      <li class="list-item" onclick="renderScreen('support')"><div class="list-icon green">${I.support}</div><div class="list-content"><div class="list-title">Связь с админом</div></div><div class="list-chevron">${I.search}</div></li>
       <li class="list-item" onclick="renderScreen('history')"><div class="list-icon purple">${I.clock}</div><div class="list-content"><div class="list-title">История поисков</div></div><div class="list-chevron">${I.search}</div></li>
       <li class="list-item" onclick="renderScreen('api-tokens')"><div class="list-icon green">${I.key}</div><div class="list-content"><div class="list-title">Мои API токены</div></div><div class="list-chevron">${I.search}</div></li>
-      <li class="list-item" onclick="renderScreen('phone-check')"><div class="list-icon green">${I.phone}</div><div class="list-content"><div class="list-title">Проверка номеров</div></div><div class="list-chevron">${I.search}</div></li>
       <li class="list-item" onclick="openSettings()"><div class="list-icon gray">${I.gear}</div><div class="list-content"><div class="list-title">Настройки</div></div><div class="list-chevron">${I.search}</div></li>
     </ul>
   `;
@@ -969,10 +1301,8 @@ async function renderProfile(userId) {
   try {
     const u = await apiGetUser(userId, 'all', 50);
     if (u.error) throw new Error(u.error);
-
     let me = { diamonds: '—', has_subscription: false, days_left: 0 };
     try { me = await pubGet('/api/me/' + userId); } catch(e) {}
-
     const name = ((u.first_name || '') + ' ' + (u.last_name || '')).trim() || 'Без имени';
     const initial = (name[0] || '?').toUpperCase();
     const username = u.username ? '@' + u.username : null;
@@ -981,48 +1311,28 @@ async function renderProfile(userId) {
     const chatsCount = (u.chats || []).length;
     const commentsCount = (u.comments || []).length;
     const wordsCount = (u.words || []).length;
-
     const chatActivity = {};
     (u.comments || []).forEach(c => { const t = (c.chat || 'Неизвестно').slice(0, 20); chatActivity[t] = (chatActivity[t] || 0) + 1; });
     const topChats = Object.entries(chatActivity).sort((a,b) => b[1] - a[1]).slice(0, 5);
     const maxChatCount = topChats[0] ? topChats[0][1] : 1;
-
     const dailyMap = {};
     (u.comments || []).forEach(c => { const d = (c.date || '').slice(0, 10); if (d) dailyMap[d] = (dailyMap[d] || 0) + 1; });
     const last14Days = [];
     for (let i = 13; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); const key = d.toISOString().slice(0, 10); last14Days.push({ date: key, count: dailyMap[key] || 0 }); }
     const maxDaily = Math.max(...last14Days.map(d => d.count), 1);
-
     const topWords = (u.words || []).slice(0, 12);
     const maxWord = topWords[0] ? topWords[0].count : 1;
     const nameHistory = u.name_history || [];
 
-    const subBlock = me.has_subscription
-      ? `<div style="background:linear-gradient(135deg, rgba(52,199,89,0.15), rgba(52,199,89,0.05));border:1px solid rgba(52,199,89,0.3);border-radius:14px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px;">
-           <div style="font-size:24px;">⭐</div>
-           <div style="flex:1;">
-             <div style="font-size:13px;color:var(--green);font-weight:600;">Подписка активна</div>
-             <div style="font-size:12px;color:var(--text-mute);margin-top:2px;">до ${formatDate(me.subscription_end)} · осталось ${me.days_left} дн.</div>
-           </div>
-         </div>`
-      : '';
-
-    const balanceBlock = `
-      <div style="background:var(--bg-elev);border-radius:14px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px;">
-        <div style="font-size:24px;">💎</div>
-        <div style="flex:1;">
-          <div style="font-size:13px;color:var(--text-mute);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Баланс</div>
-          <div style="font-size:18px;color:var(--orange);font-weight:700;margin-top:2px;">${me.diamonds} алмазов</div>
-        </div>
-      </div>
-    `;
+    const subBlock = me.has_subscription ? `<div style="background:linear-gradient(135deg, rgba(52,199,89,0.15), rgba(52,199,89,0.05));border:1px solid rgba(52,199,89,0.3);border-radius:14px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px;"><div style="font-size:24px;">⭐</div><div style="flex:1;"><div style="font-size:13px;color:var(--green);font-weight:600;">Подписка активна</div><div style="font-size:12px;color:var(--text-mute);margin-top:2px;">до ${formatDate(me.subscription_end)} · осталось ${me.days_left} дн.</div></div></div>` : '';
+    const balanceBlock = `<div style="background:var(--bg-elev);border-radius:14px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px;"><div style="font-size:24px;">💎</div><div style="flex:1;"><div style="font-size:13px;color:var(--text-mute);text-transform:uppercase;font-weight:600;">Баланс</div><div style="font-size:18px;color:var(--orange);font-weight:700;margin-top:2px;">${me.diamonds} алмазов</div></div></div>`;
 
     contentWrap.innerHTML = `
       <div style="position:relative;margin:-16px -16px 0;padding:32px 24px 24px;background:linear-gradient(180deg,${tier === 'PREMIUM' ? 'rgba(255,149,0,0.15)' : 'rgba(0,122,255,0.12)'} 0%,transparent 100%);text-align:center;">
         <button class="icon-btn" onclick="renderScreen('home')" style="position:absolute;left:8px;top:8px;color:var(--text);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></button>
         <button class="icon-btn" onclick="copyToClipboard('${u.user_id}')" style="position:absolute;right:8px;top:8px;color:var(--text);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
         <div style="position:relative;width:96px;height:96px;margin:0 auto 16px;">
-          <div id="profile-avatar-wrap" style="width:100%;height:100%;border-radius:50%;background:linear-gradient(135deg,#0a84ff,#bf5af2);color:white;display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:700;box-shadow:0 8px 24px rgba(0,122,255,0.3);border:3px solid var(--bg);overflow:hidden;position:relative;">
+          <div style="width:100%;height:100%;border-radius:50%;background:linear-gradient(135deg,#0a84ff,#bf5af2);color:white;display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:700;box-shadow:0 8px 24px rgba(0,122,255,0.3);border:3px solid var(--bg);overflow:hidden;position:relative;">
             <span id="profile-avatar-initials" style="position:relative;z-index:1;">${esc(initial)}</span>
             <img id="profile-avatar-img" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:2;opacity:0;transition:opacity .2s;">
           </div>
@@ -1032,101 +1342,38 @@ async function renderProfile(userId) {
         ${username ? '<div style="font-size:15px;color:var(--accent);margin-top:4px;">' + esc(username) + '</div>' : ''}
         <div style="display:inline-block;margin-top:10px;padding:4px 14px;background:${tierColor}20;color:${tierColor};border-radius:20px;font-size:11px;font-weight:700;letter-spacing:1px;">⚡ ${tier}</div>
       </div>
-
       ${subBlock}
       ${balanceBlock}
-
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:20px 0;">
-        <div style="background:var(--bg-elev);border-radius:14px;padding:16px 8px;text-align:center;"><div style="font-size:22px;font-weight:700;color:var(--text);">${formatNumber(commentsCount)}</div><div style="font-size:10px;color:var(--text-mute);text-transform:uppercase;letter-spacing:0.5px;margin-top:2px;font-weight:600;">Сообщений</div></div>
-        <div style="background:var(--bg-elev);border-radius:14px;padding:16px 8px;text-align:center;"><div style="font-size:22px;font-weight:700;color:var(--text);">${formatNumber(chatsCount)}</div><div style="font-size:10px;color:var(--text-mute);text-transform:uppercase;letter-spacing:0.5px;margin-top:2px;font-weight:600;">Чатов</div></div>
-        <div style="background:var(--bg-elev);border-radius:14px;padding:16px 8px;text-align:center;"><div style="font-size:22px;font-weight:700;color:var(--text);">${formatNumber(wordsCount)}</div><div style="font-size:10px;color:var(--text-mute);text-transform:uppercase;letter-spacing:0.5px;margin-top:2px;font-weight:600;">Слов</div></div>
+        <div style="background:var(--bg-elev);border-radius:14px;padding:16px 8px;text-align:center;"><div style="font-size:22px;font-weight:700;color:var(--text);">${formatNumber(commentsCount)}</div><div style="font-size:10px;color:var(--text-mute);text-transform:uppercase;font-weight:600;">Сообщений</div></div>
+        <div style="background:var(--bg-elev);border-radius:14px;padding:16px 8px;text-align:center;"><div style="font-size:22px;font-weight:700;color:var(--text);">${formatNumber(chatsCount)}</div><div style="font-size:10px;color:var(--text-mute);text-transform:uppercase;font-weight:600;">Чатов</div></div>
+        <div style="background:var(--bg-elev);border-radius:14px;padding:16px 8px;text-align:center;"><div style="font-size:22px;font-weight:700;color:var(--text);">${formatNumber(wordsCount)}</div><div style="font-size:10px;color:var(--text-mute);text-transform:uppercase;font-weight:600;">Слов</div></div>
       </div>
-
       <div class="section-title">📋 Основное</div>
       <div style="background:var(--bg-elev);border-radius:14px;padding:4px 0;margin-bottom:16px;">
-        <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:0.5px solid var(--border-soft);"><div style="width:36px;height:36px;background:rgba(0,122,255,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--accent);flex-shrink:0;">${I.user}</div><div style="flex:1;min-width:0;"><div style="font-size:11px;color:var(--text-mute);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">ID</div><div style="font-size:15px;color:var(--text);font-family:'SF Mono',monospace;margin-top:2px;">${u.user_id}</div></div></div>
-        ${u.phone ? '<div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:0.5px solid var(--border-soft);"><div style="width:36px;height:36px;background:rgba(52,199,89,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--green);flex-shrink:0;">' + I.phone + '</div><div style="flex:1;min-width:0;"><div style="font-size:11px;color:var(--text-mute);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Телефон</div><div style="font-size:15px;color:var(--text);font-family:\'SF Mono\',monospace;margin-top:2px;">' + esc(u.phone) + '</div></div></div>' : ''}
-        <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:0.5px solid var(--border-soft);"><div style="width:36px;height:36px;background:rgba(175,82,222,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--purple);flex-shrink:0;">${I.clock}</div><div style="flex:1;min-width:0;"><div style="font-size:11px;color:var(--text-mute);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Регистрация</div><div style="font-size:15px;color:var(--text);margin-top:2px;">${esc(u.estimated_reg || '—')}</div></div></div>
-        <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;"><div style="width:36px;height:36px;background:rgba(255,45,85,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--pink);flex-shrink:0;">${I.bot}</div><div style="flex:1;min-width:0;"><div style="font-size:11px;color:var(--text-mute);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Бот запущен</div><div style="font-size:15px;color:${u.started_bot ? 'var(--green)' : 'var(--red)'};margin-top:2px;font-weight:600;">${u.started_bot ? '✅ Да' : '❌ Нет'}</div></div></div>
+        <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:0.5px solid var(--border-soft);"><div style="width:36px;height:36px;background:rgba(0,122,255,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--accent);">${I.user}</div><div style="flex:1;"><div style="font-size:11px;color:var(--text-mute);text-transform:uppercase;font-weight:600;">ID</div><div style="font-size:15px;color:var(--text);font-family:'SF Mono',monospace;margin-top:2px;">${u.user_id}</div></div></div>
+        <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;"><div style="width:36px;height:36px;background:rgba(255,45,85,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--pink);">${I.bot}</div><div style="flex:1;"><div style="font-size:11px;color:var(--text-mute);text-transform:uppercase;font-weight:600;">Бот запущен</div><div style="font-size:15px;color:${u.started_bot ? 'var(--green)' : 'var(--red)'};margin-top:2px;font-weight:600;">${u.started_bot ? '✅ Да' : '❌ Нет'}</div></div></div>
       </div>
-
-      <div class="section-title">🟢 Активность</div>
-      <div style="background:var(--bg-elev);border-radius:14px;padding:4px 0;margin-bottom:16px;">
-        <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:0.5px solid var(--border-soft);">
-          <div style="width:36px;height:36px;background:${activityColor(u.last_platform)}22;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><span style="font-size:18px;">${activityIcon(u.last_platform)}</span></div>
-          <div style="flex:1;min-width:0;"><div style="font-size:11px;color:var(--text-mute);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Статус</div><div style="font-size:15px;color:${activityColor(u.last_platform)};margin-top:2px;font-weight:600;">${activityLabel(u.last_platform)}</div></div>
-        </div>
-        <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;">
-          <div style="width:36px;height:36px;background:rgba(0,122,255,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--accent);flex-shrink:0;">${I.clock}</div>
-          <div style="flex:1;min-width:0;"><div style="font-size:11px;color:var(--text-mute);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Последний визит</div><div style="font-size:15px;color:var(--text);margin-top:2px;">${esc(formatLastSeen(u.last_seen))}</div></div>
-        </div>
-      </div>
-
-      ${nameHistory.length ? `
-      <div class="section-title">📜 История имён и username (${nameHistory.length})</div>
-      <div style="background:var(--bg-elev);border-radius:14px;padding:16px;margin-bottom:16px;">
-        ${nameHistory.map((h, i) => `
-          <div style="display:flex;align-items:center;gap:10px;padding:8px 0;${i < nameHistory.length - 1 ? 'border-bottom:0.5px solid var(--border-soft);' : ''}">
-            <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--purple));display:flex;align-items:center;justify-content:center;color:white;font-weight:600;font-size:13px;flex-shrink:0;">${esc(String(h.name || '?').replace('@','')[0].toUpperCase())}</div>
-            <div style="flex:1;min-width:0;">
-              <div style="font-size:14px;color:var(--text);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(h.name || '—')}</div>
-              <div style="font-size:11px;color:var(--text-mute);margin-top:2px;">${h.date ? '📅 ' + esc(h.date) : ''}</div>
-            </div>
-          </div>
-        `).join('')}
-      </div>` : ''}
-
-      ${topChats.length ? `
-      <div class="section-title">💬 Активность в чатах</div>
-      <div style="background:var(--bg-elev);border-radius:14px;padding:16px;margin-bottom:16px;">
-        ${topChats.map(([chat, count]) => `
-          <div style="margin-bottom:12px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;"><div style="font-size:13px;color:var(--text);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;margin-right:12px;">${esc(chat)}</div><div style="font-size:12px;color:var(--accent);font-weight:600;">${formatNumber(count)}</div></div>
-            <div style="height:6px;background:var(--bg-elev-2);border-radius:3px;overflow:hidden;"><div style="height:100%;width:${(count/maxChatCount)*100}%;background:linear-gradient(90deg,var(--accent),var(--purple));border-radius:3px;"></div></div>
-          </div>
-        `).join('')}
-      </div>` : ''}
-
-      ${u.comments && u.comments.length ? `
-      <div class="section-title">📝 Последние сообщения</div>
-      <div style="display:flex;flex-direction:column;gap:10px;">
-        ${u.comments.slice(0, 10).map(c => '<div style="background:var(--bg-elev);border-radius:12px;padding:12px 14px;border-left:3px solid var(--accent);"><div style="font-size:11px;color:var(--text-mute);margin-bottom:4px;display:flex;justify-content:space-between;gap:8px;"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">📌 ' + esc((c.chat || '').slice(0, 24)) + '</span><span style="flex-shrink:0;">' + esc((c.date || '').slice(0, 10)) + '</span></div><div style="font-size:14px;color:var(--text);line-height:1.5;">' + esc((c.text || '').slice(0, 250)) + '</div>' + (c.link ? '<div style="margin-top:6px;"><a href="' + esc(c.link) + '" target="_blank" style="font-size:12px;color:var(--accent);text-decoration:none;">🔗 Открыть в Telegram</a></div>' : '') + '</div>').join('')}
-      </div>` : ''}
-
       <div style="margin-top:20px;">
         <button class="btn secondary" onclick="copyToClipboard('${u.user_id}')" style="margin-bottom:8px;">📋 Скопировать ID</button>
         <button class="btn secondary" onclick="renderScreen('home')">← На главную</button>
       </div>
     `;
-
     setTimeout(() => loadProfileAvatar(u.user_id), 80);
   } catch (e) {
-    contentWrap.innerHTML = '<div style="padding-top:40px;text-align:center;"><div style="width:80px;height:80px;margin:0 auto 16px;border-radius:50%;background:rgba(255,59,48,0.1);display:flex;align-items:center;justify-content:center;font-size:36px;">⚠️</div><div style="font-size:18px;font-weight:600;color:var(--text);margin-bottom:6px;">Не найдено</div><div style="font-size:14px;color:var(--text-mute);margin-bottom:24px;">' + esc(e.message) + '</div><button class="btn secondary" onclick="renderScreen(\'home\')">← На главную</button></div>';
+    contentWrap.innerHTML = '<div style="padding-top:40px;text-align:center;"><div style="font-size:36px;">⚠️</div><div style="font-size:18px;font-weight:600;margin:12px 0 6px;">Не найдено</div><div style="font-size:14px;color:var(--text-mute);margin-bottom:24px;">' + esc(e.message) + '</div><button class="btn secondary" onclick="renderScreen(\'home\')">← На главную</button></div>';
   }
 }
 
-// ============================================================
-// LOAD AVATAR
-// ============================================================
 function loadProfileAvatar(userId) {
   const img = document.getElementById('profile-avatar-img');
   const initials = document.getElementById('profile-avatar-initials');
   if (!img) return;
-
   const url = CONFIG.API_BASE + '/api/user_avatar/' + userId + '?t=' + Date.now();
   const test = new Image();
   test.crossOrigin = 'anonymous';
-  test.onload = () => {
-    if (test.naturalWidth > 1 && test.naturalHeight > 1) {
-      img.src = url;
-      img.style.opacity = '1';
-      if (initials) initials.style.display = 'none';
-    }
-  };
-  test.onerror = () => {
-    img.style.opacity = '0';
-    if (initials) initials.style.display = 'flex';
-  };
+  test.onload = () => { if (test.naturalWidth > 1 && test.naturalHeight > 1) { img.src = url; img.style.opacity = '1'; if (initials) initials.style.display = 'none'; } };
+  test.onerror = () => { img.style.opacity = '0'; if (initials) initials.style.display = 'flex'; };
   test.src = url;
 }
 
@@ -1137,7 +1384,7 @@ function renderPhoneCheck() {
   contentWrap.innerHTML = `
     <div class="section-title">📱 Проверка номера</div>
     <div class="chart-wrap">
-      <div class="field"><label class="field-label">Номер телефона</label><input type="tel" class="field-input" id="pc-phone" placeholder="+992901234567" autocomplete="off"><div class="field-hint">Покажет страну, оператора, регион</div></div>
+      <div class="field"><label class="field-label">Номер телефона</label><input type="tel" class="field-input" id="pc-phone" placeholder="+992901234567" autocomplete="off"><div class="field-hint">Покажет страну, оператора, регион и карту</div></div>
       <button class="btn" id="pc-check">📱 Проверить</button>
     </div>
     <div id="pc-result"></div>
@@ -1148,9 +1395,7 @@ function renderPhoneCheck() {
     if (!phone) { toast('Введите номер', 'error'); return; }
     const limitCheck = await checkAndUseRequest();
     if (!limitCheck.ok) { showLimitModal(); return; }
-    const btn = $('pc-check');
-    btn.disabled = true;
-    btn.textContent = '⏳ Проверка...';
+    const btn = $('pc-check'); btn.disabled = true; btn.textContent = '⏳ Проверка...';
     try {
       const info = analyzePhoneNumber(phone);
       let dbInfo = null;
@@ -1171,29 +1416,29 @@ function analyzePhoneNumber(phone) {
   if (clean.startsWith('+')) clean = clean.slice(1);
   if (clean.length === 11 && clean.startsWith('8')) clean = '7' + clean.slice(1);
   const countries = {
-    '992': { country: 'Таджикистан', flag: '🇹🇯', region: 'Таджикистан', tz: 'UTC+5', type: 'Мобильный', operators: { '90': 'Beeline TJ', '91': 'Beeline TJ', '92': 'Megafon TJ', '93': 'MegaFon TJ', '50': 'Tcell', '55': 'Tcell', '77': 'Tcell', '88': 'Tcell', '98': 'Babilon Mobile', '99': 'Babilon Mobile' } },
-    '998': { country: 'Узбекистан', flag: '🇺🇿', region: 'Узбекистан', tz: 'UTC+5', type: 'Мобильный', operators: { '90': 'Beeline UZ', '91': 'Beeline UZ', '93': 'Ucell', '94': 'Ucell', '95': 'Ucell', '97': 'UMS', '98': 'UMS', '99': 'UMS' } },
-    '996': { country: 'Кыргызстан', flag: '🇰🇬', region: 'Кыргызстан', tz: 'UTC+6', type: 'Мобильный', operators: { '50': 'MegaCom', '55': 'MegaCom', '70': 'Beeline KG', '77': 'Beeline KG', '99': 'O!', '20': 'O!', '22': 'O!' } },
-    '7': { country: 'Россия', flag: '🇷🇺', region: 'Россия', tz: 'UTC+3', type: 'Мобильный', operators: { '900': 'Beeline', '901': 'Beeline', '902': 'MegaFon', '903': 'Beeline', '904': 'MegaFon', '905': 'Beeline', '906': 'Beeline', '908': 'MegaFon', '909': 'MegaFon', '910': 'MegaFon', '911': 'MegaFon', '912': 'MegaFon', '913': 'MegaFon', '914': 'MegaFon', '915': 'MegaFon', '916': 'MegaFon', '917': 'MegaFon', '918': 'MegaFon', '919': 'MegaFon', '950': 'Tele2', '951': 'Tele2', '952': 'Tele2', '958': 'Tele2', '960': 'Beeline', '961': 'Beeline', '962': 'Beeline', '963': 'Beeline', '964': 'Beeline', '965': 'Beeline', '966': 'Beeline', '967': 'Beeline', '968': 'Beeline', '969': 'Beeline', '980': 'MTS', '981': 'MTS', '982': 'MTS', '983': 'MTS', '984': 'MTS', '985': 'MTS', '986': 'MTS', '987': 'MTS', '988': 'MTS', '989': 'MTS', '995': 'MTS', '996': 'MTS', '997': 'MTS', '999': 'MTS' } },
-    '1': { country: 'США/Канада', flag: '🇺🇸', region: 'США', tz: 'UTC-5', type: 'Мобильный' },
-    '44': { country: 'Великобритания', flag: '🇬🇧', region: 'Англия', tz: 'UTC+0', type: 'Мобильный' },
-    '49': { country: 'Германия', flag: '🇩🇪', region: 'Германия', tz: 'UTC+1', type: 'Мобильный' },
-    '33': { country: 'Франция', flag: '🇫🇷', region: 'Франция', tz: 'UTC+1', type: 'Мобильный' },
-    '90': { country: 'Турция', flag: '🇹🇷', region: 'Турция', tz: 'UTC+3', type: 'Мобильный' },
-    '86': { country: 'Китай', flag: '🇨🇳', region: 'Китай', tz: 'UTC+8', type: 'Мобильный' },
-    '380': { country: 'Украина', flag: '🇺🇦', region: 'Украина', tz: 'UTC+2', type: 'Мобильный' },
-    '375': { country: 'Беларусь', flag: '🇧🇾', region: 'Беларусь', tz: 'UTC+3', type: 'Мобильный' },
-    '995': { country: 'Грузия', flag: '🇬🇪', region: 'Грузия', tz: 'UTC+4', type: 'Мобильный' },
-    '374': { country: 'Армения', flag: '🇦🇲', region: 'Армения', tz: 'UTC+4', type: 'Мобильный' },
-    '994': { country: 'Азербайджан', flag: '🇦🇿', region: 'Азербайджан', tz: 'UTC+4', type: 'Мобильный' },
+    '992': { country: 'Таджикистан', flag: '🇹🇯', region: 'Таджикистан', tz: 'UTC+5', type: 'Мобильный', lat: 38.8610, lon: 71.2761, operators: { '90': 'Beeline TJ', '91': 'Beeline TJ', '92': 'Megafon TJ', '93': 'MegaFon TJ', '50': 'Tcell', '55': 'Tcell', '77': 'Tcell', '88': 'Tcell', '98': 'Babilon Mobile', '99': 'Babilon Mobile' } },
+    '998': { country: 'Узбекистан', flag: '🇺🇿', region: 'Узбекистан', tz: 'UTC+5', type: 'Мобильный', lat: 41.3775, lon: 64.5853, operators: { '90': 'Beeline UZ', '91': 'Beeline UZ', '93': 'Ucell', '94': 'Ucell', '95': 'Ucell', '97': 'UMS', '98': 'UMS', '99': 'UMS' } },
+    '996': { country: 'Кыргызстан', flag: '🇰🇬', region: 'Кыргызстан', tz: 'UTC+6', type: 'Мобильный', lat: 41.2044, lon: 74.7661, operators: { '50': 'MegaCom', '55': 'MegaCom', '70': 'Beeline KG', '77': 'Beeline KG', '99': 'O!', '20': 'O!', '22': 'O!' } },
+    '7': { country: 'Россия', flag: '🇷🇺', region: 'Россия', tz: 'UTC+3', type: 'Мобильный', lat: 55.7558, lon: 37.6173, operators: { '900': 'Beeline', '901': 'Beeline', '902': 'MegaFon', '903': 'Beeline', '904': 'MegaFon', '905': 'Beeline', '906': 'Beeline', '908': 'MegaFon', '909': 'MegaFon', '910': 'MegaFon', '911': 'MegaFon', '912': 'MegaFon', '913': 'MegaFon', '914': 'MegaFon', '915': 'MegaFon', '916': 'MegaFon', '917': 'MegaFon', '918': 'MegaFon', '919': 'MegaFon', '950': 'Tele2', '951': 'Tele2', '952': 'Tele2', '958': 'Tele2', '960': 'Beeline', '961': 'Beeline', '962': 'Beeline', '963': 'Beeline', '964': 'Beeline', '965': 'Beeline', '966': 'Beeline', '967': 'Beeline', '968': 'Beeline', '969': 'Beeline', '980': 'MTS', '981': 'MTS', '982': 'MTS', '983': 'MTS', '984': 'MTS', '985': 'MTS', '986': 'MTS', '987': 'MTS', '988': 'MTS', '989': 'MTS', '995': 'MTS', '996': 'MTS', '997': 'MTS', '999': 'MTS' } },
+    '1': { country: 'США/Канада', flag: '🇺🇸', region: 'США', tz: 'UTC-5', type: 'Мобильный', lat: 38.9072, lon: -77.0369 },
+    '44': { country: 'Великобритания', flag: '🇬🇧', region: 'Англия', tz: 'UTC+0', type: 'Мобильный', lat: 51.5074, lon: -0.1278 },
+    '49': { country: 'Германия', flag: '🇩🇪', region: 'Германия', tz: 'UTC+1', type: 'Мобильный', lat: 52.5200, lon: 13.4050 },
+    '33': { country: 'Франция', flag: '🇫🇷', region: 'Франция', tz: 'UTC+1', type: 'Мобильный', lat: 48.8566, lon: 2.3522 },
+    '90': { country: 'Турция', flag: '🇹🇷', region: 'Турция', tz: 'UTC+3', type: 'Мобильный', lat: 41.0082, lon: 28.9784 },
+    '86': { country: 'Китай', flag: '🇨🇳', region: 'Китай', tz: 'UTC+8', type: 'Мобильный', lat: 39.9042, lon: 116.4074 },
+    '380': { country: 'Украина', flag: '🇺🇦', region: 'Украина', tz: 'UTC+2', type: 'Мобильный', lat: 50.4501, lon: 30.5234 },
+    '375': { country: 'Беларусь', flag: '🇧🇾', region: 'Беларусь', tz: 'UTC+3', type: 'Мобильный', lat: 53.9045, lon: 27.5615 },
+    '995': { country: 'Грузия', flag: '🇬🇪', region: 'Грузия', tz: 'UTC+4', type: 'Мобильный', lat: 41.7151, lon: 44.8271 },
+    '374': { country: 'Армения', flag: '🇦🇲', region: 'Армения', tz: 'UTC+4', type: 'Мобильный', lat: 40.1792, lon: 44.4991 },
+    '994': { country: 'Азербайджан', flag: '🇦🇿', region: 'Азербайджан', tz: 'UTC+4', type: 'Мобильный', lat: 40.4093, lon: 49.8671 },
+    '20': { country: 'Египет', flag: '🇪🇬', region: 'Египет', tz: 'UTC+2', type: 'Мобильный', lat: 30.0444, lon: 31.2357 },
   };
-  let countryInfo = null;
-  let countryCodeLen = 0;
+  let countryInfo = null, countryCodeLen = 0;
   for (let len = 3; len >= 1; len--) { const prefix = clean.slice(0, len); if (countries[prefix]) { countryInfo = countries[prefix]; countryCodeLen = len; break; } }
   if (!countryInfo) return { phone, country: 'Неизвестно', flag: '🏴', region: '—', operator: '—', tz: '—', type: 'Неизвестно' };
   let operator = '—';
   if (countryInfo.operators) { const afterCode = clean.slice(countryCodeLen); for (let opLen = 3; opLen >= 2; opLen--) { const opPrefix = afterCode.slice(0, opLen); if (countryInfo.operators[opPrefix]) { operator = countryInfo.operators[opPrefix]; break; } } }
-  return { phone, country: countryInfo.country, flag: countryInfo.flag, region: countryInfo.region, operator, tz: countryInfo.tz, type: countryInfo.type };
+  return { phone, country: countryInfo.country, flag: countryInfo.flag, region: countryInfo.region, operator, tz: countryInfo.tz, type: countryInfo.type, lat: countryInfo.lat, lon: countryInfo.lon };
 }
 
 function renderPhoneInfo(info) {
@@ -1205,8 +1450,41 @@ function renderPhoneInfo(info) {
   const whatsappStatus = info.whatsapp ? '<a href="' + waLink + '" target="_blank" style="color:var(--green);text-decoration:none;">✅ Открыть чат</a>' : '⚠️ <a href="' + waLink + '" target="_blank" style="color:var(--green);text-decoration:none;">Проверить</a>';
   const result = $('pc-result');
   if (!result) return;
-  result.innerHTML = '<div class="section-title">📱 Информация о номере</div><div class="result-card"><div class="result-row"><div class="result-icon">' + I.phone + '</div><div class="result-content"><div class="result-label">Номер</div><div class="result-value mono accent">' + esc(phone) + '</div></div></div><div class="result-row"><div class="result-icon">' + I.globe + '</div><div class="result-content"><div class="result-label">Страна</div><div class="result-value">' + esc(info.flag || '') + ' ' + esc(info.country || '—') + '</div></div></div><div class="result-row"><div class="result-icon">' + I.signal + '</div><div class="result-content"><div class="result-label">Оператор</div><div class="result-value">' + esc(info.operator || '—') + '</div></div></div><div class="result-row"><div class="result-icon">' + I.map + '</div><div class="result-content"><div class="result-label">Регион</div><div class="result-value">' + esc(info.region || '—') + '</div></div></div><div class="result-row"><div class="result-icon">' + I.clock + '</div><div class="result-content"><div class="result-label">Часовой пояс</div><div class="result-value">' + esc(info.tz || '—') + '</div></div></div><div class="result-row"><div class="result-icon">' + I.info + '</div><div class="result-content"><div class="result-label">Тип номера</div><div class="result-value">' + esc(info.type || '—') + '</div></div></div><div class="result-row"><div class="result-icon">' + I.bot + '</div><div class="result-content"><div class="result-label">Telegram</div><div class="result-value">' + telegramStatus + '</div></div></div><div class="result-row"><div class="result-icon">' + I.msg + '</div><div class="result-content"><div class="result-label">WhatsApp</div><div class="result-value">' + whatsappStatus + '</div></div></div></div>';
+  const hasCoords = info.lat && info.lon;
+  const mapButton = hasCoords ? `<button class="btn" onclick="showPhoneMapCurrent()" style="margin-bottom:8px;">🗺 Показать на карте</button>` : '';
+  result.innerHTML = `<div class="section-title">📱 Информация о номере</div><div class="result-card"><div class="result-row"><div class="result-icon">${I.phone}</div><div class="result-content"><div class="result-label">Номер</div><div class="result-value mono accent">${esc(phone)}</div></div></div><div class="result-row"><div class="result-icon">${I.globe}</div><div class="result-content"><div class="result-label">Страна</div><div class="result-value">${esc(info.flag || '')} ${esc(info.country || '—')}</div></div></div><div class="result-row"><div class="result-icon">${I.signal}</div><div class="result-content"><div class="result-label">Оператор</div><div class="result-value">${esc(info.operator || '—')}</div></div></div><div class="result-row"><div class="result-icon">${I.map}</div><div class="result-content"><div class="result-label">Регион</div><div class="result-value">${esc(info.region || '—')}</div></div></div><div class="result-row"><div class="result-icon">${I.clock}</div><div class="result-content"><div class="result-label">Часовой пояс</div><div class="result-value">${esc(info.tz || '—')}</div></div></div><div class="result-row"><div class="result-icon">${I.info}</div><div class="result-content"><div class="result-label">Тип номера</div><div class="result-value">${esc(info.type || '—')}</div></div></div><div class="result-row"><div class="result-icon">${I.bot}</div><div class="result-content"><div class="result-label">Telegram</div><div class="result-value">${telegramStatus}</div></div></div><div class="result-row"><div class="result-icon">${I.msg}</div><div class="result-content"><div class="result-label">WhatsApp</div><div class="result-value">${whatsappStatus}</div></div></div></div>${mapButton}`;
   window._lastPhoneInfo = info;
+}
+
+function showPhoneMapCurrent() { if (window._lastPhoneInfo) showPhoneMap(window._lastPhoneInfo); }
+function showPhoneMap(info) {
+  document.querySelectorAll('.modal-overlay').forEach(m => m.remove());
+  if (window._phoneMap) { window._phoneMap.remove(); window._phoneMap = null; }
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'phone-map-modal';
+  overlay.style.padding = '0';
+  overlay.style.alignItems = 'flex-end';
+  overlay.innerHTML = '<div style="background:var(--bg);width:100%;max-width:600px;border-radius:20px 20px 0 0;overflow:hidden;animation:slideUp 0.3s ease;max-height:95vh;display:flex;flex-direction:column;"><div style="padding:16px 20px;border-bottom:0.5px solid var(--border-soft);display:flex;align-items:center;gap:12px;"><div style="flex:1;"><div style="font-size:17px;font-weight:700;color:var(--text);">' + esc(info.flag || '') + ' ' + esc(info.phone || '') + '</div><div style="font-size:13px;color:var(--text-mute);margin-top:2px;">' + esc(info.country || '') + ' · ' + esc(info.operator || '') + '</div></div><button onclick="closePhoneMap()" style="width:32px;height:32px;border-radius:50%;background:var(--bg-elev);border:none;color:var(--text-mute);cursor:pointer;display:flex;align-items:center;justify-content:center;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div><div id="phone-map" style="height:340px;width:100%;background:var(--bg-elev);"></div><div style="padding:16px 20px;"><button class="btn secondary" onclick="closePhoneMap()">Закрыть</button></div></div>';
+  document.body.appendChild(overlay);
+  setTimeout(() => initPhoneMap(info.lat, info.lon, info), 150);
+}
+function closePhoneMap() { const m = document.getElementById('phone-map-modal'); if (m) m.remove(); if (window._phoneMap) { window._phoneMap.remove(); window._phoneMap = null; } }
+function initPhoneMap(lat, lon, info) {
+  if (typeof L === 'undefined') { toast('Карта не загрузилась', 'error'); return; }
+  const isDark = currentTheme === 'dark';
+  const mapEl = document.getElementById('phone-map');
+  if (!mapEl) return;
+  const map = L.map('phone-map', { zoomControl: false, attributionControl: false, center: [lat, lon], zoom: 6, minZoom: 2, maxZoom: 18 });
+  const tileUrl = isDark ? 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}' : 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+  const tile = L.tileLayer(tileUrl, { maxZoom: 19, subdomains: isDark ? '' : 'abc', attribution: '' });
+  tile.on('tileerror', function() { map.removeLayer(tile); const fallback = isDark ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png' : 'https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png'; L.tileLayer(fallback, { maxZoom: 19, subdomains: 'abcd' }).addTo(map); });
+  tile.addTo(map);
+  L.control.zoom({ position: 'bottomright' }).addTo(map);
+  const icon = L.divIcon({ className: '', html: '<div style="position:relative;width:28px;height:28px;"><div style="position:absolute;inset:0;border-radius:50%;background:#007aff;border:3px solid white;box-shadow:0 3px 12px rgba(0,122,255,0.6);"></div><div style="position:absolute;inset:-12px;border-radius:50%;border:2px solid #007aff;opacity:0.5;animation:pulsePin 2s ease-out infinite;"></div></div>', iconSize: [28, 28], iconAnchor: [14, 14] });
+  L.marker([lat, lon], { icon }).addTo(map).bindPopup('<div style="font-family:-apple-system,sans-serif;padding:4px;"><b style="font-size:14px;">' + esc(info.flag || '') + ' ' + esc(info.country || '') + '</b><br><span style="font-size:12px;color:#8e8e93;">' + esc(info.operator || '') + '</span></div>').openPopup();
+  window._phoneMap = map;
+  setTimeout(() => map.invalidateSize(), 250);
 }
 
 // ============================================================
@@ -1215,275 +1493,107 @@ function renderPhoneInfo(info) {
 async function renderSubscription() {
   const u = getTelegramUser();
   contentWrap.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-mute);">Загрузка...</div>';
-
   let status = { has_subscription: false, end_date: null, days_left: 0 };
   let plans = [];
-  try {
-    if (u) status = await pubGet('/api/subscription/status/' + u.id);
-    const resp = await pubGet('/api/subscription/plans');
-    plans = resp.plans || [];
-  } catch(e) { console.log('sub load error', e); }
-
-  const activeBlock = status.has_subscription ? `
-    <div class="result-card" style="background:linear-gradient(135deg, rgba(52,199,89,0.15), rgba(52,199,89,0.05));border:1px solid rgba(52,199,89,0.3);">
-      <div class="result-row" style="border:none;">
-        <div class="result-icon" style="color:var(--green);">${I.check}</div>
-        <div class="result-content">
-          <div class="result-label">Подписка активна</div>
-          <div class="result-value" style="color:var(--green);">Осталось ${status.days_left} дн.</div>
-          <div style="font-size:12px;color:var(--text-mute);margin-top:2px;">до ${formatDate(status.end_date)}</div>
-        </div>
-      </div>
-    </div>
-  ` : `
-    <div class="result-card">
-      <div class="result-row">
-        <div class="result-icon" style="color:var(--text-mute);">${I.star}</div>
-        <div class="result-content">
-          <div class="result-label">Подписка</div>
-          <div class="result-value" style="color:var(--text-mute);">Не активна</div>
-        </div>
-      </div>
-    </div>
-  `;
-
-  const planItems = plans.length ? plans.map(p => `
-    <li class="list-item" onclick="buyPlan('${p.key}','${p.label}',${p.price_usd})">
-      <div class="list-icon orange">${I.star}</div>
-      <div class="list-content">
-        <div class="list-title">${esc(p.label)}</div>
-        <div class="list-sub">${p.price_usd} USD</div>
-      </div>
-      <div class="list-chevron">${I.search}</div>
-    </li>
-  `).join('') : `
-    <li class="list-item" onclick="buyPlan('1_month','1 месяц',5)">
-      <div class="list-icon orange">${I.star}</div>
-      <div class="list-content"><div class="list-title">1 месяц</div><div class="list-sub">5 USD</div></div>
-      <div class="list-chevron">${I.search}</div>
-    </li>
-  `;
-
-  contentWrap.innerHTML = `
-    <div class="section-title">⭐ Подписка</div>
-    ${activeBlock}
-    <div class="result-card">
-      <div class="result-row"><div class="result-icon">${I.check}</div><div class="result-content"><div class="result-label">Лимит запросов</div><div class="result-value accent">Безлимит</div></div></div>
-      <div class="result-row"><div class="result-icon">${I.chart}</div><div class="result-content"><div class="result-label">HTML отчёты</div><div class="result-value">✅ Да</div></div></div>
-    </div>
-    <div class="section-title">Планы</div>
-    <ul class="list">${planItems}</ul>
-    <button class="btn secondary" onclick="renderScreen('home')">← Назад</button>
-  `;
+  try { if (u) status = await pubGet('/api/subscription/status/' + u.id); const resp = await pubGet('/api/subscription/plans'); plans = resp.plans || []; } catch(e) {}
+  const activeBlock = status.has_subscription ? `<div class="result-card" style="background:linear-gradient(135deg, rgba(52,199,89,0.15), rgba(52,199,89,0.05));border:1px solid rgba(52,199,89,0.3);"><div class="result-row" style="border:none;"><div class="result-icon" style="color:var(--green);">${I.check}</div><div class="result-content"><div class="result-label">Подписка активна</div><div class="result-value" style="color:var(--green);">Осталось ${status.days_left} дн.</div><div style="font-size:12px;color:var(--text-mute);margin-top:2px;">до ${formatDate(status.end_date)}</div></div></div></div>` : `<div class="result-card"><div class="result-row"><div class="result-icon" style="color:var(--text-mute);">${I.star}</div><div class="result-content"><div class="result-label">Подписка</div><div class="result-value" style="color:var(--text-mute);">Не активна</div></div></div></div>`;
+  const planItems = plans.length ? plans.map(p => `<li class="list-item" onclick="buyPlan('${p.key}','${p.label}',${p.price_usd})"><div class="list-icon orange">${I.star}</div><div class="list-content"><div class="list-title">${esc(p.label)}</div><div class="list-sub">${p.price_usd} USD</div></div><div class="list-chevron">${I.search}</div></li>`).join('') : '';
+  contentWrap.innerHTML = `<div class="section-title">⭐ Подписка</div>${activeBlock}<div class="result-card"><div class="result-row"><div class="result-icon">${I.check}</div><div class="result-content"><div class="result-label">Лимит запросов</div><div class="result-value accent">Безлимит</div></div></div></div><div class="section-title">Планы</div><ul class="list">${planItems}</ul><button class="btn secondary" onclick="renderScreen('home')">← Назад</button>`;
 }
 
 async function buyPlan(planKey, planLabel, priceUsd) {
   const u = getTelegramUser();
   if (!u) { toast('Откройте через Telegram', 'error'); return; }
   vibrate();
-
-  showModal(`
-    <div class="modal-title">⭐ ${esc(planLabel)}</div>
-    <div class="modal-desc">К оплате: <b>${priceUsd} USD</b><br><br>Создаём счёт на оплату...</div>
-    <div style="text-align:center;padding:20px 0;"><div class="loading-bar" style="margin:0 auto;"></div></div>
-  `);
-
+  showModal(`<div class="modal-title">⭐ ${esc(planLabel)}</div><div class="modal-desc">К оплате: <b>${priceUsd} USD</b><br><br>Создаём счёт на оплату...</div><div style="text-align:center;padding:20px 0;"><div class="loading-bar" style="margin:0 auto;"></div></div>`);
   try {
     const data = await pubPost('/api/subscription/create', { user_id: u.id, plan_key: planKey });
-
-    if (!data.success) {
-      closeModal();
-      showModal(`
-        <div class="modal-title">❌ Ошибка</div>
-        <div class="modal-desc">${esc(data.error || 'Не удалось создать счёт')}</div>
-        <button class="btn secondary" onclick="closeModal()">Закрыть</button>
-      `);
-      return;
-    }
-
+    if (!data.success) { closeModal(); showModal(`<div class="modal-title">❌ Ошибка</div><div class="modal-desc">${esc(data.error || 'Не удалось создать счёт')}</div><button class="btn secondary" onclick="closeModal()">Закрыть</button>`); return; }
     closeModal();
-    const invoiceId = data.invoice_id;
-    const payUrl = data.pay_url;
-
-    showModal(`
-      <div class="modal-title">⭐ Оплата подписки</div>
-      <div class="modal-desc">
-        📋 План: <b>${esc(data.plan)}</b><br>
-        💰 К оплате: <b>${data.amount_usd} USD</b><br>
-        📝 Счёт: <code style="font-size:11px;">${esc(String(invoiceId).slice(0,20))}...</code>
-        <br><br>⏳ После оплаты нажми «Проверить оплату»
-      </div>
-      <button class="btn" id="sub-pay-btn">🏦 Перейти к оплате</button>
-      <button class="btn" id="sub-check-btn" style="background:var(--green);">✅ Проверить оплату</button>
-      <button class="btn secondary" onclick="closeModal()">Отмена</button>
-    `);
-
+    const invoiceId = data.invoice_id, payUrl = data.pay_url;
+    showModal(`<div class="modal-title">⭐ Оплата подписки</div><div class="modal-desc">📋 План: <b>${esc(data.plan)}</b><br>💰 К оплате: <b>${data.amount_usd} USD</b><br>📝 Счёт: <code style="font-size:11px;">${esc(String(invoiceId).slice(0,20))}...</code><br><br>⏳ После оплаты нажми «Проверить оплату»</div><button class="btn" id="sub-pay-btn">🏦 Перейти к оплате</button><button class="btn" id="sub-check-btn" style="background:var(--green);">✅ Проверить оплату</button><button class="btn secondary" onclick="closeModal()">Отмена</button>`);
     setTimeout(() => {
       const payBtn = document.getElementById('sub-pay-btn');
-      if (payBtn) payBtn.addEventListener('click', () => {
-        try {
-          if (window.Telegram?.WebApp?.openLink) window.Telegram.WebApp.openLink(payUrl);
-          else if (window.Telegram?.WebApp?.openTelegramLink) window.Telegram.WebApp.openTelegramLink(payUrl);
-          else window.open(payUrl, '_blank');
-        } catch(e) { window.open(payUrl, '_blank'); }
-      });
-
+      if (payBtn) payBtn.addEventListener('click', () => { try { if (window.Telegram?.WebApp?.openLink) window.Telegram.WebApp.openLink(payUrl); else window.open(payUrl, '_blank'); } catch(e) { window.open(payUrl, '_blank'); } });
       const checkBtn = document.getElementById('sub-check-btn');
       if (checkBtn) checkBtn.addEventListener('click', async () => {
-        checkBtn.disabled = true;
-        checkBtn.textContent = '⏳ Проверка...';
+        checkBtn.disabled = true; checkBtn.textContent = '⏳ Проверка...';
         try {
           const res = await pubGet('/api/subscription/check/' + invoiceId);
-          if (res.success && res.paid) {
-            closeModal();
-            toast('✅ Подписка активирована!', 'ok');
-            vibrate(50);
-            _meCache = { userId: null, data: null, ts: 0 };
-            renderScreen('subscription');
-          } else if (res.success && !res.paid) {
-            checkBtn.disabled = false;
-            checkBtn.textContent = '✅ Проверить оплату';
-            toast('⏳ Оплата ещё не поступила. Попробуйте позже.', 'error');
-          } else {
-            checkBtn.disabled = false;
-            checkBtn.textContent = '✅ Проверить оплату';
-            toast('❌ ' + (res.error || 'Ошибка'), 'error');
-          }
-        } catch(e) {
-          checkBtn.disabled = false;
-          checkBtn.textContent = '✅ Проверить оплату';
-          toast('Ошибка сети', 'error');
-        }
+          if (res.success && res.paid) { closeModal(); toast('✅ Подписка активирована!', 'ok'); vibrate(50); _meCache = { userId: null, data: null, ts: 0 }; renderScreen('subscription'); }
+          else { checkBtn.disabled = false; checkBtn.textContent = '✅ Проверить оплату'; toast('⏳ Оплата ещё не поступила', 'error'); }
+        } catch(e) { checkBtn.disabled = false; checkBtn.textContent = '✅ Проверить оплату'; toast('Ошибка сети', 'error'); }
       });
     }, 100);
-
-  } catch(e) {
-    closeModal();
-    showModal(`
-      <div class="modal-title">❌ Ошибка</div>
-      <div class="modal-desc">${esc(e.message || 'Сеть недоступна')}</div>
-      <button class="btn secondary" onclick="closeModal()">Закрыть</button>
-    `);
-  }
+  } catch(e) { closeModal(); toast('Ошибка сети', 'error'); }
 }
 
 // ============================================================
-// TRACKING
+// TRACKING / DELETE / ABOUT / ADMIN (упрощённо, как было)
 // ============================================================
 async function renderTracking() {
   const u = getTelegramUser();
   contentWrap.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-mute);">Загрузка...</div>';
-  let me = { diamonds: '—' };
-  let trackList = [];
+  let me = { diamonds: '—' }; let trackList = [];
   try { if (u) me = await getMe(true); } catch(e) {}
   try { if (u) trackList = await pubGet('/api/tracking/' + u.id); } catch(e) {}
-
   contentWrap.innerHTML = `
     <div class="section-title">👀 Отслеживание</div>
-    <div class="result-card">
-      <div class="result-row"><div class="result-icon">${I.gem}</div><div class="result-content"><div class="result-label">Ваш баланс</div><div class="result-value accent">${me.diamonds ?? '—'} алмазов</div></div></div>
-      <div class="result-row"><div class="result-icon">${I.bell}</div><div class="result-content"><div class="result-label">Стоимость</div><div class="result-value">20 алмазов / 7 дней</div></div></div>
-    </div>
-    <div class="chart-wrap">
-      <div class="field"><label class="field-label">ID пользователя</label><input type="number" class="field-input" id="tr-id" placeholder="123456789"></div>
-      <button class="btn" id="tr-btn">👀 Активировать отслеживание</button>
-    </div>
+    <div class="result-card"><div class="result-row"><div class="result-icon">${I.gem}</div><div class="result-content"><div class="result-label">Ваш баланс</div><div class="result-value accent">${me.diamonds ?? '—'} алмазов</div></div></div><div class="result-row"><div class="result-icon">${I.bell}</div><div class="result-content"><div class="result-label">Стоимость</div><div class="result-value">20 алмазов / 7 дней</div></div></div></div>
+    <div class="chart-wrap"><div class="field"><label class="field-label">ID пользователя</label><input type="number" class="field-input" id="tr-id" placeholder="123456789"></div><button class="btn" id="tr-btn">👀 Активировать отслеживание</button></div>
     <div class="section-title">📋 Активные отслеживания</div>
-    <ul class="list" id="tr-list">
-      ${trackList && trackList.length ? trackList.map(t => `<li class="list-item"><div class="list-icon purple">👤</div><div class="list-content"><div class="list-title">${t.target_user_id}</div><div class="list-sub">до ${(t.end_date||'').slice(0,10)} ${t.active ? '✅' : '⏸'}</div></div><button class="icon-btn" onclick="removeTracking(${t.target_user_id})" style="color:var(--red);">✕</button></li>`).join('') : '<li class="list-item"><div class="list-content"><div class="list-sub">Нет активных отслеживаний</div></div></li>'}
-    </ul>
+    <ul class="list">${trackList && trackList.length ? trackList.map(t => `<li class="list-item"><div class="list-icon purple">👤</div><div class="list-content"><div class="list-title">${t.target_user_id}</div><div class="list-sub">до ${(t.end_date||'').slice(0,10)}</div></div><button class="icon-btn" onclick="removeTracking(${t.target_user_id})" style="color:var(--red);">✕</button></li>`).join('') : '<li class="list-item"><div class="list-content"><div class="list-sub">Нет активных отслеживаний</div></div></li>'}</ul>
     <button class="btn secondary" onclick="renderScreen('home')">← Назад</button>
   `;
   $('tr-btn').addEventListener('click', activateTracking);
 }
-
 async function activateTracking() {
-  const u = getTelegramUser();
-  const id = $('tr-id').value.trim();
+  const u = getTelegramUser(); const id = $('tr-id').value.trim();
   if (!u) { toast('Откройте через Telegram', 'error'); return; }
   if (!id || !/^\d+$/.test(id)) { toast('Введите корректный ID', 'error'); return; }
   const btn = $('tr-btn'); btn.disabled = true; btn.textContent = '⏳ Активация...';
   try {
     const data = await pubPost('/api/tracking/add', { user_id: u.id, target_id: parseInt(id) });
-    if (data.success) {
-      toast('✅ Отслеживание активировано!', 'ok');
-      _meCache = { userId: null, data: null, ts: 0 };
-      renderScreen('tracking');
-    } else {
-      toast('❌ ' + (data.error || 'Ошибка'), 'error');
-    }
+    if (data.success) { toast('✅ Отслеживание активировано!', 'ok'); _meCache = { userId: null, data: null, ts: 0 }; renderScreen('tracking'); }
+    else toast('❌ ' + (data.error || 'Ошибка'), 'error');
   } catch(e) { toast('Ошибка сети', 'error'); }
   finally { btn.disabled = false; btn.textContent = '👀 Активировать отслеживание'; }
 }
-
 async function removeTracking(targetId) {
-  const u = getTelegramUser();
-  if (!u) return;
-  try {
-    await pubPost('/api/tracking/remove', { user_id: u.id, target_id: targetId });
-    toast('Удалено', 'ok');
-    renderScreen('tracking');
-  } catch(e) { toast('Ошибка', 'error'); }
+  const u = getTelegramUser(); if (!u) return;
+  try { await pubPost('/api/tracking/remove', { user_id: u.id, target_id: targetId }); toast('Удалено', 'ok'); renderScreen('tracking'); } catch(e) { toast('Ошибка', 'error'); }
 }
 
-// ============================================================
-// DELETE DATA
-// ============================================================
 function renderDeleteData() {
-  contentWrap.innerHTML = `
-    <div class="section-title">🗑️ Удаление данных</div>
-    <div class="result-card">
-      <div class="result-row"><div class="result-icon">${I.gem}</div><div class="result-content"><div class="result-label">Стоимость</div><div class="result-value accent">200 алмазов</div></div></div>
-    </div>
-    <div class="chart-wrap" style="background:rgba(255,59,48,0.08);border:1px solid rgba(255,59,48,0.2);">
-      <div style="color:var(--red);font-weight:600;margin-bottom:12px;">⚠️ ВНИМАНИЕ</div>
-      <div style="color:var(--text-dim);font-size:14px;line-height:1.6;">• Удаляет ВСЕ ваши данные<br>• Очищает историю имён<br>• Удаляет список чатов<br>• Удаляет все сообщения</div>
-    </div>
-    <button class="btn danger" id="del-btn">🗑️ Удалить данные (200 💎)</button>
-    <button class="btn secondary" onclick="renderScreen('home')">← Назад</button>
-  `;
+  contentWrap.innerHTML = `<div class="section-title">🗑️ Удаление данных</div><div class="result-card"><div class="result-row"><div class="result-icon">${I.gem}</div><div class="result-content"><div class="result-label">Стоимость</div><div class="result-value accent">200 алмазов</div></div></div></div><div class="chart-wrap" style="background:rgba(255,59,48,0.08);border:1px solid rgba(255,59,48,0.2);"><div style="color:var(--red);font-weight:600;margin-bottom:12px;">⚠️ ВНИМАНИЕ</div><div style="color:var(--text-dim);font-size:14px;line-height:1.6;">• Удаляет ВСЕ ваши данные<br>• Очищает историю имён<br>• Удаляет список чатов<br>• Удаляет все сообщения</div></div><button class="btn danger" id="del-btn">🗑️ Удалить данные (200 💎)</button><button class="btn secondary" onclick="renderScreen('home')">← Назад</button>`;
   $('del-btn').addEventListener('click', confirmDelete);
 }
-
 function confirmDelete() {
   vibrate();
   showModal('<div class="modal-title">⚠️ Удалить данные?</div><div class="modal-desc">Действие необратимо. Спишется 200 алмазов.</div><button class="btn danger" id="del-confirm">🗑️ Да, удалить</button><button class="btn secondary" onclick="closeModal()">Отмена</button>');
   setTimeout(() => {
     const btn = document.getElementById('del-confirm');
     if (btn) btn.addEventListener('click', async () => {
-      const u = getTelegramUser();
-      if (!u) { toast('Откройте через Telegram', 'error'); return; }
+      const u = getTelegramUser(); if (!u) return;
       closeModal();
       try {
         const data = await pubPost('/api/delete_data', { user_id: u.id });
-        if (data.success) {
-          toast('✅ Данные удалены!', 'ok');
-          _meCache = { userId: null, data: null, ts: 0 };
-          renderScreen('home');
-        } else {
-          toast('❌ ' + (data.error || 'Ошибка'), 'error');
-        }
+        if (data.success) { toast('✅ Данные удалены!', 'ok'); _meCache = { userId: null, data: null, ts: 0 }; renderScreen('home'); }
+        else toast('❌ ' + (data.error || 'Ошибка'), 'error');
       } catch(e) { toast('Ошибка сети', 'error'); }
     });
   }, 50);
 }
 
-// ============================================================
-// ABOUT
-// ============================================================
 function renderAbout() {
-  contentWrap.innerHTML = '<div style="padding-top:20px;text-align:center;"><div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#60a5fa,#007aff);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:36px;">🤖</div><div style="font-size:22px;font-weight:700;color:var(--text);">AGENT ANALYTICS</div><div style="font-size:14px;color:var(--text-mute);margin-top:4px;">Версия 2.0</div></div><div class="section-title">📊 О проекте</div><div class="chart-wrap"><div style="color:var(--text-dim);font-size:14px;line-height:1.6;">Многофункциональный бот для анализа Telegram-активности. Работает в личных чатах и группах.</div></div><div class="section-title">🎯 Лимиты</div><div class="chart-wrap"><div style="color:var(--text-dim);font-size:14px;line-height:1.6;">Бесплатно: <b>' + CONFIG.DAILY_LIMIT + ' запросов в день</b><br>Сброс каждые 24 часа<br>Безлимит — с подпиской</div></div><button class="btn secondary" onclick="renderScreen(\'home\')">← На главную</button>';
+  contentWrap.innerHTML = '<div style="padding-top:20px;text-align:center;"><div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#60a5fa,#007aff);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:36px;">🤖</div><div style="font-size:22px;font-weight:700;color:var(--text);">AGENT ANALYTICS</div><div style="font-size:14px;color:var(--text-mute);margin-top:4px;">Версия 2.0</div></div><div class="section-title">📊 О проекте</div><div class="chart-wrap"><div style="color:var(--text-dim);font-size:14px;line-height:1.6;">Многофункциональный бот для анализа Telegram-активности.</div></div><div class="section-title">🎯 Лимиты</div><div class="chart-wrap"><div style="color:var(--text-dim);font-size:14px;line-height:1.6;">Бесплатно: <b>' + CONFIG.DAILY_LIMIT + ' запросов в день</b><br>Сброс каждые 24 часа<br>Безлимит — с подпиской</div></div><button class="btn secondary" onclick="renderScreen(\'home\')">← На главную</button>';
 }
 
-// ============================================================
-// ADMIN PANEL
-// ============================================================
 async function renderAdminPanel() {
   if (!isAdmin()) { toast('❌ Доступ запрещён', 'error'); return renderHome(); }
-  contentWrap.innerHTML = '<div style="padding-top:20px;text-align:center;"><div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#ff9500,#ff3b30);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:36px;">👑</div><div style="font-size:22px;font-weight:700;color:var(--text);">АДМИН ПАНЕЛЬ</div></div><div class="section-title">📊 Статистика</div><div class="stats-row"><div class="stat-card"><div class="stat-value" id="adm-users">—</div><div class="stat-label">Пользователей</div></div><div class="stat-card"><div class="stat-value" id="adm-comments">—</div><div class="stat-label">Сообщений</div></div></div><div class="section-title">🛠 Управление</div><ul class="list"><li class="list-item" onclick="openAdminAddBalance()"><div class="list-icon orange">💰</div><div class="list-content"><div class="list-title">Пополнить баланс</div></div><div class="list-chevron">' + I.search + '</div></li><li class="list-item" onclick="openAdminGiftSubscription()"><div class="list-icon purple">🎁</div><div class="list-content"><div class="list-title">Подарить подписку</div></div><div class="list-chevron">' + I.search + '</div></li><li class="list-item" onclick="openAdminGiftApi()"><div class="list-icon green">🔑</div><div class="list-content"><div class="list-title">Подарить API токен</div></div><div class="list-chevron">' + I.search + '</div></li><li class="list-item" onclick="openAdminDeleteUser()"><div class="list-icon red">🗑️</div><div class="list-content"><div class="list-title" style="color:var(--red);">Удалить данные</div></div><div class="list-chevron">' + I.search + '</div></li></ul><div class="section-title">💬 Коммуникации</div><ul class="list"><li class="list-item" onclick="openAdminAnswer()"><div class="list-icon">💬</div><div class="list-content"><div class="list-title">Ответить на вопросы</div></div><div class="list-chevron">' + I.search + '</div></li><li class="list-item" onclick="openAdminBroadcastUsers()"><div class="list-icon orange">📢</div><div class="list-content"><div class="list-title">Рассылка пользователям</div></div><div class="list-chevron">' + I.search + '</div></li><li class="list-item" onclick="openAdminBroadcastGroups()"><div class="list-icon orange">📢</div><div class="list-content"><div class="list-title">Рассылка группам</div></div><div class="list-chevron">' + I.search + '</div></li></ul><div class="section-title">📋 Данные</div><ul class="list"><li class="list-item" onclick="openAdminSearchHistory()"><div class="list-icon purple">📋</div><div class="list-content"><div class="list-title">История поисков</div></div><div class="list-chevron">' + I.search + '</div></li></ul><button class="btn secondary" onclick="renderScreen(\'home\')">← На главную</button>';
+  contentWrap.innerHTML = '<div style="padding-top:20px;text-align:center;"><div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#ff9500,#ff3b30);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:36px;">👑</div><div style="font-size:22px;font-weight:700;color:var(--text);">АДМИН ПАНЕЛЬ</div></div><div class="section-title">📊 Статистика</div><div class="stats-row"><div class="stat-card"><div class="stat-value" id="adm-users">—</div><div class="stat-label">Пользователей</div></div><div class="stat-card"><div class="stat-value" id="adm-comments">—</div><div class="stat-label">Сообщений</div></div></div><div class="section-title">🛠 Управление</div><ul class="list"><li class="list-item" onclick="openAdminAddBalance()"><div class="list-icon orange">💰</div><div class="list-content"><div class="list-title">Пополнить баланс</div></div><div class="list-chevron">' + I.search + '</div></li><li class="list-item" onclick="openAdminGiftSubscription()"><div class="list-icon purple">🎁</div><div class="list-content"><div class="list-title">Подарить подписку</div></div><div class="list-chevron">' + I.search + '</div></li><li class="list-item" onclick="openAdminGiftApi()"><div class="list-icon green">🔑</div><div class="list-content"><div class="list-title">Подарить API токен</div></div><div class="list-chevron">' + I.search + '</div></li></ul><button class="btn secondary" onclick="renderScreen(\'home\')">← На главную</button>';
   try { const stats = await apiGetPublicStats(); $('adm-users').textContent = formatNumber(stats.users || 0); $('adm-comments').textContent = formatNumber(stats.comments || 0); } catch (e) {}
 }
-
 function openAdminAddBalance() {
   showModal('<div class="modal-title">💰 Пополнить баланс</div><div class="field"><label class="field-label">ID пользователя</label><input type="number" class="field-input" id="adm-bal-id" placeholder="123456789"></div><div class="field"><label class="field-label">Сумма (алмазов)</label><input type="number" class="field-input" id="adm-bal-sum" placeholder="50"></div><button class="btn" id="adm-bal-go">Начислить</button><button class="btn secondary" onclick="closeModal()">Отмена</button>');
   setTimeout(() => document.getElementById('adm-bal-go')?.addEventListener('click', async () => {
@@ -1499,7 +1609,6 @@ function openAdminAddBalance() {
     } catch(e) { toast('Ошибка сети', 'error'); }
   }), 50);
 }
-
 function openAdminGiftSubscription() {
   showModal('<div class="modal-title">🎁 Подарить подписку</div><div class="field"><label class="field-label">ID пользователя</label><input type="number" class="field-input" id="adm-sub-id" placeholder="123456789"></div><div class="field"><label class="field-label">Дней</label><input type="number" class="field-input" id="adm-sub-days" placeholder="30"></div><button class="btn" id="adm-sub-go">Подарить</button><button class="btn secondary" onclick="closeModal()">Отмена</button>');
   setTimeout(() => document.getElementById('adm-sub-go')?.addEventListener('click', async () => {
@@ -1515,7 +1624,6 @@ function openAdminGiftSubscription() {
     } catch(e) { toast('Ошибка сети', 'error'); }
   }), 50);
 }
-
 function openAdminGiftApi() {
   showModal('<div class="modal-title">🔑 Подарить API токен</div><div class="field"><label class="field-label">ID пользователя</label><input type="number" class="field-input" id="adm-api-id" placeholder="123456789"></div><div class="field"><label class="field-label">План</label><select class="field-input" id="adm-api-plan"><option value="100">100 запросов</option><option value="500">500 запросов</option><option value="1000">1000 запросов</option><option value="5000">5000 запросов</option></select></div><button class="btn" id="adm-api-go">Подарить</button><button class="btn secondary" onclick="closeModal()">Отмена</button>');
   setTimeout(() => document.getElementById('adm-api-go')?.addEventListener('click', async () => {
@@ -1531,82 +1639,6 @@ function openAdminGiftApi() {
   }), 50);
 }
 
-function openAdminDeleteUser() {
-  showModal('<div class="modal-title">🗑️ Удалить данные</div><div class="field"><label class="field-label">ID пользователя</label><input type="number" class="field-input" id="adm-del-id" placeholder="123456789"></div><button class="btn danger" id="adm-del-go">🗑️ Удалить</button><button class="btn secondary" onclick="closeModal()">Отмена</button>');
-  setTimeout(() => document.getElementById('adm-del-go')?.addEventListener('click', async () => {
-    const id = document.getElementById('adm-del-id').value.trim();
-    if (!id || !/^\d+$/.test(id)) { toast('Введите ID', 'error'); return; }
-    if (parseInt(id) === CONFIG.ADMIN_ID) { toast('Нельзя удалить админа', 'error'); return; }
-    const u = getTelegramUser();
-    try {
-      const data = await pubPost('/api/admin/delete_user', { admin_id: u.id, user_id: parseInt(id) });
-      if (data.success) { closeModal(); toast('✅ Данные удалены', 'ok'); }
-      else toast('❌ ' + (data.error || 'Ошибка'), 'error');
-    } catch(e) { toast('Ошибка сети', 'error'); }
-  }), 50);
-}
-
-function openAdminAnswer() {
-  showModal('<div class="modal-title">💬 Ответить</div><div class="field"><label class="field-label">ID пользователя</label><input type="number" class="field-input" id="adm-ans-id" placeholder="123456789"></div><div class="field"><label class="field-label">Сообщение</label><textarea class="field-input" id="adm-ans-text" rows="4" placeholder="Ваш ответ..." style="resize:vertical;font-family:inherit;"></textarea></div><button class="btn" id="adm-ans-go">📤 Отправить</button><button class="btn secondary" onclick="closeModal()">Отмена</button>');
-  setTimeout(() => document.getElementById('adm-ans-go')?.addEventListener('click', async () => {
-    const id = document.getElementById('adm-ans-id').value.trim();
-    const text = document.getElementById('adm-ans-text').value.trim();
-    if (!id || !/^\d+$/.test(id)) { toast('Введите ID', 'error'); return; }
-    if (!text) { toast('Введите текст', 'error'); return; }
-    const u = getTelegramUser();
-    try {
-      const data = await pubPost('/api/admin/answer', { admin_id: u.id, user_id: parseInt(id), text: text });
-      if (data.success) { closeModal(); toast('✅ Отправлено', 'ok'); }
-      else toast('❌ ' + (data.error || 'Ошибка'), 'error');
-    } catch(e) { toast('Ошибка сети', 'error'); }
-  }), 50);
-}
-
-function openAdminBroadcastUsers() {
-  showModal('<div class="modal-title">📢 Рассылка пользователям</div><div class="modal-desc">Всем запустившим бота</div><div class="field"><textarea class="field-input" id="adm-bc-users" rows="5" placeholder="Текст..." style="resize:vertical;font-family:inherit;"></textarea></div><button class="btn" id="adm-bc-go">📢 Отправить</button><button class="btn secondary" onclick="closeModal()">Отмена</button>');
-  setTimeout(() => document.getElementById('adm-bc-go')?.addEventListener('click', async () => {
-    const text = document.getElementById('adm-bc-users').value.trim();
-    if (!text) { toast('Введите сообщение', 'error'); return; }
-    const u = getTelegramUser();
-    try {
-      const data = await pubPost('/api/admin/broadcast_users', { admin_id: u.id, text: text });
-      if (data.success) { closeModal(); toast(`✅ Отправлено: ${data.sent}, ошибок: ${data.failed}`, 'ok'); }
-      else toast('❌ ' + (data.error || 'Ошибка'), 'error');
-    } catch(e) { toast('Ошибка сети', 'error'); }
-  }), 50);
-}
-
-function openAdminBroadcastGroups() {
-  showModal('<div class="modal-title">📢 Рассылка группам</div><div class="modal-desc">Во все группы админа</div><div class="field"><textarea class="field-input" id="adm-bc-groups" rows="5" placeholder="Текст..." style="resize:vertical;font-family:inherit;"></textarea></div><button class="btn" id="adm-bcg-go">📢 Отправить</button><button class="btn secondary" onclick="closeModal()">Отмена</button>');
-  setTimeout(() => document.getElementById('adm-bcg-go')?.addEventListener('click', async () => {
-    const text = document.getElementById('adm-bc-groups').value.trim();
-    if (!text) { toast('Введите сообщение', 'error'); return; }
-    const u = getTelegramUser();
-    try {
-      const data = await pubPost('/api/admin/broadcast_groups', { admin_id: u.id, text: text });
-      if (data.success) { closeModal(); toast(`✅ Отправлено: ${data.sent}/${data.total}`, 'ok'); }
-      else toast('❌ ' + (data.error || 'Ошибка'), 'error');
-    } catch(e) { toast('Ошибка сети', 'error'); }
-  }), 50);
-}
-
-async function openAdminSearchHistory() {
-  showModal('<div class="modal-title">📋 История поисков</div><div class="modal-desc">Загрузка...</div>');
-  try {
-    const history = await pubGet('/api/search_history').catch(() => []);
-    let html = '<div class="modal-title">📋 История поисков</div>';
-    if (!history || !history.length) html += '<div class="modal-desc">История пуста</div>';
-    else {
-      html += '<div class="modal-desc">Найдено: ' + history.length + '</div><div style="max-height:60vh;overflow-y:auto;">';
-      history.slice(0, 50).forEach((h, i) => { html += '<div style="padding:10px 0;border-bottom:0.5px solid var(--border-soft);"><div style="font-size:12px;color:var(--text-mute);">#' + (i+1) + ' · ' + esc((h.date||'').slice(0, 16)) + '</div><div style="font-size:14px;color:var(--text);">🎯 <code>' + esc(h.target_id || '—') + '</code></div></div>'; });
-      html += '</div>';
-    }
-    html += '<button class="btn secondary" onclick="closeModal()">Закрыть</button>';
-    closeModal();
-    showModal(html);
-  } catch (e) { closeModal(); toast('Ошибка загрузки', 'error'); }
-}
-
 // ============================================================
 // MODALS / SETTINGS
 // ============================================================
@@ -1620,32 +1652,27 @@ function showModal(html) {
 function closeModal() { document.querySelectorAll('.modal-overlay').forEach(m => m.remove()); }
 
 function openSettings() {
-  showModal('<div class="modal-title">⚙️ Настройки</div><div class="modal-desc">API Токен для доступа к боту</div><div class="field"><label class="field-label">API Токен</label><input type="password" class="field-input" id="modal-token" value="' + esc(APIFY_TOKEN) + '"></div><div style="display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-top:0.5px solid var(--border-soft);border-bottom:0.5px solid var(--border-soft);margin:12px 0;"><div><div style="font-size:16px;color:var(--text);font-weight:600;">Тёмная тема</div></div><label class="toggle"><input type="checkbox" id="modal-theme" ' + (currentTheme === 'dark' ? 'checked' : '') + '><span class="toggle-slider"></span></label></div><button class="btn" onclick="saveSettings()">Сохранить</button><button class="btn secondary" onclick="closeModal()">Отмена</button>');
+  showModal('<div class="modal-title">⚙️ Настройки</div><div class="field"><label class="field-label">API Токен</label><input type="password" class="field-input" id="modal-token" value="' + esc(APIFY_TOKEN) + '"></div><div style="display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-top:0.5px solid var(--border-soft);border-bottom:0.5px solid var(--border-soft);margin:12px 0;"><div style="font-size:16px;color:var(--text);font-weight:600;">Тёмная тема</div><label class="toggle"><input type="checkbox" id="modal-theme" ' + (currentTheme === 'dark' ? 'checked' : '') + '><span class="toggle-slider"></span></label></div><button class="btn" onclick="saveSettings()">Сохранить</button><button class="btn secondary" onclick="closeModal()">Отмена</button>');
   setTimeout(() => { const t = $('modal-theme'); if (t) t.addEventListener('change', e => applyTheme(e.target.checked ? 'dark' : 'light')); }, 50);
 }
 function saveSettings() {
   const t = $('modal-token');
   if (t) { APIFY_TOKEN = t.value.trim() || APIFY_TOKEN; localStorage.setItem('aa_token', APIFY_TOKEN); }
-  closeModal();
-  toast('Сохранено', 'ok');
-  renderScreen(currentScreen.name, currentScreen.data);
+  closeModal(); toast('Сохранено', 'ok'); renderScreen(currentScreen.name, currentScreen.data);
 }
 async function openMyProfile() {
   const u = getTelegramUser();
   if (!u) { toast('Откройте через Telegram', 'error'); return; }
   const limitCheck = await checkAndUseRequest();
   if (!limitCheck.ok) { showLimitModal(); return; }
-  searchInput.value = String(u.id);
-  handleSearch();
+  searchInput.value = String(u.id); handleSearch();
 }
-
 async function handleSearch() {
   const q = searchInput.value.trim();
   if (!q) return;
   const limitCheck = await checkAndUseRequest();
   if (!limitCheck.ok) { showLimitModal(); return; }
-  searchBtn.disabled = true;
-  vibrate(10);
+  searchBtn.disabled = true; vibrate(10);
   try {
     const isId = /^\d{5,15}$/.test(q);
     if (isId) { const userId = parseInt(q); try { await apiGetUser(userId); renderScreen('profile', userId); return; } catch (e) {} }
@@ -1663,6 +1690,7 @@ searchBtn.addEventListener('click', handleSearch);
 searchInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); handleSearch(); } });
 $('refresh-btn').addEventListener('click', () => { vibrate(); _meCache = { userId: null, data: null, ts: 0 }; renderScreen(currentScreen.name, currentScreen.data); toast('Обновлено', 'ok'); });
 $('settings-btn').addEventListener('click', openSettings);
+$('notif-btn').addEventListener('click', () => renderScreen('notifications'));
 
 window.addEventListener('load', () => {
   setTimeout(() => {
@@ -1671,7 +1699,10 @@ window.addEventListener('load', () => {
     setTimeout(() => { const e = document.getElementById('loading'); if (e) e.remove(); }, 500);
     getDailyUsage();
     updateRequestsBadge();
+    updateNotifBadge();
     renderScreen('home');
+    // Обновляем бейдж уведомлений каждые 30 сек
+    setInterval(updateNotifBadge, 30000);
   }, 800);
 });
 
@@ -1688,18 +1719,17 @@ window.isAdmin = isAdmin;
 window.removeTracking = removeTracking;
 window.activateTracking = activateTracking;
 window.renderApiTokens = renderApiTokens;
+window.showPhoneMapCurrent = showPhoneMapCurrent;
+window.closePhoneMap = closePhoneMap;
 window.openAdminAddBalance = openAdminAddBalance;
 window.openAdminGiftSubscription = openAdminGiftSubscription;
 window.openAdminGiftApi = openAdminGiftApi;
-window.openAdminDeleteUser = openAdminDeleteUser;
-window.openAdminAnswer = openAdminAnswer;
-window.openAdminBroadcastUsers = openAdminBroadcastUsers;
-window.openAdminBroadcastGroups = openAdminBroadcastGroups;
-window.openAdminSearchHistory = openAdminSearchHistory;
 window.getRequestsLeft = getRequestsLeft;
 window.checkAndUseRequest = checkAndUseRequest;
 window.showLimitModal = showLimitModal;
 window.updateRequestsBadge = updateRequestsBadge;
+window.updateNotifBadge = updateNotifBadge;
+window.maryamQuick = maryamQuick;
 window.searchInput = searchInput;
 window.$ = $;
 </script>

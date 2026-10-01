@@ -204,15 +204,6 @@ input, textarea { user-select: text; -webkit-user-select: text; }
 .modal-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; color: var(--text); }
 .modal-desc { font-size: 14px; color: var(--text-mute); margin-bottom: 20px; line-height: 1.5; }
 
-@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-@keyframes pulsePin { 0% { transform: scale(0.7); opacity: 0.6; } 100% { transform: scale(1.6); opacity: 0; } }
-#phone-map .leaflet-control-zoom a { background: var(--bg) !important; color: var(--accent) !important; border: none !important; width: 36px !important; height: 36px !important; line-height: 34px !important; font-size: 18px !important; }
-#phone-map .leaflet-control-zoom-in { border-radius: 10px 10px 0 0 !important; }
-#phone-map .leaflet-control-zoom-out { border-radius: 0 0 10px 10px !important; }
-#phone-map .leaflet-popup-content-wrapper { background: var(--bg) !important; color: var(--text) !important; border-radius: 12px !important; box-shadow: 0 8px 24px rgba(0,0,0,0.15) !important; }
-#phone-map .leaflet-popup-tip { background: var(--bg) !important; }
-#phone-map .leaflet-control-attribution { display: none !important; }
-
 .hist-item { background: var(--bg-elev); border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; border-left: 3px solid var(--accent); }
 .hist-item .hist-top { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-mute); margin-bottom: 6px; gap: 8px; }
 .hist-item .hist-target { font-size: 14px; color: var(--text); font-family: 'SF Mono', monospace; word-break: break-all; }
@@ -340,6 +331,16 @@ let currentScreen = { name: 'home', data: null };
 // ============================================================
 function esc(s) {
   return String(s == null ? '' : s).replace(/[&<>"']/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
+}
+function formatDate(iso) {
+  if (!iso) return '—';
+  try {
+    const d = new Date(iso);
+    const dd = String(d.getDate()).padStart(2, '0');
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const yyyy = d.getFullYear();
+    return dd + '.' + mm + '.' + yyyy;
+  } catch(e) { return String(iso).slice(0, 10); }
 }
 function toast(msg, type = '') {
   const el = document.createElement('div');
@@ -626,13 +627,15 @@ async function renderHome() {
       </button>
     ` : ''}
 
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--bg-elev);border-radius:14px;margin-bottom:16px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--bg-elev);border-radius:14px;margin-bottom:12px;">
       <div>
         <div style="font-size:13px;color:var(--text-mute);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Доступно запросов</div>
         <div style="font-size:12px;color:var(--text-mute);margin-top:2px;">${admin ? 'Безлимитный доступ' : 'Обновление каждые 24 часа'}</div>
       </div>
       <div id="requests-badge" style="padding:6px 14px;border-radius:20px;font-size:13px;font-weight:700;"></div>
     </div>
+
+    <div id="me-block"></div>
 
     <div class="stats-row">
       <div class="stat-card"><div class="stat-value" id="my-comments">—</div><div class="stat-label">Моих сообщений</div></div>
@@ -695,6 +698,32 @@ async function renderHome() {
   updateRequestsBadge();
 
   if (tgUser) {
+    try {
+      const me = await pubGet('/api/me/' + tgUser.id);
+      console.log('[HOME] me =', me);
+      const meBlock = document.getElementById('me-block');
+      if (meBlock) {
+        const subLine = me.has_subscription
+          ? `<div style="display:flex;justify-content:space-between;padding:10px 0;">
+               <span style="color:var(--text-mute);">⭐ Подписка</span>
+               <span style="color:var(--green);font-weight:600;">активна до ${formatDate(me.subscription_end)}</span>
+             </div>`
+          : `<div style="display:flex;justify-content:space-between;padding:10px 0;">
+               <span style="color:var(--text-mute);">⭐ Подписка</span>
+               <span style="color:var(--red);font-weight:600;">не активна</span>
+             </div>`;
+        meBlock.innerHTML = `
+          <div style="background:var(--bg-elev);border-radius:14px;padding:12px 16px;margin-bottom:12px;">
+            ${subLine}
+            <div style="display:flex;justify-content:space-between;padding:10px 0;border-top:0.5px solid var(--border-soft);">
+              <span style="color:var(--text-mute);">💎 Баланс</span>
+              <span style="color:var(--orange);font-weight:600;">${me.diamonds} алмазов</span>
+            </div>
+          </div>
+        `;
+      }
+    } catch(e) { console.log('[HOME] me error:', e); }
+
     try {
       const u = await apiGetUser(tgUser.id, 'all', 100).catch(() => null);
       if (u && !u.error) {
@@ -807,9 +836,7 @@ function renderChart(activity) {
 async function renderSearchHistory() {
   contentWrap.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-mute);">Загрузка истории...</div>';
   let history = [];
-  try {
-    history = await pubGet('/api/search_history');
-  } catch(e) { history = []; }
+  try { history = await pubGet('/api/search_history'); } catch(e) { history = []; }
 
   if (!history || !history.length) {
     contentWrap.innerHTML = `
@@ -839,7 +866,7 @@ async function renderSearchHistory() {
 }
 
 // ============================================================
-// API TOKENS — раздел «Мои API токены»
+// API TOKENS
 // ============================================================
 async function renderApiTokens() {
   const u = getTelegramUser();
@@ -918,11 +945,16 @@ async function renderProfile(userId) {
   try {
     const u = await apiGetUser(userId, 'all', 50);
     if (u.error) throw new Error(u.error);
+
+    // Дополнительно грузим /api/me для баланса и подписки
+    let me = { diamonds: '—', has_subscription: false, days_left: 0 };
+    try { me = await pubGet('/api/me/' + userId); } catch(e) {}
+
     const name = ((u.first_name || '') + ' ' + (u.last_name || '')).trim() || 'Без имени';
     const initial = (name[0] || '?').toUpperCase();
     const username = u.username ? '@' + u.username : null;
-    const tier = u.started_bot ? 'PREMIUM' : 'USER';
-    const tierColor = u.started_bot ? 'var(--orange)' : 'var(--accent)';
+    const tier = (u.started_bot || me.has_subscription) ? 'PREMIUM' : 'USER';
+    const tierColor = (u.started_bot || me.has_subscription) ? 'var(--orange)' : 'var(--accent)';
     const chatsCount = (u.chats || []).length;
     const commentsCount = (u.comments || []).length;
     const wordsCount = (u.words || []).length;
@@ -942,8 +974,30 @@ async function renderProfile(userId) {
     const maxWord = topWords[0] ? topWords[0].count : 1;
     const nameHistory = u.name_history || [];
 
+    // Блок подписки
+    const subBlock = me.has_subscription
+      ? `<div style="background:linear-gradient(135deg, rgba(52,199,89,0.15), rgba(52,199,89,0.05));border:1px solid rgba(52,199,89,0.3);border-radius:14px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px;">
+           <div style="font-size:24px;">⭐</div>
+           <div style="flex:1;">
+             <div style="font-size:13px;color:var(--green);font-weight:600;">Подписка активна</div>
+             <div style="font-size:12px;color:var(--text-mute);margin-top:2px;">до ${formatDate(me.subscription_end)} · осталось ${me.days_left} дн.</div>
+           </div>
+         </div>`
+      : '';
+
+    // Блок баланса
+    const balanceBlock = `
+      <div style="background:var(--bg-elev);border-radius:14px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px;">
+        <div style="font-size:24px;">💎</div>
+        <div style="flex:1;">
+          <div style="font-size:13px;color:var(--text-mute);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Баланс</div>
+          <div style="font-size:18px;color:var(--orange);font-weight:700;margin-top:2px;">${me.diamonds} алмазов</div>
+        </div>
+      </div>
+    `;
+
     contentWrap.innerHTML = `
-      <div style="position:relative;margin:-16px -16px 0;padding:32px 24px 24px;background:linear-gradient(180deg,${u.started_bot ? 'rgba(255,149,0,0.15)' : 'rgba(0,122,255,0.12)'} 0%,transparent 100%);text-align:center;">
+      <div style="position:relative;margin:-16px -16px 0;padding:32px 24px 24px;background:linear-gradient(180deg,${tier === 'PREMIUM' ? 'rgba(255,149,0,0.15)' : 'rgba(0,122,255,0.12)'} 0%,transparent 100%);text-align:center;">
         <button class="icon-btn" onclick="renderScreen('home')" style="position:absolute;left:8px;top:8px;color:var(--text);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></button>
         <button class="icon-btn" onclick="copyToClipboard('${u.user_id}')" style="position:absolute;right:8px;top:8px;color:var(--text);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
         <div style="position:relative;width:96px;height:96px;margin:0 auto 16px;">
@@ -951,12 +1005,15 @@ async function renderProfile(userId) {
             <span id="profile-avatar-initials" style="position:relative;z-index:1;">${esc(initial)}</span>
             <img id="profile-avatar-img" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:2;opacity:0;transition:opacity .2s;">
           </div>
-          ${u.started_bot ? '<div style="position:absolute;bottom:2px;right:2px;width:26px;height:26px;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;border:3px solid var(--bg);z-index:3;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></div>' : ''}
+          ${me.has_subscription ? '<div style="position:absolute;bottom:2px;right:2px;width:26px;height:26px;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;border:3px solid var(--bg);z-index:3;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></div>' : ''}
         </div>
         <div style="font-size:24px;font-weight:700;color:var(--text);letter-spacing:-0.5px;">${esc(name)}</div>
         ${username ? '<div style="font-size:15px;color:var(--accent);margin-top:4px;">' + esc(username) + '</div>' : ''}
         <div style="display:inline-block;margin-top:10px;padding:4px 14px;background:${tierColor}20;color:${tierColor};border-radius:20px;font-size:11px;font-weight:700;letter-spacing:1px;">⚡ ${tier}</div>
       </div>
+
+      ${subBlock}
+      ${balanceBlock}
 
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:20px 0;">
         <div style="background:var(--bg-elev);border-radius:14px;padding:16px 8px;text-align:center;"><div style="font-size:22px;font-weight:700;color:var(--text);">${formatNumber(commentsCount)}</div><div style="font-size:10px;color:var(--text-mute);text-transform:uppercase;letter-spacing:0.5px;margin-top:2px;font-weight:600;">Сообщений</div></div>
@@ -998,14 +1055,6 @@ async function renderProfile(userId) {
         `).join('')}
       </div>` : ''}
 
-      ${last14Days.some(d => d.count > 0) ? `
-      <div class="section-title">📈 Активность (14 дней)</div>
-      <div style="background:var(--bg-elev);border-radius:14px;padding:16px;margin-bottom:16px;">
-        <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:4px;height:80px;">
-          ${last14Days.map(d => { const h = Math.max(4, (d.count / maxDaily) * 70); return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;"><div style="width:100%;height:' + h + 'px;background:linear-gradient(180deg,var(--accent),var(--accent-dim));border-radius:4px;min-height:4px;"></div><div style="font-size:8px;color:var(--text-mute);">' + d.date.slice(8) + '</div></div>'; }).join('')}
-        </div>
-      </div>` : ''}
-
       ${topChats.length ? `
       <div class="section-title">💬 Активность в чатах</div>
       <div style="background:var(--bg-elev);border-radius:14px;padding:16px;margin-bottom:16px;">
@@ -1016,20 +1065,6 @@ async function renderProfile(userId) {
           </div>
         `).join('')}
       </div>` : ''}
-
-      ${topWords.length ? `
-      <div class="section-title">🔤 Частые слова</div>
-      <div style="background:var(--bg-elev);border-radius:14px;padding:16px;margin-bottom:16px;">
-        <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;">
-          ${topWords.map(w => { const size = 12 + (w.count / maxWord) * 14; const opacity = 0.5 + (w.count / maxWord) * 0.5; return '<span style="font-size:' + size + 'px;color:var(--accent);font-weight:600;opacity:' + opacity + ';">' + esc(w.word) + '</span>'; }).join('')}
-        </div>
-      </div>` : ''}
-
-      ${u.chats && u.chats.length ? `
-      <div class="section-title">👥 Чаты (${u.chats.length})</div>
-      <ul class="list">
-        ${u.chats.slice(0, 10).map(c => '<li class="list-item"><div class="list-icon ' + (c.type === 'channel' ? 'green' : '') + '">' + (c.type === 'channel' ? '📢' : '💬') + '</div><div class="list-content"><div class="list-title">' + esc((c.title || '').slice(0, 28)) + '</div><div class="list-sub">' + esc((c.last_date || '').slice(0, 10)) + '</div></div></li>').join('')}
-      </ul>` : ''}
 
       ${u.comments && u.comments.length ? `
       <div class="section-title">📝 Последние сообщения</div>
@@ -1168,6 +1203,8 @@ async function renderSubscription() {
     plans = resp.plans || [];
   } catch(e) { console.log('sub load error', e); }
 
+  console.log('[SUB] status =', status);
+
   const activeBlock = status.has_subscription ? `
     <div class="result-card" style="background:linear-gradient(135deg, rgba(52,199,89,0.15), rgba(52,199,89,0.05));border:1px solid rgba(52,199,89,0.3);">
       <div class="result-row" style="border:none;">
@@ -1175,7 +1212,7 @@ async function renderSubscription() {
         <div class="result-content">
           <div class="result-label">Подписка активна</div>
           <div class="result-value" style="color:var(--green);">Осталось ${status.days_left} дн.</div>
-          <div style="font-size:12px;color:var(--text-mute);margin-top:2px;">до ${(status.end_date||'').slice(0,10)}</div>
+          <div style="font-size:12px;color:var(--text-mute);margin-top:2px;">до ${formatDate(status.end_date)}</div>
         </div>
       </div>
     </div>
@@ -1456,22 +1493,14 @@ function openAdminGiftSubscription() {
   setTimeout(() => document.getElementById('adm-sub-go')?.addEventListener('click', async () => {
     const id = document.getElementById('adm-sub-id').value.trim();
     const days = document.getElementById('adm-sub-days').value.trim();
-    console.log('[GIFT_SUB] id=', id, 'days=', days);
     if (!id || !/^\d+$/.test(id)) { toast('Введите ID', 'error'); return; }
     if (!days || !/^\d+$/.test(days)) { toast('Введите дни', 'error'); return; }
     const u = getTelegramUser();
-    const payload = { admin_id: u.id, user_id: parseInt(id), days: parseInt(days) };
-    console.log('[GIFT_SUB] sending payload=', payload);
-    console.log('[GIFT_SUB] url=', CONFIG.API_BASE + '/api/admin/gift_subscription');
     try {
-      const data = await pubPost('/api/admin/gift_subscription', payload);
-      console.log('[GIFT_SUB] response=', data);
+      const data = await pubPost('/api/admin/gift_subscription', { admin_id: u.id, user_id: parseInt(id), days: parseInt(days) });
       if (data.success) { closeModal(); toast('✅ Подписка подарена до ' + (data.end_date||'').slice(0,10), 'ok'); }
       else toast('❌ ' + (data.error || 'Ошибка'), 'error');
-    } catch(e) {
-      console.log('[GIFT_SUB] error=', e);
-      toast('Ошибка сети: ' + e.message, 'error');
-    }
+    } catch(e) { toast('Ошибка сети', 'error'); }
   }), 50);
 }
 

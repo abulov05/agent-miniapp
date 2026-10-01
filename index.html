@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>AGENT ANALYTICS</title>
 
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -45,7 +47,6 @@ body {
     padding-bottom: calc(90px + var(--safe-bottom));
 }
 
-/* ===== HEADER ===== */
 .ios-header {
     position: sticky; top: 0; z-index: 100;
     background: rgba(0,0,0,0.75);
@@ -61,23 +62,15 @@ body {
 .ios-header-sub { font-size: 12px; color: var(--ios-text-2); margin-top: 2px; }
 
 .back-btn {
-    position: absolute;
-    left: 16px;
-    top: calc(var(--safe-top) + 16px);
-    background: none;
-    border: none;
-    color: var(--ios-blue);
-    font-size: 17px;
-    font-weight: 400;
-    cursor: pointer;
-    font-family: inherit;
-    padding: 4px 8px;
-    display: none;
+    position: absolute; left: 16px; top: calc(var(--safe-top) + 16px);
+    background: none; border: none;
+    color: var(--ios-blue); font-size: 17px; font-weight: 400;
+    cursor: pointer; font-family: inherit;
+    padding: 4px 8px; display: none;
 }
 
 .back-btn.visible { display: block; }
 
-/* ===== CONTENT ===== */
 .ios-content { padding: 16px; animation: fadeIn 0.25s ease; }
 
 @keyframes fadeIn {
@@ -95,6 +88,69 @@ body {
     padding: 0 4px 8px;
 }
 
+/* ===== IOS APP ICONS ===== */
+.app-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px 12px;
+    padding: 8px 0;
+}
+
+.app-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: transform 0.15s;
+    text-decoration: none;
+    color: inherit;
+}
+
+.app-item:active { transform: scale(0.92); }
+
+.app-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    color: white;
+    position: relative;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    overflow: hidden;
+}
+
+/* Иконка со "стеклянным" эффектом, как в iOS */
+.app-icon::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 50%);
+    pointer-events: none;
+}
+
+.app-icon.blue { background: linear-gradient(180deg, #4da2ff 0%, #0a84ff 100%); }
+.app-icon.green { background: linear-gradient(180deg, #4ce07f 0%, #30d158 100%); }
+.app-icon.red { background: linear-gradient(180deg, #ff6b5e 0%, #ff453a 100%); }
+.app-icon.orange { background: linear-gradient(180deg, #ffb340 0%, #ff9f0a 100%); }
+.app-icon.purple { background: linear-gradient(180deg, #d27cf7 0%, #bf5af2 100%); }
+.app-icon.pink { background: linear-gradient(180deg, #ff5e80 0%, #ff375f 100%); }
+.app-icon.teal { background: linear-gradient(180deg, #7ee0ff 0%, #64d2ff 100%); }
+.app-icon.yellow { background: linear-gradient(180deg, #ffe14d 0%, #ffd60a 100%); }
+.app-icon.gray { background: linear-gradient(180deg, #8e8e93 0%, #48484a 100%); }
+
+.app-label {
+    font-size: 11px;
+    font-weight: 400;
+    text-align: center;
+    line-height: 1.2;
+    color: var(--ios-text);
+    max-width: 72px;
+}
+
 /* ===== PROFILE CARD ===== */
 .profile-card {
     display: flex; align-items: center; gap: 14px;
@@ -109,8 +165,7 @@ body {
     border-radius: 50%;
     background: linear-gradient(135deg, #0a84ff, #bf5af2);
     display: flex; align-items: center; justify-content: center;
-    font-size: 26px; font-weight: 700;
-    flex-shrink: 0;
+    font-size: 26px; font-weight: 700; flex-shrink: 0;
 }
 
 .profile-info { flex: 1; min-width: 0; }
@@ -118,17 +173,13 @@ body {
 .profile-username { font-size: 14px; color: var(--ios-blue); }
 
 .profile-badge {
-    display: inline-block;
-    font-size: 10px; font-weight: 600;
-    padding: 3px 8px;
-    border-radius: 6px;
+    display: inline-block; font-size: 10px; font-weight: 600;
+    padding: 3px 8px; border-radius: 6px;
     background: rgba(255,159,10,0.15);
     color: var(--ios-orange);
-    margin-top: 6px;
-    letter-spacing: 0.3px;
+    margin-top: 6px; letter-spacing: 0.3px;
 }
 
-/* ===== STATS GRID ===== */
 .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
 
 .stat-card {
@@ -138,11 +189,9 @@ body {
 }
 
 .stat-icon {
-    width: 32px; height: 32px;
-    border-radius: 8px;
+    width: 32px; height: 32px; border-radius: 8px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 16px;
-    margin-bottom: 10px;
+    font-size: 16px; margin-bottom: 10px;
 }
 
 .stat-icon.blue { background: rgba(10,132,255,0.15); }
@@ -157,8 +206,7 @@ body {
 .stat-label {
     font-size: 11px; color: var(--ios-text-2);
     text-transform: uppercase;
-    letter-spacing: 0.3px;
-    font-weight: 500;
+    letter-spacing: 0.3px; font-weight: 500;
 }
 
 /* ===== MENU LIST ===== */
@@ -172,19 +220,16 @@ body {
     display: flex; align-items: center; gap: 12px;
     padding: 14px 16px;
     border-bottom: 0.5px solid var(--ios-sep);
-    cursor: pointer;
-    transition: background 0.15s;
+    cursor: pointer; transition: background 0.15s;
 }
 
 .menu-item:last-child { border-bottom: none; }
 .menu-item:active { background: var(--ios-bg-3); }
 
 .menu-icon {
-    width: 30px; height: 30px;
-    border-radius: 7px;
+    width: 30px; height: 30px; border-radius: 7px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 15px;
-    flex-shrink: 0;
+    font-size: 15px; flex-shrink: 0;
 }
 
 .menu-text { flex: 1; font-size: 16px; }
@@ -194,16 +239,14 @@ body {
 .detail-card {
     background: var(--ios-bg-2);
     border-radius: var(--r-md);
-    overflow: hidden;
-    margin-bottom: 16px;
+    overflow: hidden; margin-bottom: 16px;
 }
 
 .detail-row {
     display: flex; justify-content: space-between; align-items: center;
     padding: 13px 16px;
     border-bottom: 0.5px solid var(--ios-sep);
-    font-size: 15px;
-    gap: 12px;
+    font-size: 15px; gap: 12px;
 }
 
 .detail-row:last-child { border-bottom: none; }
@@ -213,10 +256,8 @@ body {
 
 .detail-value {
     color: var(--ios-text);
-    font-weight: 500;
-    text-align: right;
-    max-width: 60%;
-    word-break: break-word;
+    font-weight: 500; text-align: right;
+    max-width: 60%; word-break: break-word;
 }
 
 .detail-value.blue { color: var(--ios-blue); }
@@ -253,11 +294,8 @@ body {
 }
 
 .search-bar input {
-    flex: 1;
-    background: none; border: none; outline: none;
-    color: var(--ios-text);
-    font-size: 16px;
-    font-family: inherit;
+    flex: 1; background: none; border: none; outline: none;
+    color: var(--ios-text); font-size: 16px; font-family: inherit;
 }
 
 .search-bar input::placeholder { color: var(--ios-text-2); }
@@ -270,19 +308,16 @@ body {
     border-radius: var(--r-md);
     padding: 12px 14px;
     margin-bottom: 8px;
-    cursor: pointer;
-    transition: background 0.15s;
+    cursor: pointer; transition: background 0.15s;
 }
 
 .user-card:active { background: var(--ios-bg-3); }
 
 .user-avatar-sm {
-    width: 44px; height: 44px;
-    border-radius: 50%;
+    width: 44px; height: 44px; border-radius: 50%;
     background: linear-gradient(135deg, #0a84ff, #bf5af2);
     display: flex; align-items: center; justify-content: center;
-    font-size: 17px; font-weight: 600;
-    flex-shrink: 0;
+    font-size: 17px; font-weight: 600; flex-shrink: 0;
 }
 
 .user-info-sm { flex: 1; min-width: 0; }
@@ -300,13 +335,10 @@ body {
 /* ===== BUTTONS ===== */
 .btn-primary {
     display: flex; align-items: center; justify-content: center; gap: 8px;
-    padding: 14px;
-    border-radius: var(--r-md);
-    background: var(--ios-blue);
-    color: white;
+    padding: 14px; border-radius: var(--r-md);
+    background: var(--ios-blue); color: white;
     font-size: 16px; font-weight: 600;
-    border: none; cursor: pointer;
-    font-family: inherit;
+    border: none; cursor: pointer; font-family: inherit;
     transition: opacity 0.15s;
 }
 
@@ -314,28 +346,14 @@ body {
 
 .btn-secondary {
     display: flex; align-items: center; justify-content: center; gap: 8px;
-    padding: 14px;
-    border-radius: var(--r-md);
-    background: var(--ios-bg-3);
-    color: var(--ios-text);
+    padding: 14px; border-radius: var(--r-md);
+    background: var(--ios-bg-3); color: var(--ios-text);
     font-size: 16px; font-weight: 500;
-    border: none; cursor: pointer;
-    font-family: inherit;
+    border: none; cursor: pointer; font-family: inherit;
     transition: opacity 0.15s;
 }
 
 .btn-secondary:active { opacity: 0.8; }
-
-.btn-danger {
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-    padding: 14px;
-    border-radius: var(--r-md);
-    background: rgba(255,69,58,0.15);
-    color: var(--ios-red);
-    font-size: 16px; font-weight: 600;
-    border: none; cursor: pointer;
-    font-family: inherit;
-}
 
 .full-width { width: 100%; margin-top: 12px; }
 
@@ -343,8 +361,7 @@ body {
 .loading {
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
-    padding: 60px 20px;
-    color: var(--ios-text-2);
+    padding: 60px 20px; color: var(--ios-text-2);
 }
 
 .spinner {
@@ -358,7 +375,7 @@ body {
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ===== EMPTY STATE ===== */
+/* ===== EMPTY ===== */
 .empty-state { text-align: center; padding: 40px 20px; color: var(--ios-text-2); }
 .empty-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.5; }
 .empty-text { font-size: 15px; }
@@ -377,12 +394,10 @@ body {
 
 .tab-item {
     display: flex; flex-direction: column; align-items: center; gap: 3px;
-    padding: 4px 12px;
-    cursor: pointer;
+    padding: 4px 12px; cursor: pointer;
     color: var(--ios-text-2);
     transition: color 0.2s;
-    background: none; border: none;
-    font-family: inherit;
+    background: none; border: none; font-family: inherit;
 }
 
 .tab-item.active { color: var(--ios-blue); }
@@ -397,16 +412,12 @@ body {
     transform: translateX(-50%) translateY(20px);
     background: rgba(44,44,46,0.95);
     backdrop-filter: blur(10px);
-    color: white;
-    padding: 12px 20px;
+    color: white; padding: 12px 20px;
     border-radius: 20px;
     font-size: 14px; font-weight: 500;
-    opacity: 0;
-    transition: all 0.3s ease;
-    z-index: 1000;
-    pointer-events: none;
-    max-width: 90%;
-    text-align: center;
+    opacity: 0; transition: all 0.3s ease;
+    z-index: 1000; pointer-events: none;
+    max-width: 90%; text-align: center;
 }
 
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -417,8 +428,7 @@ body {
     background: rgba(0,0,0,0.7);
     backdrop-filter: blur(10px);
     display: flex; align-items: center; justify-content: center;
-    z-index: 500;
-    padding: 20px;
+    z-index: 500; padding: 20px;
     animation: fadeIn 0.2s ease;
 }
 
@@ -428,8 +438,7 @@ body {
     background: var(--ios-bg-2);
     border-radius: var(--r-lg);
     width: 100%; max-width: 400px;
-    max-height: 85vh;
-    overflow-y: auto;
+    max-height: 85vh; overflow-y: auto;
     animation: modalIn 0.25s ease;
 }
 
@@ -443,18 +452,15 @@ body {
     padding: 16px 20px;
     border-bottom: 0.5px solid var(--ios-sep);
     position: sticky; top: 0;
-    background: var(--ios-bg-2);
-    z-index: 10;
+    background: var(--ios-bg-2); z-index: 10;
 }
 
 .modal-title { font-size: 17px; font-weight: 600; }
 
 .modal-close {
     background: none; border: none;
-    color: var(--ios-text-2);
-    font-size: 18px; cursor: pointer;
-    padding: 4px;
-    font-family: inherit;
+    color: var(--ios-text-2); font-size: 18px;
+    cursor: pointer; padding: 4px; font-family: inherit;
 }
 
 .modal-body { padding: 20px; }
@@ -486,13 +492,10 @@ body {
 
 .modal-footer button { flex: 1; }
 
-/* ===== INPUT GROUP ===== */
 .input-group { margin-bottom: 14px; }
 .input-label {
     font-size: 13px; color: var(--ios-text-2);
-    margin-bottom: 6px;
-    display: block;
-    font-weight: 500;
+    margin-bottom: 6px; display: block; font-weight: 500;
 }
 .input-field {
     width: 100%;
@@ -501,48 +504,27 @@ body {
     border-radius: 10px;
     padding: 12px 14px;
     color: var(--ios-text);
-    font-size: 15px;
-    outline: none;
-    font-family: inherit;
+    font-size: 15px; outline: none; font-family: inherit;
     transition: border-color 0.2s;
 }
 .input-field:focus { border-color: var(--ios-blue); }
 
-/* ===== BADGE ===== */
-.badge {
-    display: inline-block;
-    font-size: 11px;
-    padding: 3px 8px;
-    border-radius: 6px;
-    font-weight: 600;
-    letter-spacing: 0.2px;
-}
-.badge.blue { background: rgba(10,132,255,0.15); color: var(--ios-blue); }
-.badge.green { background: rgba(48,209,88,0.15); color: var(--ios-green); }
-.badge.red { background: rgba(255,69,58,0.15); color: var(--ios-red); }
-.badge.orange { background: rgba(255,159,10,0.15); color: var(--ios-orange); }
-.badge.purple { background: rgba(191,90,242,0.15); color: var(--ios-purple); }
-
 @media (max-width: 360px) {
     .profile-name { font-size: 18px; }
     .stat-value { font-size: 20px; }
+    .app-icon { width: 56px; height: 56px; font-size: 26px; border-radius: 14px; }
+    .app-label { font-size: 10px; }
 }
 </style>
 </head>
 <body>
 
-<!-- ============================================================
-     HEADER
-     ============================================================ -->
 <header class="ios-header">
     <button class="back-btn" id="backBtn" onclick="goBack()">‹ Назад</button>
     <div class="ios-header-title" id="pageTitle">AGENT ANALYTICS</div>
     <div class="ios-header-sub" id="pageSubtitle">Мини-приложение</div>
 </header>
 
-<!-- ============================================================
-     CONTENT
-     ============================================================ -->
 <main class="ios-content" id="content">
     <div class="loading">
         <div class="spinner"></div>
@@ -550,9 +532,6 @@ body {
     </div>
 </main>
 
-<!-- ============================================================
-     TAB BAR
-     ============================================================ -->
 <nav class="ios-tabbar" id="tabbar">
     <button class="tab-item active" data-tab="home" onclick="switchTab('home')">
         <span class="tab-icon">🏠</span>
@@ -572,26 +551,16 @@ body {
     </button>
 </nav>
 
-<!-- ============================================================
-     TOAST
-     ============================================================ -->
 <div class="toast" id="toast"></div>
-
-<!-- ============================================================
-     MODALS CONTAINER
-     ============================================================ -->
 <div id="modalsContainer"></div>
 
-<!-- ============================================================
-     JAVASCRIPT
-     ============================================================ -->
 <script>
 /* ============================================================
-   КОНФИГ
+   КОНФИГ — УЖЕ ЗАПОЛНЕН
    ============================================================ */
 const CONFIG = {
-  API_BASE: "https://precise-subject-makeshift.ngrok-free.dev",
-API_KEY: "SC3xksKXvYEKx_2oRjgLVDl6OOsNUpVI",
+    API_BASE: "https://precise-subject-makeshift.ngrok-free.dev",
+    API_KEY: "SC3xksKXvYEKx_2oRjgLVDl6OOsNUpVI",
     APP_NAME: "AGENT ANALYTICS",
     BOT_USERNAME: "dev1_robot",
     ADMIN_ID: 8682108827
@@ -683,7 +652,6 @@ class AgentAPI {
     }
 }
 
-// Подхват токена из URL (?key=xxx)
 const urlParams = new URLSearchParams(window.location.search);
 const urlKey = urlParams.get('key');
 if (urlKey) {
@@ -694,7 +662,7 @@ if (urlKey) {
 const api = new AgentAPI(CONFIG.API_BASE, CONFIG.API_KEY);
 
 /* ============================================================
-   ПОЛЬЗОВАТЕЛЬ (из Telegram)
+   ПОЛЬЗОВАТЕЛЬ
    ============================================================ */
 function getCurrentUser() {
     if (tg?.initDataUnsafe?.user) {
@@ -764,7 +732,7 @@ function errorState(message) {
 }
 
 /* ============================================================
-   НАВИГАЦИЯ (стек)
+   НАВИГАЦИЯ
    ============================================================ */
 let navStack = [];
 let currentTab = 'home';
@@ -778,6 +746,7 @@ function goBack() {
     if (navStack.length > 0) {
         const prev = navStack.pop();
         prev();
+        if (navStack.length === 0) setBackVisible(false);
     } else {
         switchTab('home');
     }
@@ -875,25 +844,6 @@ function clearApiKey() {
 }
 
 /* ============================================================
-   УНИВЕРСАЛЬНАЯ МОДАЛКА
-   ============================================================ */
-function showModal({ title, body, footer = '', id = 'genericModal' }) {
-    const html = `
-        <div class="modal-overlay" id="${id}" onclick="if(event.target.id==='${id}')closeModal('${id}')">
-            <div class="modal">
-                <div class="modal-header">
-                    <div class="modal-title">${title}</div>
-                    <button class="modal-close" onclick="closeModal('${id}')">✕</button>
-                </div>
-                <div class="modal-body">${body}</div>
-                ${footer ? `<div class="modal-footer">${footer}</div>` : ''}
-            </div>
-        </div>
-    `;
-    document.getElementById('modalsContainer').insertAdjacentHTML('beforeend', html);
-}
-
-/* ============================================================
    TABS
    ============================================================ */
 let currentChart = null;
@@ -919,7 +869,7 @@ function switchTab(tab) {
 }
 
 /* ============================================================
-   🏠 HOME — ГЛАВНОЕ МЕНЮ (все кнопки бота)
+   🏠 HOME — с iOS-иконками
    ============================================================ */
 async function loadHome() {
     setTitle(CONFIG.APP_NAME, 'Мини-приложение');
@@ -971,104 +921,73 @@ async function loadHome() {
                     </div>
                 </section>
 
-                <!-- ОСНОВНЫЕ ФУНКЦИИ -->
                 <section class="section">
-                    <div class="section-header">📋 Меню</div>
-                    <div class="menu-list">
-                        <div class="menu-item" onclick="openMyProfile()">
-                            <div class="menu-icon" style="background:rgba(10,132,255,0.15);">👤</div>
-                            <div class="menu-text">Мой профиль</div>
-                            <div class="menu-chevron">›</div>
-                        </div>
-                        <div class="menu-item" onclick="openTopup()">
-                            <div class="menu-icon" style="background:rgba(48,209,88,0.15);">💰</div>
-                            <div class="menu-text">Пополнить баланс</div>
-                            <div class="menu-chevron">›</div>
-                        </div>
-                        <div class="menu-item" onclick="openBonus()">
-                            <div class="menu-icon" style="background:rgba(255,214,10,0.15);">🎁</div>
-                            <div class="menu-text">Ежедневный бонус</div>
-                            <div class="menu-chevron">›</div>
-                        </div>
-                        <div class="menu-item" onclick="openReferral()">
-                            <div class="menu-icon" style="background:rgba(191,90,242,0.15);">🤝</div>
-                            <div class="menu-text">Реферальная программа</div>
-                            <div class="menu-chevron">›</div>
-                        </div>
-                        <div class="menu-item" onclick="openAiAssistant()">
-                            <div class="menu-icon" style="background:rgba(100,210,255,0.15);">🕵️</div>
-                            <div class="menu-text">Маям Помощник (AI)</div>
-                            <div class="menu-chevron">›</div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- ИНСТРУМЕНТЫ -->
-                <section class="section">
-                    <div class="section-header">🔧 Инструменты</div>
-                    <div class="menu-list">
-                        <div class="menu-item" onclick="openPhoneCheck()">
-                            <div class="menu-icon" style="background:rgba(10,132,255,0.15);">📱</div>
-                            <div class="menu-text">Проверить номер</div>
-                            <div class="menu-chevron">›</div>
-                        </div>
-                        <div class="menu-item" onclick="openStickerCheck()">
-                            <div class="menu-icon" style="background:rgba(255,159,10,0.15);">🔍</div>
-                            <div class="menu-text">Проверить стикер</div>
-                            <div class="menu-chevron">›</div>
-                        </div>
-                        <div class="menu-item" onclick="openSubscription()">
-                            <div class="menu-icon" style="background:rgba(255,159,10,0.15);">⭐</div>
-                            <div class="menu-text">Подписка</div>
-                            <div class="menu-chevron">›</div>
-                        </div>
-                        <div class="menu-item" onclick="openApiTokens()">
-                            <div class="menu-icon" style="background:rgba(48,209,88,0.15);">🔌</div>
-                            <div class="menu-text">API Токены</div>
-                            <div class="menu-chevron">›</div>
-                        </div>
-                        <div class="menu-item" onclick="openNotifications()">
-                            <div class="menu-icon" style="background:rgba(255,55,95,0.15);">🔔</div>
-                            <div class="menu-text">Уведомления</div>
-                            <div class="menu-chevron">›</div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- НАСТРОЙКИ -->
-                <section class="section">
-                    <div class="section-header">⚙️ Настройки</div>
-                    <div class="menu-list">
-                        <div class="menu-item" onclick="openTracking()">
-                            <div class="menu-icon" style="background:rgba(10,132,255,0.15);">👀</div>
-                            <div class="menu-text">Отслеживание</div>
-                            <div class="menu-chevron">›</div>
-                        </div>
-                        <div class="menu-item" onclick="openDeleteData()">
-                            <div class="menu-icon" style="background:rgba(255,69,58,0.15);">🗑️</div>
-                            <div class="menu-text" style="color:#ff453a;">Удалить данные</div>
-                            <div class="menu-chevron">›</div>
-                        </div>
-                        <div class="menu-item" onclick="openBotStats()">
-                            <div class="menu-icon" style="background:rgba(48,209,88,0.15);">📊</div>
-                            <div class="menu-text">Статистика бота</div>
-                            <div class="menu-chevron">›</div>
-                        </div>
-                        <div class="menu-item" onclick="openDashboard()">
-                            <div class="menu-icon" style="background:rgba(255,159,10,0.15);">🖥️</div>
-                            <div class="menu-text">Веб-панель</div>
-                            <div class="menu-chevron">›</div>
-                        </div>
-                        <div class="menu-item" onclick="openContactAdmin()">
-                            <div class="menu-icon" style="background:rgba(191,90,242,0.15);">💬</div>
-                            <div class="menu-text">Связь с админом</div>
-                            <div class="menu-chevron">›</div>
-                        </div>
-                        <div class="menu-item" onclick="openAbout()">
-                            <div class="menu-icon" style="background:rgba(100,210,255,0.15);">ℹ️</div>
-                            <div class="menu-text">О боте</div>
-                            <div class="menu-chevron">›</div>
-                        </div>
+                    <div class="section-header">Приложения</div>
+                    <div class="app-grid">
+                        <a class="app-item" onclick="openMyProfile()">
+                            <div class="app-icon blue">👤</div>
+                            <div class="app-label">Профиль</div>
+                        </a>
+                        <a class="app-item" onclick="openTopup()">
+                            <div class="app-icon green">💰</div>
+                            <div class="app-label">Пополнить</div>
+                        </a>
+                        <a class="app-item" onclick="openBonus()">
+                            <div class="app-icon yellow">🎁</div>
+                            <div class="app-label">Бонус</div>
+                        </a>
+                        <a class="app-item" onclick="openReferral()">
+                            <div class="app-icon purple">🤝</div>
+                            <div class="app-label">Реферал</div>
+                        </a>
+                        <a class="app-item" onclick="openAiAssistant()">
+                            <div class="app-icon teal">🕵️</div>
+                            <div class="app-label">Маям AI</div>
+                        </a>
+                        <a class="app-item" onclick="openPhoneCheck()">
+                            <div class="app-icon blue">📱</div>
+                            <div class="app-label">Номер</div>
+                        </a>
+                        <a class="app-item" onclick="openStickerCheck()">
+                            <div class="app-icon orange">🔍</div>
+                            <div class="app-label">Стикер</div>
+                        </a>
+                        <a class="app-item" onclick="openSubscription()">
+                            <div class="app-icon yellow">⭐</div>
+                            <div class="app-label">Подписка</div>
+                        </a>
+                        <a class="app-item" onclick="openApiTokens()">
+                            <div class="app-icon green">🔌</div>
+                            <div class="app-label">API</div>
+                        </a>
+                        <a class="app-item" onclick="openNotifications()">
+                            <div class="app-icon pink">🔔</div>
+                            <div class="app-label">Уведомл.</div>
+                        </a>
+                        <a class="app-item" onclick="openTracking()">
+                            <div class="app-icon blue">👀</div>
+                            <div class="app-label">Трекинг</div>
+                        </a>
+                        <a class="app-item" onclick="openDeleteData()">
+                            <div class="app-icon red">🗑️</div>
+                            <div class="app-label">Удалить</div>
+                        </a>
+                        <a class="app-item" onclick="openBotStats()">
+                            <div class="app-icon green">📊</div>
+                            <div class="app-label">Стата</div>
+                        </a>
+                        <a class="app-item" onclick="openDashboard()">
+                            <div class="app-icon orange">🖥️</div>
+                            <div class="app-label">Панель</div>
+                        </a>
+                        <a class="app-item" onclick="openContactAdmin()">
+                            <div class="app-icon purple">💬</div>
+                            <div class="app-label">Админ</div>
+                        </a>
+                        <a class="app-item" onclick="openAbout()">
+                            <div class="app-icon teal">ℹ️</div>
+                            <div class="app-label">О боте</div>
+                        </a>
                     </div>
                 </section>
             </div>
@@ -1167,7 +1086,7 @@ async function openMyProfile() {
 }
 
 /* ============================================================
-   💰 ПОПОЛНИТЬ БАЛАНС
+   💰 ПОПОЛНИТЬ
    ============================================================ */
 function openTopup() {
     haptic();
@@ -1175,17 +1094,9 @@ function openTopup() {
     setTitle('Пополнить баланс', 'Выберите способ');
 
     const methods = [
-        { key: 'cryptocloud', name: 'CryptoCloud', desc: 'Криптовалюта', icon: '🏦', color: 'blue' },
-        { key: 'cryptobot', name: 'CryptoBot', desc: 'USDT, BTC, TON', icon: '🤖', color: 'purple' },
-        { key: 'oxapay', name: 'OxaPay', desc: 'Карты и крипта', icon: '💎', color: 'green' }
-    ];
-
-    const amounts = [
-        { diamonds: 10, usd: '0.07' },
-        { diamonds: 50, usd: '0.33' },
-        { diamonds: 100, usd: '0.67' },
-        { diamonds: 500, usd: '3.33' },
-        { diamonds: 1000, usd: '6.67' }
+        { name: 'CryptoCloud', desc: 'Криптовалюта', icon: '🏦' },
+        { name: 'CryptoBot', desc: 'USDT, BTC, TON', icon: '🤖' },
+        { name: 'OxaPay', desc: 'Карты и крипта', icon: '💎' }
     ];
 
     setContent(`
@@ -1193,7 +1104,7 @@ function openTopup() {
             <section class="section">
                 <div class="menu-list">
                     ${methods.map(m => `
-                        <div class="menu-item" onclick="openTopupMethod('${m.key}')">
+                        <div class="menu-item" onclick="openBot()">
                             <div class="menu-icon" style="background:rgba(10,132,255,0.15);">${m.icon}</div>
                             <div class="menu-text">
                                 <div>${m.name}</div>
@@ -1206,7 +1117,6 @@ function openTopup() {
             </section>
 
             <section class="section">
-                <div class="section-header">Курс</div>
                 <div class="detail-card">
                     <div class="detail-row">
                         <span class="detail-label">💎 150 алмазов</span>
@@ -1215,24 +1125,11 @@ function openTopup() {
                 </div>
             </section>
 
-            <div class="empty-state" style="padding:20px;">
-                <div class="empty-text" style="font-size:13px;">
-                    ⚠️ Оплата происходит в Telegram-боте.<br>
-                    Нажмите на кнопку ниже, чтобы открыть бота.
-                </div>
-            </div>
-
             <button class="btn-primary full-width" onclick="openBot()">
                 🤖 Открыть бота для оплаты
             </button>
         </div>
     `);
-}
-
-function openTopupMethod(method) {
-    haptic();
-    showToast('Откройте бота для оплаты');
-    openBot();
 }
 
 /* ============================================================
@@ -1264,7 +1161,7 @@ function openBonus() {
             </div>
 
             <button class="btn-primary full-width" onclick="openBot()">
-                🎁 Получить бонус в боте
+                🎁 Получить в боте
             </button>
         </div>
     `);
@@ -1313,7 +1210,7 @@ function openReferral() {
                 </div>
             </section>
 
-            <button class="btn-primary full-width" onclick="copyRefLink('${escapeHtml(refLink)}')">
+            <button class="btn-primary full-width" onclick="copyText('${escapeHtml(refLink)}')">
                 📋 Скопировать ссылку
             </button>
             <button class="btn-secondary full-width" onclick="shareRefLink('${escapeHtml(refLink)}')">
@@ -1323,10 +1220,10 @@ function openReferral() {
     `);
 }
 
-function copyRefLink(link) {
+function copyText(text) {
     haptic('success');
-    navigator.clipboard.writeText(link).then(() => {
-        showToast('✅ Ссылка скопирована');
+    navigator.clipboard.writeText(text).then(() => {
+        showToast('✅ Скопировано');
     }).catch(() => {
         showToast('Не удалось скопировать');
     });
@@ -1343,7 +1240,7 @@ function shareRefLink(link) {
 }
 
 /* ============================================================
-   🕵️ AI ПОМОЩНИК
+   🕵️ AI
    ============================================================ */
 function openAiAssistant() {
     haptic();
@@ -1367,7 +1264,7 @@ function openAiAssistant() {
                 <div class="empty-icon">💬</div>
                 <div class="empty-text">
                     AI-помощник работает в Telegram-боте.<br>
-                    Откройте бота и напишите «Маям» для активации
+                    Напишите «Маям» для активации
                 </div>
             </div>
 
@@ -1418,14 +1315,12 @@ function doPhoneCheck() {
     const phone = document.getElementById('phoneInput').value.trim();
     if (!phone) { showToast('Введите номер'); return; }
     haptic();
-
-    showToast('Откройте бота для проверки номера');
-    // Полная проверка доступна только в боте
+    showToast('Откройте бота для проверки');
     setTimeout(() => openBot(), 500);
 }
 
 /* ============================================================
-   🔍 ПРОВЕРИТЬ СТИКЕР
+   🔍 СТИКЕР
    ============================================================ */
 function openStickerCheck() {
     haptic();
@@ -1463,9 +1358,9 @@ function openSubscription() {
     setTitle('Подписка', 'Безлимитный доступ');
 
     const plans = [
-        { id: '1_month', name: '1 месяц', price: '5 USD', days: 30 },
-        { id: '6_months', name: '6 месяцев', price: '20 USD', days: 180, save: 'Выгода 33%' },
-        { id: '1_year', name: '1 год', price: '45 USD', days: 365, save: 'Выгода 40%' }
+        { name: '1 месяц', price: '5 USD' },
+        { name: '6 месяцев', price: '20 USD', save: 'Выгода 33%' },
+        { name: '1 год', price: '45 USD', save: 'Выгода 40%' }
     ];
 
     setContent(`
@@ -1510,12 +1405,6 @@ function openSubscription() {
                 </div>
             </section>
 
-            <div class="empty-state" style="padding:10px 20px;">
-                <div class="empty-text" style="font-size:13px;">
-                    ⚠️ Оплата в Telegram-боте
-                </div>
-            </div>
-
             <button class="btn-primary full-width" onclick="openBot()">
                 ⭐ Купить в боте
             </button>
@@ -1524,7 +1413,7 @@ function openSubscription() {
 }
 
 /* ============================================================
-   🔌 API ТОКЕНЫ
+   🔌 API
    ============================================================ */
 function openApiTokens() {
     haptic();
@@ -1532,19 +1421,18 @@ function openApiTokens() {
     setTitle('API Токены', 'Для разработчиков');
 
     const plans = [
-        { id: '100', name: '100 запросов', price: '1 USD' },
-        { id: '500', name: '500 запросов', price: '4 USD' },
-        { id: '1000', name: '1000 запросов', price: '7 USD' },
-        { id: '5000', name: '5000 запросов', price: '30 USD' }
+        { name: '100 запросов', price: '1 USD' },
+        { name: '500 запросов', price: '4 USD' },
+        { name: '1000 запросов', price: '7 USD' },
+        { name: '5000 запросов', price: '30 USD' }
     ];
 
     setContent(`
         <div class="page">
             <section class="section">
-                <div class="section-header">Возможности API</div>
                 <div class="detail-card">
                     <div class="detail-row">
-                        <span class="detail-label">👥 Список пользователей</span>
+                        <span class="detail-label">👥 Список юзеров</span>
                         <span class="detail-value green">✅</span>
                     </div>
                     <div class="detail-row">
@@ -1556,7 +1444,7 @@ function openApiTokens() {
                         <span class="detail-value green">✅</span>
                     </div>
                     <div class="detail-row">
-                        <span class="detail-label">⏰ Срок действия</span>
+                        <span class="detail-label">⏰ Срок</span>
                         <span class="detail-value">30 дней</span>
                     </div>
                 </div>
@@ -1592,13 +1480,9 @@ function openNotifications() {
     haptic();
     pushNav(loadHome);
     setTitle('Уведомления', '');
-
     setContent(`
         <div class="page">
             ${emptyState('🔔', 'Нет новых уведомлений')}
-            <button class="btn-secondary full-width" onclick="openBot()">
-                🔔 Открыть в боте
-            </button>
         </div>
     `);
 }
@@ -1632,11 +1516,11 @@ function openTracking() {
 
             <section class="section">
                 <div class="input-group">
-                    <label class="input-label">ID пользователя для отслеживания</label>
+                    <label class="input-label">ID пользователя</label>
                     <input type="number" id="trackInput" class="input-field" placeholder="123456789">
                 </div>
                 <button class="btn-primary full-width" onclick="doTrack()">
-                    👀 Активировать отслеживание
+                    👀 Активировать
                 </button>
             </section>
         </div>
@@ -1719,7 +1603,7 @@ async function openBotStats() {
                     <div class="stat-card">
                         <div class="stat-icon green">🟢</div>
                         <div class="stat-value">${active}</div>
-                        <div class="stat-label">Запускали бота</div>
+                        <div class="stat-label">Запускали</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-icon purple">📢</div>
@@ -1763,7 +1647,7 @@ function openContactAdmin() {
                 <div class="detail-card">
                     <div class="detail-row">
                         <span class="detail-label">👑 Админ</span>
-                        <span class="detail-value blue">@shrlok_analytics</span>
+                        <span class="detail-value blue">@sherlok032</span>
                     </div>
                 </div>
             </section>
@@ -1771,7 +1655,7 @@ function openContactAdmin() {
             <div class="empty-state" style="padding:20px;">
                 <div class="empty-icon">💬</div>
                 <div class="empty-text">
-                    Напишите сообщение прямо в боте<br>
+                    Напишите сообщение в боте<br>
                     и админ ответит вам
                 </div>
             </div>
@@ -1834,20 +1718,6 @@ function openAbout() {
                     <div class="detail-row"><span class="detail-label">⛔ Анти-оскорбления</span></div>
                     <div class="detail-row"><span class="detail-label">👋 Приветствие новичков</span></div>
                     <div class="detail-row"><span class="detail-label">🤖 AI в групповом чате</span></div>
-                </div>
-            </section>
-
-            <section class="section">
-                <div class="section-header">👑 Контакты</div>
-                <div class="detail-card">
-                    <div class="detail-row">
-                        <span class="detail-label">Админ</span>
-                        <span class="detail-value blue">@shrlok_analytics</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Версия</span>
-                        <span class="detail-value">2.0</span>
-                    </div>
                 </div>
             </section>
         </div>
@@ -2171,7 +2041,7 @@ async function loadStats() {
 }
 
 /* ============================================================
-   👤 ME TAB (Настройки профиля)
+   👤 ME TAB
    ============================================================ */
 function loadMe() {
     setTitle('Профиль', 'Управление');

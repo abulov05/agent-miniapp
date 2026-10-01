@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#ffffff">
+<meta name="theme-color" content="#000000">
 <title>AGENT ANALYTICS</title>
 
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -61,7 +61,6 @@ html, body {
 
 input, textarea { user-select: text; -webkit-user-select: text; }
 
-/* Скрываем скроллбары везде */
 ::-webkit-scrollbar { width: 0; height: 0; background: transparent; display: none; }
 * { scrollbar-width: none; -ms-overflow-style: none; }
 .content-wrap::-webkit-scrollbar, .panel-body::-webkit-scrollbar { display: none; width: 0; }
@@ -72,7 +71,6 @@ input, textarea { user-select: text; -webkit-user-select: text; }
   background: var(--bg);
 }
 
-/* HEADER */
 .header {
   display: flex; align-items: center; gap: 12px;
   padding: calc(env(safe-area-inset-top, 0px) + 8px) 16px 8px;
@@ -105,7 +103,6 @@ input, textarea { user-select: text; -webkit-user-select: text; }
 .icon-btn:active { background: rgba(120, 120, 128, 0.16); }
 .icon-btn svg { width: 22px; height: 22px; stroke-width: 2; }
 
-/* SEARCH */
 .search-wrap { padding: 8px 16px 12px; background: var(--bg); flex-shrink: 0; z-index: 90; }
 .search-bar {
   display: flex; align-items: center; gap: 8px;
@@ -134,7 +131,6 @@ input, textarea { user-select: text; -webkit-user-select: text; }
 .search-submit:disabled { opacity: 0.3; }
 .search-submit svg { width: 18px; height: 18px; stroke-width: 3; }
 
-/* CONTENT */
 .content-wrap {
   flex: 1; position: relative;
   overflow-y: auto;
@@ -143,7 +139,6 @@ input, textarea { user-select: text; -webkit-user-select: text; }
   min-height: 0;
 }
 
-/* SECTIONS */
 .section-title {
   font-size: 13px; font-weight: 600;
   color: var(--text-mute);
@@ -153,7 +148,6 @@ input, textarea { user-select: text; -webkit-user-select: text; }
   padding: 0 4px;
 }
 
-/* STATS */
 .stats-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px; }
 .stat-card {
   background: var(--bg-elev);
@@ -164,7 +158,6 @@ input, textarea { user-select: text; -webkit-user-select: text; }
 .stat-value { font-size: 24px; font-weight: 700; color: var(--text); letter-spacing: -0.5px; margin-bottom: 4px; }
 .stat-label { font-size: 11px; color: var(--text-mute); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500; }
 
-/* QUICK GRID */
 .quick-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px; }
 .quick-card {
   background: var(--bg-elev);
@@ -192,7 +185,6 @@ input, textarea { user-select: text; -webkit-user-select: text; }
 .quick-card-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
 .quick-card-sub { font-size: 12px; color: var(--text-mute); line-height: 1.3; }
 
-/* LIST */
 .list {
   list-style: none;
   background: var(--bg);
@@ -231,7 +223,6 @@ input, textarea { user-select: text; -webkit-user-select: text; }
 .list-icon.pink { background: var(--pink); }
 .list-icon.gray { background: var(--text-mute); }
 
-/* RESULT */
 .result-card {
   background: var(--bg);
   border-radius: 12px;
@@ -253,7 +244,6 @@ input, textarea { user-select: text; -webkit-user-select: text; }
 .result-value.mono { font-family: 'SF Mono', 'Menlo', monospace; font-size: 15px; }
 .result-value.accent { color: var(--accent); font-weight: 600; }
 
-/* FORMS */
 .field { margin-bottom: 14px; }
 .field-label { display: block; font-size: 13px; color: var(--text-mute); margin-bottom: 6px; }
 .field-input {
@@ -281,7 +271,6 @@ input, textarea { user-select: text; -webkit-user-select: text; }
 .btn.secondary { background: var(--bg-elev); color: var(--accent); }
 .btn.danger { background: var(--red); }
 
-/* TOGGLE */
 .toggle { position: relative; width: 51px; height: 31px; flex-shrink: 0; }
 .toggle input { opacity: 0; width: 0; height: 0; }
 .toggle-slider {
@@ -300,7 +289,6 @@ input, textarea { user-select: text; -webkit-user-select: text; }
 .toggle input:checked + .toggle-slider { background: #34c759; }
 .toggle input:checked + .toggle-slider::before { transform: translateX(20px); }
 
-/* TABS */
 .tabs {
   display: flex;
   background: var(--bg);
@@ -322,7 +310,6 @@ input, textarea { user-select: text; -webkit-user-select: text; }
 .tab svg { width: 26px; height: 26px; stroke-width: 1.8; }
 .tab span { font-size: 10px; font-weight: 500; }
 
-/* TOAST */
 .toast-wrap {
   position: fixed; left: 50%; transform: translateX(-50%);
   bottom: calc(env(safe-area-inset-bottom, 0px) + 90px);
@@ -348,7 +335,6 @@ input, textarea { user-select: text; -webkit-user-select: text; }
 .toast.error { background: rgba(255, 59, 48, 0.95); }
 .toast.ok { background: rgba(52, 199, 89, 0.95); }
 
-/* LOADING */
 .loading {
   position: fixed; inset: 0;
   background: var(--bg);
@@ -380,7 +366,6 @@ input, textarea { user-select: text; -webkit-user-select: text; }
   100% { transform: translateX(350%); }
 }
 
-/* LOGO ANIMATIONS */
 .logo-rotator {
   transform-origin: 50px 50px;
   animation: logoSpin 3s linear infinite;
@@ -408,7 +393,6 @@ input, textarea { user-select: text; -webkit-user-select: text; }
   100% { stroke-dashoffset: -260; opacity: 0.4; }
 }
 
-/* CHART */
 .chart-wrap {
   background: var(--bg-elev);
   border-radius: 14px;
@@ -422,7 +406,6 @@ input, textarea { user-select: text; -webkit-user-select: text; }
 }
 .chart-canvas-wrap { height: 180px; position: relative; }
 
-/* MODAL */
 .modal-overlay {
   position: fixed; inset: 0;
   background: rgba(0,0,0,0.7);
@@ -447,7 +430,6 @@ input, textarea { user-select: text; -webkit-user-select: text; }
 .modal-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; color: var(--text); }
 .modal-desc { font-size: 14px; color: var(--text-mute); margin-bottom: 20px; line-height: 1.5; }
 
-/* PHONE MAP MODAL */
 @keyframes slideUp {
   from { transform: translateY(100%); }
   to { transform: translateY(0); }
@@ -479,7 +461,6 @@ input, textarea { user-select: text; -webkit-user-select: text; }
 </head>
 <body>
 
-<!-- LOADING -->
 <div class="loading" id="loading">
   <div class="loading-logo">
     <svg viewBox="0 0 100 100">
@@ -506,7 +487,6 @@ input, textarea { user-select: text; -webkit-user-select: text; }
 
 <div id="app">
 
-  <!-- HEADER -->
   <header class="header">
     <div class="logo">
       <svg viewBox="0 0 100 100">
@@ -548,7 +528,6 @@ input, textarea { user-select: text; -webkit-user-select: text; }
     </div>
   </header>
 
-  <!-- SEARCH -->
   <div class="search-wrap">
     <div class="search-bar">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
@@ -565,10 +544,8 @@ input, textarea { user-select: text; -webkit-user-select: text; }
     </div>
   </div>
 
-  <!-- CONTENT -->
   <div class="content-wrap" id="content-wrap"></div>
 
-  <!-- TABS -->
   <nav class="tabs">
     <button class="tab active" data-tab="home">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
@@ -784,7 +761,6 @@ function renderScreen(name, data) {
   }
 }
 
-// TABS
 document.querySelectorAll('.tab').forEach(tab => {
   tab.addEventListener('click', () => {
     const t = tab.dataset.tab;
@@ -799,11 +775,10 @@ document.querySelectorAll('.tab').forEach(tab => {
 });
 
 // ============================================================
-// RENDER: HOME — статистика САМОГО пользователя
+// HOME
 // ============================================================
 async function renderHome() {
   const tgUser = getTelegramUser();
-
   contentWrap.innerHTML = `
     <div class="stats-row">
       <div class="stat-card"><div class="stat-value" id="my-comments">—</div><div class="stat-label">Моих сообщений</div></div>
@@ -876,7 +851,6 @@ async function renderHome() {
       </li>
     </ul>
   `;
-
   if (tgUser) {
     try {
       const u = await apiGetUser(tgUser.id, 'all', 100).catch(() => null);
@@ -891,14 +865,11 @@ async function renderHome() {
       $('my-comments').textContent = '—';
       $('my-chats').textContent = '—';
     }
-  } else {
-    $('my-comments').textContent = '—';
-    $('my-chats').textContent = '—';
   }
 }
 
 // ============================================================
-// RENDER: SEARCH
+// SEARCH TAB
 // ============================================================
 function renderSearchTab() {
   contentWrap.innerHTML = `
@@ -926,7 +897,7 @@ function renderSearchTab() {
 }
 
 // ============================================================
-// RENDER: STATS — статистика БОТА
+// STATS (БОТ)
 // ============================================================
 async function renderStats() {
   contentWrap.innerHTML = `
@@ -952,7 +923,6 @@ async function renderStats() {
     <div class="section-title">📱 Проверки номеров</div>
     <ul class="list" id="phone-lookups"><li class="list-item"><div class="list-content"><div class="list-sub">Загрузка...</div></div></li></ul>
   `;
-
   try {
     const [stats, activity, chats, words, phones] = await Promise.all([
       apiGetPublicStats().catch(() => ({})),
@@ -961,7 +931,6 @@ async function renderStats() {
       apiGetWords().catch(() => []),
       apiGetPhoneLookups().catch(() => [])
     ]);
-
     $('bs-users').textContent = formatNumber(stats.users || 0);
     $('bs-comments').textContent = formatNumber(stats.comments || 0);
     $('bs-chats').textContent = formatNumber(stats.chats || 0);
@@ -999,9 +968,7 @@ async function renderStats() {
       : '<li class="list-item"><div class="list-content"><div class="list-sub">Нет данных</div></div></li>';
 
     renderChart(activity);
-  } catch (e) {
-    toast(e.message, 'error');
-  }
+  } catch (e) { toast(e.message, 'error'); }
 }
 
 function renderChart(activity) {
@@ -1033,7 +1000,7 @@ function renderChart(activity) {
 }
 
 // ============================================================
-// RENDER: ME
+// ME
 // ============================================================
 function renderMe() {
   const u = getTelegramUser();
@@ -1073,7 +1040,7 @@ function renderMe() {
 }
 
 // ============================================================
-// RENDER: PROFILE (красивый iOS-стиль)
+// PROFILE
 // ============================================================
 async function renderProfile(userId) {
   contentWrap.innerHTML = `
@@ -1081,22 +1048,18 @@ async function renderProfile(userId) {
       <div class="loading-bar" style="margin:0 auto;"></div>
       <div style="margin-top:16px;color:var(--text-mute);font-size:13px;">Загрузка профиля...</div>
     </div>`;
-
   try {
     const u = await apiGetUser(userId, 'all', 50);
     if (u.error) throw new Error(u.error);
-
     const name = ((u.first_name || '') + ' ' + (u.last_name || '')).trim() || 'Без имени';
     const initial = (name[0] || '?').toUpperCase();
     const username = u.username ? '@' + u.username : null;
     const tier = u.started_bot ? 'PREMIUM' : 'USER';
     const tierColor = u.started_bot ? 'var(--orange)' : 'var(--accent)';
-
     const chatsCount = (u.chats || []).length;
     const commentsCount = (u.comments || []).length;
     const wordsCount = (u.words || []).length;
 
-    // Активность по чатам
     const chatActivity = {};
     (u.comments || []).forEach(c => {
       const t = (c.chat || 'Неизвестно').slice(0, 20);
@@ -1105,7 +1068,6 @@ async function renderProfile(userId) {
     const topChats = Object.entries(chatActivity).sort((a,b) => b[1] - a[1]).slice(0, 5);
     const maxChatCount = topChats[0] ? topChats[0][1] : 1;
 
-    // Ежедневная активность (14 дней)
     const dailyMap = {};
     (u.comments || []).forEach(c => {
       const d = (c.date || '').slice(0, 10);
@@ -1120,7 +1082,6 @@ async function renderProfile(userId) {
     }
     const maxDaily = Math.max(...last14Days.map(d => d.count), 1);
 
-    // Облако слов
     const topWords = (u.words || []).slice(0, 12);
     const maxWord = topWords[0] ? topWords[0].count : 1;
 
@@ -1132,14 +1093,12 @@ async function renderProfile(userId) {
         <button class="icon-btn" onclick="copyToClipboard('${u.user_id}')" style="position:absolute;right:8px;top:8px;color:var(--text);">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
         </button>
-
         <div style="position:relative;width:96px;height:96px;margin:0 auto 16px;">
           <div style="width:100%;height:100%;border-radius:50%;background:linear-gradient(135deg,#0a84ff,#bf5af2);color:white;display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:700;box-shadow:0 8px 24px rgba(0,122,255,0.3);border:3px solid var(--bg);">${esc(initial)}</div>
           ${u.started_bot ? `<div style="position:absolute;bottom:2px;right:2px;width:26px;height:26px;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;border:3px solid var(--bg);">
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
           </div>` : ''}
         </div>
-
         <div style="font-size:24px;font-weight:700;color:var(--text);letter-spacing:-0.5px;">${esc(name)}</div>
         ${username ? `<div style="font-size:15px;color:var(--accent);margin-top:4px;">${esc(username)}</div>` : ''}
         <div style="display:inline-block;margin-top:10px;padding:4px 14px;background:${tierColor}20;color:${tierColor};border-radius:20px;font-size:11px;font-weight:700;letter-spacing:1px;">⚡ ${tier}</div>
@@ -1282,7 +1241,7 @@ async function renderProfile(userId) {
 }
 
 // ============================================================
-// RENDER: PHONE CHECK с КАРТОЙ
+// PHONE CHECK
 // ============================================================
 function renderPhoneCheck() {
   contentWrap.innerHTML = `
@@ -1291,65 +1250,39 @@ function renderPhoneCheck() {
       <div class="field">
         <label class="field-label">Номер телефона</label>
         <input type="tel" class="field-input" id="pc-phone" placeholder="+992901234567" autocomplete="off">
-        <div class="field-hint">Покажет страну на карте и оператора</div>
+        <div class="field-hint">Покажет страну, оператора, регион и карту</div>
       </div>
       <button class="btn" id="pc-check">📱 Проверить</button>
     </div>
     <div id="pc-result"></div>
     <button class="btn secondary" onclick="renderScreen('home')">← Назад</button>
   `;
-
   $('pc-check').addEventListener('click', async () => {
     const phone = $('pc-phone').value.trim();
     if (!phone) { toast('Введите номер', 'error'); return; }
-
     const btn = $('pc-check');
     btn.disabled = true;
     btn.textContent = '⏳ Проверка...';
-
     try {
-      const lookups = await apiGetPhoneLookups().catch(() => []);
-      const clean = phone.replace(/[\s\-\(\)]/g, '');
-      const found = lookups.find(l => {
-        const lclean = (l.phone || '').replace(/[\s\-\(\)]/g, '');
-        return lclean === clean || lclean.includes(clean) || clean.includes(lclean);
-      });
-
-      let info = null;
-      if (found) {
-        info = {
-          phone: found.phone,
-          country: '',
-          operator: found.carrier || '',
-          region: found.region || '',
-          telegram: found.telegram,
-          telegram_username: found.telegram_username,
-          whatsapp: found.whatsapp,
-          source: 'database'
-        };
+      const info = analyzePhoneNumber(phone);
+      let dbInfo = null;
+      try {
+        const lookups = await apiGetPhoneLookups().catch(() => []);
+        const clean = phone.replace(/[\s\-\(\)]/g, '');
+        dbInfo = lookups.find(l => {
+          const lclean = (l.phone || '').replace(/[\s\-\(\)]/g, '');
+          return lclean === clean || lclean.includes(clean) || clean.includes(lclean);
+        });
+      } catch (e) {}
+      if (dbInfo) {
+        info.operator = dbInfo.carrier || info.operator;
+        info.region = dbInfo.region || info.region;
+        info.telegram = dbInfo.telegram;
+        info.telegram_username = dbInfo.telegram_username;
+        info.whatsapp = dbInfo.whatsapp;
       }
-
-      if (!info) {
-        info = await lookupPhoneOnline(phone);
-      }
-
-      if (info && info.lat && info.lon) {
-        showPhoneMap(info);
-      } else if (info) {
-        $('pc-result').innerHTML = `
-          <div class="result-card">
-            <div class="result-row"><div class="result-icon">${I.phone}</div><div class="result-content"><div class="result-label">Номер</div><div class="result-value mono accent">${esc(info.phone)}</div></div></div>
-            ${info.country ? `<div class="result-row"><div class="result-icon">${I.globe}</div><div class="result-content"><div class="result-label">Страна</div><div class="result-value">${esc(info.country)}</div></div></div>` : ''}
-            ${info.operator ? `<div class="result-row"><div class="result-icon">${I.signal}</div><div class="result-content"><div class="result-label">Оператор</div><div class="result-value">${esc(info.operator)}</div></div></div>` : ''}
-          </div>
-        `;
-      } else {
-        $('pc-result').innerHTML = `
-          <div class="result-card">
-            <div class="result-row"><div class="result-icon">${I.info}</div><div class="result-content"><div class="result-label">Результат</div><div class="result-value">Номер не найден. Проверьте его в боте.</div></div></div>
-          </div>
-          <button class="btn" onclick="openBot()">🤖 Проверить в боте</button>`;
-      }
+      renderPhoneInfo(info);
+      if (info.lat && info.lon) showPhoneMap(info);
     } catch (e) {
       toast(e.message, 'error');
     } finally {
@@ -1359,86 +1292,123 @@ function renderPhoneCheck() {
   });
 }
 
-async function lookupPhoneOnline(phone) {
-  const clean = phone.replace(/[\s\-\(\)]/g, '').replace(/^\+/, '');
+function analyzePhoneNumber(phone) {
+  let clean = phone.replace(/[\s\-\(\)\.]/g, '');
+  if (clean.startsWith('+')) clean = clean.slice(1);
+  if (clean.length === 11 && clean.startsWith('8')) clean = '7' + clean.slice(1);
 
-  const countryByCode = {
-    '992': { country: 'Таджикистан', lat: 38.8610, lon: 71.2761, flag: '🇹🇯' },
-    '998': { country: 'Узбекистан', lat: 41.3775, lon: 64.5853, flag: '🇺🇿' },
-    '996': { country: 'Кыргызстан', lat: 41.2044, lon: 74.7661, flag: '🇰🇬' },
-    '993': { country: 'Туркменистан', lat: 38.9697, lon: 59.5563, flag: '🇹🇲' },
-    '79':  { country: 'Россия', lat: 55.7558, lon: 37.6173, flag: '🇷🇺' },
-    '78':  { country: 'Россия', lat: 55.7558, lon: 37.6173, flag: '🇷🇺' },
-    '77':  { country: 'Казахстан', lat: 51.1694, lon: 71.4491, flag: '🇰🇿' },
-    '7':   { country: 'Россия', lat: 55.7558, lon: 37.6173, flag: '🇷🇺' },
-    '1':   { country: 'США', lat: 38.9072, lon: -77.0369, flag: '🇺🇸' },
-    '44':  { country: 'Великобритания', lat: 51.5074, lon: -0.1278, flag: '🇬🇧' },
-    '49':  { country: 'Германия', lat: 52.5200, lon: 13.4050, flag: '🇩🇪' },
-    '33':  { country: 'Франция', lat: 48.8566, lon: 2.3522, flag: '🇫🇷' },
-    '39':  { country: 'Италия', lat: 41.9028, lon: 12.4964, flag: '🇮🇹' },
-    '34':  { country: 'Испания', lat: 40.4168, lon: -3.7038, flag: '🇪🇸' },
-    '90':  { country: 'Турция', lat: 41.0082, lon: 28.9784, flag: '🇹🇷' },
-    '86':  { country: 'Китай', lat: 39.9042, lon: 116.4074, flag: '🇨🇳' },
-    '81':  { country: 'Япония', lat: 35.6762, lon: 139.6503, flag: '🇯🇵' },
-    '82':  { country: 'Южная Корея', lat: 37.5665, lon: 126.9780, flag: '🇰🇷' },
-    '91':  { country: 'Индия', lat: 28.6139, lon: 77.2090, flag: '🇮🇳' },
-    '971': { country: 'ОАЭ', lat: 25.2048, lon: 55.2708, flag: '🇦🇪' },
-    '972': { country: 'Израиль', lat: 31.7683, lon: 35.2137, flag: '🇮🇱' },
-    '966': { country: 'Саудовская Аравия', lat: 24.7136, lon: 46.6753, flag: '🇸🇦' },
-    '20':  { country: 'Египет', lat: 30.0444, lon: 31.2357, flag: '🇪🇬' },
-    '380': { country: 'Украина', lat: 50.4501, lon: 30.5234, flag: '🇺🇦' },
-    '375': { country: 'Беларусь', lat: 53.9045, lon: 27.5615, flag: '🇧🇾' },
-    '373': { country: 'Молдова', lat: 47.0105, lon: 28.8638, flag: '🇲🇩' },
-    '995': { country: 'Грузия', lat: 41.7151, lon: 44.8271, flag: '🇬🇪' },
-    '374': { country: 'Армения', lat: 40.1792, lon: 44.4991, flag: '🇦🇲' },
-    '994': { country: 'Азербайджан', lat: 40.4093, lon: 49.8671, flag: '🇦🇿' },
-    '48':  { country: 'Польша', lat: 52.2297, lon: 21.0122, flag: '🇵🇱' },
-    '420': { country: 'Чехия', lat: 50.0755, lon: 14.4378, flag: '🇨🇿' },
-    '30':  { country: 'Греция', lat: 37.9838, lon: 23.7275, flag: '🇬🇷' },
-    '31':  { country: 'Нидерланды', lat: 52.3676, lon: 4.9041, flag: '🇳🇱' },
-    '32':  { country: 'Бельгия', lat: 50.8503, lon: 4.3517, flag: '🇧🇪' },
-    '41':  { country: 'Швейцария', lat: 46.9480, lon: 7.4474, flag: '🇨🇭' },
-    '43':  { country: 'Австрия', lat: 48.2082, lon: 16.3738, flag: '🇦🇹' },
-    '46':  { country: 'Швеция', lat: 59.3293, lon: 18.0686, flag: '🇸🇪' },
-    '47':  { country: 'Норвегия', lat: 59.9139, lon: 10.7522, flag: '🇳🇴' },
-    '45':  { country: 'Дания', lat: 55.6761, lon: 12.5683, flag: '🇩🇰' },
-    '358': { country: 'Финляндия', lat: 60.1699, lon: 24.9384, flag: '🇫🇮' },
-    '351': { country: 'Португалия', lat: 38.7223, lon: -9.1393, flag: '🇵🇹' },
-    '353': { country: 'Ирландия', lat: 53.3498, lon: -6.2603, flag: '🇮🇪' }
+  const countries = {
+    '992': { country: 'Таджикистан', flag: '🇹🇯', region: 'Таджикистан', tz: 'UTC+5', type: 'Мобильный', lat: 38.8610, lon: 71.2761,
+      operators: { '90': 'Beeline TJ', '91': 'Beeline TJ', '92': 'Megafon TJ', '93': 'MegaFon TJ', '50': 'Tcell', '55': 'Tcell', '77': 'Tcell', '88': 'Tcell', '98': 'Babilon Mobile', '99': 'Babilon Mobile' } },
+    '998': { country: 'Узбекистан', flag: '🇺🇿', region: 'Узбекистан', tz: 'UTC+5', type: 'Мобильный', lat: 41.3775, lon: 64.5853,
+      operators: { '90': 'Beeline UZ', '91': 'Beeline UZ', '93': 'Ucell', '94': 'Ucell', '95': 'Ucell', '97': 'UMS', '98': 'UMS', '99': 'UMS', '88': 'Perfectum' } },
+    '996': { country: 'Кыргызстан', flag: '🇰🇬', region: 'Кыргызстан', tz: 'UTC+6', type: 'Мобильный', lat: 41.2044, lon: 74.7661,
+      operators: { '50': 'MegaCom', '55': 'MegaCom', '70': 'Beeline KG', '77': 'Beeline KG', '99': 'O!', '20': 'O!', '22': 'O!' } },
+    '993': { country: 'Туркменистан', flag: '🇹🇲', region: 'Туркменистан', tz: 'UTC+5', type: 'Мобильный', lat: 38.9697, lon: 59.5563 },
+    '7': { country: 'Россия', flag: '🇷🇺', region: 'Россия', tz: 'UTC+3', type: 'Мобильный', lat: 55.7558, lon: 37.6173,
+      operators: { '900': 'Beeline', '901': 'Beeline', '902': 'MegaFon', '903': 'Beeline', '904': 'MegaFon', '905': 'Beeline', '906': 'Beeline', '908': 'MegaFon', '909': 'MegaFon', '910': 'MegaFon', '911': 'MegaFon', '912': 'MegaFon', '913': 'MegaFon', '914': 'MegaFon', '915': 'MegaFon', '916': 'MegaFon', '917': 'MegaFon', '918': 'MegaFon', '919': 'MegaFon', '920': 'MegaFon', '921': 'MegaFon', '922': 'MegaFon', '923': 'MegaFon', '924': 'MegaFon', '925': 'MegaFon', '926': 'MegaFon', '927': 'MegaFon', '928': 'MegaFon', '929': 'MegaFon', '930': 'MegaFon', '931': 'MegaFon', '932': 'MegaFon', '933': 'MegaFon', '934': 'MegaFon', '936': 'MegaFon', '937': 'MegaFon', '938': 'MegaFon', '939': 'MegaFon', '950': 'Tele2', '951': 'Tele2', '952': 'Tele2', '953': 'Tele2', '958': 'Tele2', '960': 'Beeline', '961': 'Beeline', '962': 'Beeline', '963': 'Beeline', '964': 'Beeline', '965': 'Beeline', '966': 'Beeline', '967': 'Beeline', '968': 'Beeline', '969': 'Beeline', '977': 'MegaFon', '978': 'MegaFon', '980': 'MTS', '981': 'MTS', '982': 'MTS', '983': 'MTS', '984': 'MTS', '985': 'MTS', '986': 'MTS', '987': 'MTS', '988': 'MTS', '989': 'MTS', '995': 'MTS', '996': 'MTS', '997': 'MTS', '999': 'MTS' } },
+    '77': { country: 'Казахстан', flag: '🇰🇿', region: 'Казахстан', tz: 'UTC+6', type: 'Мобильный', lat: 51.1694, lon: 71.4491,
+      operators: { '700': 'Altel', '701': 'Altel', '702': 'Beeline KZ', '705': 'Beeline KZ', '707': 'Beeline KZ', '708': 'Beeline KZ', '747': 'Tele2 KZ', '777': 'Beeline KZ', '778': 'Beeline KZ' } },
+    '1': { country: 'США/Канада', flag: '🇺🇸', region: 'США', tz: 'UTC-5', type: 'Мобильный', lat: 38.9072, lon: -77.0369 },
+    '44': { country: 'Великобритания', flag: '🇬🇧', region: 'Англия', tz: 'UTC+0', type: 'Мобильный', lat: 51.5074, lon: -0.1278 },
+    '49': { country: 'Германия', flag: '🇩🇪', region: 'Германия', tz: 'UTC+1', type: 'Мобильный', lat: 52.5200, lon: 13.4050 },
+    '33': { country: 'Франция', flag: '🇫🇷', region: 'Франция', tz: 'UTC+1', type: 'Мобильный', lat: 48.8566, lon: 2.3522 },
+    '39': { country: 'Италия', flag: '🇮🇹', region: 'Италия', tz: 'UTC+1', type: 'Мобильный', lat: 41.9028, lon: 12.4964 },
+    '34': { country: 'Испания', flag: '🇪🇸', region: 'Испания', tz: 'UTC+1', type: 'Мобильный', lat: 40.4168, lon: -3.7038 },
+    '90': { country: 'Турция', flag: '🇹🇷', region: 'Турция', tz: 'UTC+3', type: 'Мобильный', lat: 41.0082, lon: 28.9784 },
+    '86': { country: 'Китай', flag: '🇨🇳', region: 'Китай', tz: 'UTC+8', type: 'Мобильный', lat: 39.9042, lon: 116.4074 },
+    '81': { country: 'Япония', flag: '🇯🇵', region: 'Япония', tz: 'UTC+9', type: 'Мобильный', lat: 35.6762, lon: 139.6503 },
+    '82': { country: 'Южная Корея', flag: '🇰🇷', region: 'Южная Корея', tz: 'UTC+9', type: 'Мобильный', lat: 37.5665, lon: 126.9780 },
+    '91': { country: 'Индия', flag: '🇮🇳', region: 'Индия', tz: 'UTC+5:30', type: 'Мобильный', lat: 28.6139, lon: 77.2090 },
+    '971': { country: 'ОАЭ', flag: '🇦🇪', region: 'ОАЭ', tz: 'UTC+4', type: 'Мобильный', lat: 25.2048, lon: 55.2708 },
+    '972': { country: 'Израиль', flag: '🇮🇱', region: 'Израиль', tz: 'UTC+2', type: 'Мобильный', lat: 31.7683, lon: 35.2137 },
+    '966': { country: 'Саудовская Аравия', flag: '🇸🇦', region: 'Саудовская Аравия', tz: 'UTC+3', type: 'Мобильный', lat: 24.7136, lon: 46.6753 },
+    '20': { country: 'Египет', flag: '🇪🇬', region: 'Египет', tz: 'UTC+2', type: 'Мобильный', lat: 30.0444, lon: 31.2357 },
+    '380': { country: 'Украина', flag: '🇺🇦', region: 'Украина', tz: 'UTC+2', type: 'Мобильный', lat: 50.4501, lon: 30.5234 },
+    '375': { country: 'Беларусь', flag: '🇧🇾', region: 'Беларусь', tz: 'UTC+3', type: 'Мобильный', lat: 53.9045, lon: 27.5615 },
+    '373': { country: 'Молдова', flag: '🇲🇩', region: 'Молдова', tz: 'UTC+2', type: 'Мобильный', lat: 47.0105, lon: 28.8638 },
+    '995': { country: 'Грузия', flag: '🇬🇪', region: 'Грузия', tz: 'UTC+4', type: 'Мобильный', lat: 41.7151, lon: 44.8271 },
+    '374': { country: 'Армения', flag: '🇦🇲', region: 'Армения', tz: 'UTC+4', type: 'Мобильный', lat: 40.1792, lon: 44.4991 },
+    '994': { country: 'Азербайджан', flag: '🇦🇿', region: 'Азербайджан', tz: 'UTC+4', type: 'Мобильный', lat: 40.4093, lon: 49.8671 },
+    '48': { country: 'Польша', flag: '🇵🇱', region: 'Польша', tz: 'UTC+1', type: 'Мобильный', lat: 52.2297, lon: 21.0122 },
+    '420': { country: 'Чехия', flag: '🇨🇿', region: 'Чехия', tz: 'UTC+1', type: 'Мобильный', lat: 50.0755, lon: 14.4378 },
+    '30': { country: 'Греция', flag: '🇬🇷', region: 'Греция', tz: 'UTC+2', type: 'Мобильный', lat: 37.9838, lon: 23.7275 },
+    '31': { country: 'Нидерланды', flag: '🇳🇱', region: 'Нидерланды', tz: 'UTC+1', type: 'Мобильный', lat: 52.3676, lon: 4.9041 },
+    '32': { country: 'Бельгия', flag: '🇧🇪', region: 'Бельгия', tz: 'UTC+1', type: 'Мобильный', lat: 50.8503, lon: 4.3517 },
+    '41': { country: 'Швейцария', flag: '🇨🇭', region: 'Швейцария', tz: 'UTC+1', type: 'Мобильный', lat: 46.9480, lon: 7.4474 },
+    '43': { country: 'Австрия', flag: '🇦🇹', region: 'Австрия', tz: 'UTC+1', type: 'Мобильный', lat: 48.2082, lon: 16.3738 },
+    '46': { country: 'Швеция', flag: '🇸🇪', region: 'Швеция', tz: 'UTC+1', type: 'Мобильный', lat: 59.3293, lon: 18.0686 },
+    '47': { country: 'Норвегия', flag: '🇳🇴', region: 'Норвегия', tz: 'UTC+1', type: 'Мобильный', lat: 59.9139, lon: 10.7522 },
+    '45': { country: 'Дания', flag: '🇩🇰', region: 'Дания', tz: 'UTC+1', type: 'Мобильный', lat: 55.6761, lon: 12.5683 },
+    '358': { country: 'Финляндия', flag: '🇫🇮', region: 'Финляндия', tz: 'UTC+2', type: 'Мобильный', lat: 60.1699, lon: 24.9384 },
+    '351': { country: 'Португалия', flag: '🇵🇹', region: 'Португалия', tz: 'UTC+0', type: 'Мобильный', lat: 38.7223, lon: -9.1393 },
+    '353': { country: 'Ирландия', flag: '🇮🇪', region: 'Ирландия', tz: 'UTC+0', type: 'Мобильный', lat: 53.3498, lon: -6.2603 }
   };
 
   let countryInfo = null;
+  let countryCodeLen = 0;
   for (let len = 3; len >= 1; len--) {
     const prefix = clean.slice(0, len);
-    if (countryByCode[prefix]) {
-      countryInfo = countryByCode[prefix];
-      break;
+    if (countries[prefix]) { countryInfo = countries[prefix]; countryCodeLen = len; break; }
+  }
+  if (!countryInfo) return { phone, country: 'Неизвестно', flag: '🏴', region: '—', operator: '—', tz: '—', type: 'Неизвестно' };
+
+  let operator = '—';
+  if (countryInfo.operators) {
+    const afterCode = clean.slice(countryCodeLen);
+    for (let opLen = 3; opLen >= 2; opLen--) {
+      const opPrefix = afterCode.slice(0, opLen);
+      if (countryInfo.operators[opPrefix]) { operator = countryInfo.operators[opPrefix]; break; }
     }
   }
+  return { phone, country: countryInfo.country, flag: countryInfo.flag, region: countryInfo.region, operator, tz: countryInfo.tz, type: countryInfo.type, lat: countryInfo.lat, lon: countryInfo.lon };
+}
 
-  if (countryInfo) {
-    return {
-      phone: phone,
-      country: countryInfo.country,
-      flag: countryInfo.flag,
-      lat: countryInfo.lat,
-      lon: countryInfo.lon,
-      operator: '—',
-      region: '—'
-    };
-  }
-  return null;
+function renderPhoneInfo(info) {
+  const phone = info.phone || '';
+  const clean = phone.replace(/\D/g, '');
+  const waLink = `https://wa.me/${clean}`;
+  const tgLink = info.telegram_username
+    ? `https://t.me/${info.telegram_username.replace('@', '')}`
+    : `https://t.me/+${clean}`;
+  const telegramStatus = info.telegram
+    ? `<a href="${tgLink}" target="_blank" style="color:var(--accent);text-decoration:none;">✅ Открыть профиль</a>`
+    : `⚠️ <a href="${tgLink}" target="_blank" style="color:var(--accent);text-decoration:none;">Проверить ссылку</a>`;
+  const whatsappStatus = info.whatsapp
+    ? `<a href="${waLink}" target="_blank" style="color:var(--green);text-decoration:none;">✅ Открыть чат</a>`
+    : `⚠️ <a href="${waLink}" target="_blank" style="color:var(--green);text-decoration:none;">Проверить чат</a>`;
+
+  const result = $('pc-result');
+  if (!result) return;
+  result.innerHTML = `
+    <div class="section-title">📱 Информация о номере</div>
+    <div class="result-card">
+      <div class="result-row"><div class="result-icon">${I.phone}</div><div class="result-content"><div class="result-label">Номер</div><div class="result-value mono accent">${esc(phone)}</div></div></div>
+      <div class="result-row"><div class="result-icon">${I.globe}</div><div class="result-content"><div class="result-label">Страна</div><div class="result-value">${esc(info.flag || '')} ${esc(info.country || '—')}</div></div></div>
+      <div class="result-row"><div class="result-icon">${I.signal}</div><div class="result-content"><div class="result-label">Оператор</div><div class="result-value">${esc(info.operator || '—')}</div></div></div>
+      <div class="result-row"><div class="result-icon">${I.map}</div><div class="result-content"><div class="result-label">Регион</div><div class="result-value">${esc(info.region || '—')}</div></div></div>
+      <div class="result-row"><div class="result-icon">${I.clock}</div><div class="result-content"><div class="result-label">Часовой пояс</div><div class="result-value">${esc(info.tz || '—')}</div></div></div>
+      <div class="result-row"><div class="result-icon">${I.info}</div><div class="result-content"><div class="result-label">Тип номера</div><div class="result-value">${esc(info.type || '—')}</div></div></div>
+      <div class="result-row"><div class="result-icon">${I.bot}</div><div class="result-content"><div class="result-label">Telegram</div><div class="result-value">${telegramStatus}</div></div></div>
+      <div class="result-row"><div class="result-icon">${I.msg}</div><div class="result-content"><div class="result-label">WhatsApp</div><div class="result-value">${whatsappStatus}</div></div></div>
+    </div>
+    ${info.lat && info.lon ? `<button class="btn" onclick="showPhoneMapCurrent()">🗺 Показать на карте</button>` : ''}
+  `;
+  window._lastPhoneInfo = info;
+}
+
+function showPhoneMapCurrent() {
+  if (window._lastPhoneInfo) showPhoneMap(window._lastPhoneInfo);
 }
 
 function showPhoneMap(info) {
   document.querySelectorAll('.modal-overlay').forEach(m => m.remove());
-
+  if (window._phoneMap) { window._phoneMap.remove(); window._phoneMap = null; }
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay';
   overlay.id = 'phone-map-modal';
   overlay.style.padding = '0';
   overlay.style.alignItems = 'flex-end';
-
   overlay.innerHTML = `
     <div style="background:var(--bg);width:100%;max-width:600px;border-radius:20px 20px 0 0;overflow:hidden;animation:slideUp 0.3s ease;max-height:95vh;display:flex;flex-direction:column;">
       <div style="padding:16px 20px;border-bottom:0.5px solid var(--border-soft);display:flex;align-items:center;gap:12px;">
@@ -1455,16 +1425,15 @@ function showPhoneMap(info) {
         <div class="result-card" style="margin:0;">
           <div class="result-row"><div class="result-icon">${I.globe}</div><div class="result-content"><div class="result-label">Страна</div><div class="result-value">${esc(info.flag || '')} ${esc(info.country || '—')}</div></div></div>
           <div class="result-row"><div class="result-icon">${I.signal}</div><div class="result-content"><div class="result-label">Оператор</div><div class="result-value">${esc(info.operator || '—')}</div></div></div>
-          <div class="result-row"><div class="result-icon">${I.map}</div><div class="result-content"><div class="result-label">Координаты</div><div class="result-value mono">${info.lat.toFixed(4)}, ${info.lon.toFixed(4)}</div></div></div>
+          <div class="result-row"><div class="result-icon">${I.clock}</div><div class="result-content"><div class="result-label">Часовой пояс</div><div class="result-value">${esc(info.tz || '—')}</div></div></div>
         </div>
         <button class="btn" onclick="openBot()" style="margin-top:12px;">🤖 Полная проверка в боте</button>
         <button class="btn secondary" onclick="closePhoneMap()">Закрыть</button>
       </div>
     </div>
   `;
-
   document.body.appendChild(overlay);
-  setTimeout(() => initPhoneMap(info.lat, info.lon, info), 100);
+  setTimeout(() => initPhoneMap(info.lat, info.lon, info), 150);
 }
 
 function closePhoneMap() {
@@ -1478,40 +1447,31 @@ function initPhoneMap(lat, lon, info) {
   const isDark = currentTheme === 'dark';
   const mapEl = document.getElementById('phone-map');
   if (!mapEl) return;
-
-  const map = L.map('phone-map', {
-    zoomControl: false, attributionControl: false,
-    center: [lat, lon], zoom: 6, minZoom: 2, maxZoom: 18
-  });
-
+  const map = L.map('phone-map', { zoomControl: false, attributionControl: false, center: [lat, lon], zoom: 6, minZoom: 2, maxZoom: 18 });
   const tileUrl = isDark
-    ? 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}'
-    : 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
-
-  L.tileLayer(tileUrl, { maxZoom: 19, subdomains: 'abcd' }).addTo(map);
+    ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+    : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+  L.tileLayer(tileUrl, { maxZoom: 19, subdomains: 'abcd', attribution: '' }).addTo(map);
   L.control.zoom({ position: 'bottomright' }).addTo(map);
-
   const icon = L.divIcon({
     className: '',
-    html: `<div style="position:relative;width:24px;height:24px;">
-      <div style="position:absolute;inset:0;border-radius:50%;background:#007aff;border:3px solid white;box-shadow:0 3px 12px rgba(0,122,255,0.5);"></div>
-      <div style="position:absolute;inset:-10px;border-radius:50%;border:2px solid #007aff;opacity:0.4;animation:pulsePin 2s ease-out infinite;"></div>
+    html: `<div style="position:relative;width:28px;height:28px;">
+      <div style="position:absolute;inset:0;border-radius:50%;background:#007aff;border:3px solid white;box-shadow:0 3px 12px rgba(0,122,255,0.6);"></div>
+      <div style="position:absolute;inset:-12px;border-radius:50%;border:2px solid #007aff;opacity:0.5;animation:pulsePin 2s ease-out infinite;"></div>
     </div>`,
-    iconSize: [24, 24], iconAnchor: [12, 12]
+    iconSize: [28, 28], iconAnchor: [14, 14]
   });
-
   L.marker([lat, lon], { icon }).addTo(map)
     .bindPopup(`<div style="font-family:-apple-system,sans-serif;padding:4px;">
       <b style="font-size:14px;">${esc(info.flag || '')} ${esc(info.country || '')}</b><br>
       <span style="font-size:12px;color:#8e8e93;">${esc(info.operator || '')}</span>
     </div>`).openPopup();
-
   window._phoneMap = map;
-  setTimeout(() => map.invalidateSize(), 200);
+  setTimeout(() => map.invalidateSize(), 250);
 }
 
 // ============================================================
-// RENDER: SUBSCRIPTION
+// SUBSCRIPTION / API / TRACKING / DELETE / ABOUT
 // ============================================================
 function renderSubscription() {
   contentWrap.innerHTML = `
@@ -1522,42 +1482,37 @@ function renderSubscription() {
       <div class="result-row"><div class="result-icon">${I.search}</div><div class="result-content"><div class="result-label">Поиск</div><div class="result-value">✅ Да</div></div></div>
       <div class="result-row"><div class="result-icon">${I.phone}</div><div class="result-content"><div class="result-label">Проверка номеров</div><div class="result-value">✅ Да</div></div></div>
     </div>
-
     <div class="section-title">Планы</div>
     <ul class="list">
-      <li class="list-item" onclick="buyPlan('1_month','1 месяц','5 USD')">
+      <li class="list-item" onclick="buyPlan('1 месяц','5 USD')">
         <div class="list-icon orange">${I.star}</div>
         <div class="list-content"><div class="list-title">1 месяц</div><div class="list-sub">5 USD</div></div>
         <div class="list-chevron">${I.search}</div>
       </li>
-      <li class="list-item" onclick="buyPlan('6_months','6 месяцев','20 USD')">
+      <li class="list-item" onclick="buyPlan('6 месяцев','20 USD')">
         <div class="list-icon orange">${I.star}</div>
         <div class="list-content"><div class="list-title">6 месяцев</div><div class="list-sub">20 USD · Выгода 33%</div></div>
         <div class="list-chevron">${I.search}</div>
       </li>
-      <li class="list-item" onclick="buyPlan('1_year','1 год','45 USD')">
+      <li class="list-item" onclick="buyPlan('1 год','45 USD')">
         <div class="list-icon orange">${I.star}</div>
         <div class="list-content"><div class="list-title">1 год</div><div class="list-sub">45 USD · Выгода 40%</div></div>
         <div class="list-chevron">${I.search}</div>
       </li>
     </ul>
-
     <button class="btn secondary" onclick="renderScreen('home')">← Назад</button>
   `;
 }
-function buyPlan(id, name, price) {
+function buyPlan(name, price) {
   vibrate();
   showModal(`
     <div class="modal-title">⭐ ${name}</div>
-    <div class="modal-desc">К оплате: ${price}<br><br>Оплата в Telegram-боте. Нажмите кнопку, чтобы перейти к оплате.</div>
+    <div class="modal-desc">К оплате: ${price}<br><br>Оплата в Telegram-боте.</div>
     <button class="btn" onclick="openBot(); closeModal();">🤖 Перейти в бота</button>
     <button class="btn secondary" onclick="closeModal()">Отмена</button>
   `);
 }
 
-// ============================================================
-// RENDER: API TOKENS
-// ============================================================
 function renderApiTokens() {
   contentWrap.innerHTML = `
     <div class="section-title">API Токены</div>
@@ -1565,7 +1520,6 @@ function renderApiTokens() {
       <div class="result-row"><div class="result-icon">${I.chart}</div><div class="result-content"><div class="result-label">Возможности</div><div class="result-value">Список юзеров, поиск, статистика</div></div></div>
       <div class="result-row"><div class="result-icon">${I.clock}</div><div class="result-content"><div class="result-label">Срок</div><div class="result-value">30 дней</div></div></div>
     </div>
-
     <div class="section-title">Пакеты</div>
     <ul class="list">
       <li class="list-item" onclick="buyApi('100 запросов','1 USD')">
@@ -1589,7 +1543,6 @@ function renderApiTokens() {
         <div class="list-chevron">${I.search}</div>
       </li>
     </ul>
-
     <div class="section-title">Мой токен</div>
     <div class="result-card">
       <div class="result-row"><div class="result-icon">${I.key}</div><div class="result-content"><div class="result-label">Текущий</div><div class="result-value mono" style="font-size:12px;word-break:break-all;">${esc(APIFY_TOKEN.slice(0, 32))}...</div></div></div>
@@ -1602,15 +1555,12 @@ function buyApi(name, price) {
   vibrate();
   showModal(`
     <div class="modal-title">🔌 ${name}</div>
-    <div class="modal-desc">К оплате: ${price}<br><br>Оплата в Telegram-боте через OxaPay.</div>
+    <div class="modal-desc">К оплате: ${price}<br><br>Оплата в Telegram-боте.</div>
     <button class="btn" onclick="openBot(); closeModal();">🤖 Купить</button>
     <button class="btn secondary" onclick="closeModal()">Отмена</button>
   `);
 }
 
-// ============================================================
-// RENDER: TRACKING
-// ============================================================
 function renderTracking() {
   contentWrap.innerHTML = `
     <div class="section-title">Отслеживание</div>
@@ -1641,9 +1591,6 @@ function activateTracking() {
   `);
 }
 
-// ============================================================
-// RENDER: DELETE DATA
-// ============================================================
 function renderDeleteData() {
   contentWrap.innerHTML = `
     <div class="section-title">Удаление данных</div>
@@ -1674,9 +1621,6 @@ function confirmDelete() {
   `);
 }
 
-// ============================================================
-// RENDER: ABOUT
-// ============================================================
 function renderAbout() {
   contentWrap.innerHTML = `
     <div style="padding-top:20px;text-align:center;">
@@ -1686,14 +1630,12 @@ function renderAbout() {
       <div style="font-size:22px;font-weight:700;color:var(--text);">AGENT ANALYTICS</div>
       <div style="font-size:14px;color:var(--text-mute);margin-top:4px;">Версия 2.0</div>
     </div>
-
     <div class="section-title">📊 О проекте</div>
     <div class="chart-wrap">
       <div style="color:var(--text-dim);font-size:14px;line-height:1.6;">
         Многофункциональный бот для анализа Telegram-активности. Работает в личных чатах и группах.
       </div>
     </div>
-
     <div class="section-title">🛡️ Для пользователей</div>
     <ul class="list">
       <li class="list-item"><div class="list-icon">${I.search}</div><div class="list-content"><div class="list-title">Поиск людей</div><div class="list-sub">По ID, @username, телефону</div></div></li>
@@ -1702,21 +1644,19 @@ function renderAbout() {
       <li class="list-item"><div class="list-icon purple">${I.bot}</div><div class="list-content"><div class="list-title">AI Помощник «Маям»</div><div class="list-sub">Отвечает на вопросы</div></div></li>
       <li class="list-item"><div class="list-icon orange">${I.star}</div><div class="list-content"><div class="list-title">Бонусы и рефералы</div><div class="list-sub">+10 алмазов в день</div></div></li>
     </ul>
-
     <div class="section-title">🛡️ Для групп</div>
     <ul class="list">
       <li class="list-item"><div class="list-icon red">${I.shield}</div><div class="list-content"><div class="list-title">Анти-спам</div><div class="list-sub">Блокировка рекламы</div></div></li>
       <li class="list-item"><div class="list-icon red">${I.shield}</div><div class="list-content"><div class="list-title">Анти-оскорбления</div><div class="list-sub">Фильтр мата</div></div></li>
       <li class="list-item"><div class="list-icon green">${I.users}</div><div class="list-content"><div class="list-title">Приветствие новичков</div><div class="list-sub">Автоматически</div></div></li>
     </ul>
-
     <button class="btn" onclick="openBot()">🤖 Открыть бота в Telegram</button>
     <button class="btn secondary" onclick="renderScreen('home')">← Назад</button>
   `;
 }
 
 // ============================================================
-// MODAL
+// MODAL / ACTIONS
 // ============================================================
 function showModal(html) {
   const overlay = document.createElement('div');
@@ -1728,10 +1668,6 @@ function showModal(html) {
 function closeModal() {
   document.querySelectorAll('.modal-overlay').forEach(m => m.remove());
 }
-
-// ============================================================
-// ACTIONS
-// ============================================================
 function openSettings() {
   showModal(`
     <div class="modal-title">⚙️ Настройки</div>
@@ -1783,21 +1719,19 @@ function openMyProfile() {
 }
 
 // ============================================================
-// SEARCH HANDLER
+// SEARCH
 // ============================================================
 async function handleSearch() {
   const q = searchInput.value.trim();
   if (!q) return;
   searchBtn.disabled = true;
   vibrate(10);
-
   try {
     const isId = /^\d{5,15}$/.test(q);
     if (isId) {
       const userId = parseInt(q);
       try { await apiGetUser(userId); renderScreen('profile', userId); return; } catch (e) {}
     }
-
     const users = await apiGetUsers();
     const query = q.toLowerCase().replace('@', '').replace(/[\s\-]/g, '');
     const found = users.filter(u =>
@@ -1805,10 +1739,8 @@ async function handleSearch() {
       (u.username || '').toLowerCase().includes(query) ||
       ((u.first_name || '') + ' ' + (u.last_name || '')).toLowerCase().includes(query)
     );
-
     if (found.length === 0) { toast('Ничего не найдено', 'error'); return; }
     if (found.length === 1) { renderScreen('profile', found[0].user_id); return; }
-
     contentWrap.innerHTML = `
       <div class="section-title">Найдено: ${found.length}</div>
       <ul class="list">
@@ -1856,7 +1788,6 @@ window.addEventListener('load', () => {
   }, 800);
 });
 
-// Экспорт для inline-обработчиков
 window.renderScreen = renderScreen;
 window.openMyProfile = openMyProfile;
 window.openBot = openBot;
@@ -1870,6 +1801,7 @@ window.closeModal = closeModal;
 window.saveSettings = saveSettings;
 window.copyToClipboard = copyToClipboard;
 window.closePhoneMap = closePhoneMap;
+window.showPhoneMapCurrent = showPhoneMapCurrent;
 window.searchInput = searchInput;
 window.$ = $;
 </script>

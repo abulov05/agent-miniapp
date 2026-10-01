@@ -3,1873 +3,1430 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#000000">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#ffffff">
 <title>AGENT ANALYTICS</title>
 
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
 :root {
-    --ios-bg: #000000;
-    --ios-bg-2: #1c1c1e;
-    --ios-bg-3: #2c2c2e;
-    --ios-sep: rgba(255,255,255,0.08);
-    --ios-blue: #0a84ff;
-    --ios-green: #30d158;
-    --ios-red: #ff453a;
-    --ios-orange: #ff9f0a;
-    --ios-purple: #bf5af2;
-    --ios-pink: #ff375f;
-    --ios-teal: #64d2ff;
-    --ios-yellow: #ffd60a;
-    --ios-text: #ffffff;
-    --ios-text-2: #8e8e93;
-    --ios-text-3: #48484a;
-    --r-sm: 10px;
-    --r-md: 14px;
-    --r-lg: 20px;
-    --safe-top: env(safe-area-inset-top, 0px);
-    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --bg: #ffffff;
+  --bg-elev: #f2f2f7;
+  --bg-elev-2: #e5e5ea;
+  --border: #c6c6c8;
+  --border-soft: #e5e5ea;
+  --text: #000000;
+  --text-dim: #3c3c43;
+  --text-mute: #8e8e93;
+  --accent: #007aff;
+  --accent-dim: #0066d6;
+  --green: #34c759;
+  --red: #ff3b30;
+  --orange: #ff9500;
+  --purple: #af52de;
+  --pink: #ff2d55;
 }
 
-html, body { height: 100%; overflow-x: hidden; }
-
-body {
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;
-    background: var(--ios-bg);
-    color: var(--ios-text);
-    -webkit-font-smoothing: antialiased;
-    padding-bottom: calc(90px + var(--safe-bottom));
+html[data-theme="dark"] {
+  --bg: #000000;
+  --bg-elev: #1c1c1e;
+  --bg-elev-2: #2c2c2e;
+  --border: #38383a;
+  --border-soft: #2c2c2e;
+  --text: #ffffff;
+  --text-dim: #ebebf5;
+  --text-mute: #8e8e93;
+  --accent: #0a84ff;
+  --accent-dim: #0066d6;
 }
 
-.ios-header {
-    position: sticky; top: 0; z-index: 100;
-    background: rgba(0,0,0,0.75);
-    backdrop-filter: saturate(180%) blur(20px);
-    -webkit-backdrop-filter: saturate(180%) blur(20px);
-    padding: calc(var(--safe-top) + 12px) 60px 12px;
-    border-bottom: 0.5px solid var(--ios-sep);
-    text-align: center;
-    min-height: 56px;
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+  font-size: 17px; line-height: 1.3;
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+  user-select: none; -webkit-user-select: none;
+  transition: background-color 0.3s, color 0.3s;
 }
 
-.ios-header-title { font-size: 17px; font-weight: 600; letter-spacing: -0.4px; }
-.ios-header-sub { font-size: 12px; color: var(--ios-text-2); margin-top: 2px; }
+input, textarea { user-select: text; -webkit-user-select: text; }
 
-.back-btn {
-    position: absolute; left: 16px; top: calc(var(--safe-top) + 16px);
-    background: none; border: none;
-    color: var(--ios-blue); font-size: 17px; font-weight: 400;
-    cursor: pointer; font-family: inherit;
-    padding: 4px 8px; display: none;
+#app {
+  position: fixed; inset: 0;
+  display: flex; flex-direction: column;
+  background: var(--bg);
 }
 
-.back-btn.visible { display: block; }
-
-.ios-content { padding: 16px; animation: fadeIn 0.25s ease; }
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
+/* HEADER */
+.header {
+  display: flex; align-items: center; gap: 12px;
+  padding: calc(env(safe-area-inset-top, 0px) + 8px) 16px 8px;
+  background: var(--bg);
+  border-bottom: 0.5px solid var(--border-soft);
+  flex-shrink: 0; z-index: 100;
 }
 
-.section { margin-bottom: 24px; }
+.logo { width: 36px; height: 36px; flex-shrink: 0; }
+.logo svg { width: 36px; height: 36px; }
 
-.section-header {
-    font-size: 13px; font-weight: 600;
-    color: var(--ios-text-2);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    padding: 0 4px 8px;
+.brand-text { display: flex; flex-direction: column; line-height: 1.1; }
+.brand-name { font-size: 15px; font-weight: 600; letter-spacing: 0.3px; color: var(--text); }
+.brand-sub { font-size: 11px; font-weight: 400; letter-spacing: 0.5px; color: var(--text-mute); margin-top: 1px; }
+
+.header-actions { margin-left: auto; display: flex; gap: 6px; }
+
+.icon-btn {
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  background: transparent; border: none; border-radius: 50%;
+  color: var(--accent); cursor: pointer;
 }
+.icon-btn:active { background: rgba(120, 120, 128, 0.16); }
+.icon-btn svg { width: 22px; height: 22px; stroke-width: 2; }
 
-/* ===== IOS APP ICONS ===== */
-.app-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px 12px;
-    padding: 8px 0;
+/* SEARCH */
+.search-wrap {
+  padding: 8px 16px 12px;
+  background: var(--bg);
+  flex-shrink: 0; z-index: 90;
 }
-
-.app-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    cursor: pointer;
-    transition: transform 0.15s;
-    text-decoration: none;
-    color: inherit;
-}
-
-.app-item:active { transform: scale(0.92); }
-
-.app-icon {
-    width: 64px;
-    height: 64px;
-    border-radius: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 30px;
-    color: white;
-    position: relative;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-    overflow: hidden;
-}
-
-.app-icon::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 50%);
-    pointer-events: none;
-}
-
-.app-icon.blue { background: linear-gradient(180deg, #4da2ff 0%, #0a84ff 100%); }
-.app-icon.green { background: linear-gradient(180deg, #4ce07f 0%, #30d158 100%); }
-.app-icon.red { background: linear-gradient(180deg, #ff6b5e 0%, #ff453a 100%); }
-.app-icon.orange { background: linear-gradient(180deg, #ffb340 0%, #ff9f0a 100%); }
-.app-icon.purple { background: linear-gradient(180deg, #d27cf7 0%, #bf5af2 100%); }
-.app-icon.pink { background: linear-gradient(180deg, #ff5e80 0%, #ff375f 100%); }
-.app-icon.teal { background: linear-gradient(180deg, #7ee0ff 0%, #64d2ff 100%); }
-.app-icon.yellow { background: linear-gradient(180deg, #ffe14d 0%, #ffd60a 100%); }
-.app-icon.gray { background: linear-gradient(180deg, #8e8e93 0%, #48484a 100%); }
-
-.app-label {
-    font-size: 11px;
-    font-weight: 400;
-    text-align: center;
-    line-height: 1.2;
-    color: var(--ios-text);
-    max-width: 72px;
-}
-
-.profile-card {
-    display: flex; align-items: center; gap: 14px;
-    background: var(--ios-bg-2);
-    border-radius: var(--r-lg);
-    padding: 18px;
-    margin-bottom: 16px;
-}
-
-.profile-avatar {
-    width: 64px; height: 64px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #0a84ff, #bf5af2);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 26px; font-weight: 700; flex-shrink: 0;
-}
-
-.profile-info { flex: 1; min-width: 0; }
-.profile-name { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 2px; }
-.profile-username { font-size: 14px; color: var(--ios-blue); }
-
-.profile-badge {
-    display: inline-block; font-size: 10px; font-weight: 600;
-    padding: 3px 8px; border-radius: 6px;
-    background: rgba(255,159,10,0.15);
-    color: var(--ios-orange);
-    margin-top: 6px; letter-spacing: 0.3px;
-}
-
-.stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-
-.stat-card {
-    background: var(--ios-bg-2);
-    border-radius: var(--r-md);
-    padding: 16px;
-}
-
-.stat-icon {
-    width: 32px; height: 32px; border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 16px; margin-bottom: 10px;
-}
-
-.stat-icon.blue { background: rgba(10,132,255,0.15); }
-.stat-icon.green { background: rgba(48,209,88,0.15); }
-.stat-icon.purple { background: rgba(191,90,242,0.15); }
-.stat-icon.orange { background: rgba(255,159,10,0.15); }
-.stat-icon.pink { background: rgba(255,55,95,0.15); }
-.stat-icon.teal { background: rgba(100,210,255,0.15); }
-.stat-icon.yellow { background: rgba(255,214,10,0.15); }
-
-.stat-value { font-size: 24px; font-weight: 700; letter-spacing: -0.8px; margin-bottom: 2px; }
-.stat-label {
-    font-size: 11px; color: var(--ios-text-2);
-    text-transform: uppercase;
-    letter-spacing: 0.3px; font-weight: 500;
-}
-
-.menu-list {
-    background: var(--ios-bg-2);
-    border-radius: var(--r-md);
-    overflow: hidden;
-}
-
-.menu-item {
-    display: flex; align-items: center; gap: 12px;
-    padding: 14px 16px;
-    border-bottom: 0.5px solid var(--ios-sep);
-    cursor: pointer; transition: background 0.15s;
-}
-
-.menu-item:last-child { border-bottom: none; }
-.menu-item:active { background: var(--ios-bg-3); }
-
-.menu-icon {
-    width: 30px; height: 30px; border-radius: 7px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 15px; flex-shrink: 0;
-}
-
-.menu-text { flex: 1; font-size: 16px; }
-.menu-chevron { color: var(--ios-text-3); font-size: 18px; font-weight: 300; }
-
-.detail-card {
-    background: var(--ios-bg-2);
-    border-radius: var(--r-md);
-    overflow: hidden; margin-bottom: 16px;
-}
-
-.detail-row {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 13px 16px;
-    border-bottom: 0.5px solid var(--ios-sep);
-    font-size: 15px; gap: 12px;
-}
-
-.detail-row:last-child { border-bottom: none; }
-.detail-row.stacked { flex-direction: column; align-items: flex-start; gap: 4px; }
-
-.detail-label { color: var(--ios-text-2); }
-
-.detail-value {
-    color: var(--ios-text);
-    font-weight: 500; text-align: right;
-    max-width: 60%; word-break: break-word;
-}
-
-.detail-value.blue { color: var(--ios-blue); }
-.detail-value.green { color: var(--ios-green); }
-.detail-value.red { color: var(--ios-red); }
-.detail-value.orange { color: var(--ios-orange); }
-
-.comment-meta { font-size: 12px; color: var(--ios-text-2); }
-.comment-text { font-size: 14px; color: var(--ios-text); }
-
-.chart-card {
-    background: var(--ios-bg-2);
-    border-radius: var(--r-md);
-    padding: 16px;
-}
-
-.chart-header {
-    display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 12px;
-}
-
-.chart-title { font-size: 15px; font-weight: 600; }
-.chart-period { font-size: 13px; color: var(--ios-blue); font-weight: 500; }
-.chart-container { height: 180px; position: relative; }
 
 .search-bar {
-    display: flex; align-items: center; gap: 8px;
-    background: var(--ios-bg-3);
-    border-radius: 10px;
-    padding: 10px 14px;
-    margin-bottom: 12px;
+  display: flex; align-items: center; gap: 6px;
+  background: var(--bg-elev);
+  border: none; border-radius: 10px;
+  padding: 7px 8px 7px 10px;
 }
-
+.search-bar:focus-within { background: var(--bg-elev-2); }
+.search-bar svg { width: 16px; height: 16px; color: var(--text-mute); flex-shrink: 0; stroke-width: 2.5; }
 .search-bar input {
-    flex: 1; background: none; border: none; outline: none;
-    color: var(--ios-text); font-size: 16px; font-family: inherit;
+  flex: 1; min-width: 0;
+  background: transparent; border: none; outline: none;
+  color: var(--text); font-family: inherit; font-size: 17px;
+  padding: 0 2px;
+}
+.search-bar input::placeholder { color: var(--text-mute); }
+
+.search-submit {
+  width: 22px; height: 22px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--accent); border: none; border-radius: 50%;
+  color: white; cursor: pointer; flex-shrink: 0;
+}
+.search-submit:active { opacity: 0.7; }
+.search-submit:disabled { opacity: 0.3; }
+.search-submit svg { width: 12px; height: 12px; stroke-width: 3; }
+
+/* CONTENT */
+.content-wrap {
+  flex: 1; position: relative;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 0 16px 16px;
+  min-height: 0;
 }
 
-.search-bar input::placeholder { color: var(--ios-text-2); }
-.search-icon { color: var(--ios-text-2); font-size: 16px; }
-
-.user-card {
-    display: flex; align-items: center; gap: 12px;
-    background: var(--ios-bg-2);
-    border-radius: var(--r-md);
-    padding: 12px 14px;
-    margin-bottom: 8px;
-    cursor: pointer; transition: background 0.15s;
+/* WELCOME */
+.welcome {
+  text-align: center;
+  padding: 40px 20px 30px;
+}
+.welcome-icon {
+  width: 96px; height: 96px;
+  margin: 0 auto 20px;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, rgba(0,122,255,0.1), rgba(0,122,255,0.02));
+  border-radius: 28px;
+}
+.welcome-icon svg { width: 56px; height: 56px; }
+.welcome-title {
+  font-size: 24px; font-weight: 700;
+  color: var(--text); margin-bottom: 6px;
+  letter-spacing: -0.5px;
+}
+.welcome-sub {
+  font-size: 15px; color: var(--text-mute);
+  margin-bottom: 24px; line-height: 1.4;
 }
 
-.user-card:active { background: var(--ios-bg-3); }
+.welcome-hint {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 14px;
+  background: var(--bg-elev);
+  border-radius: 20px;
+  font-size: 13px; color: var(--text-mute);
+  margin-bottom: 12px;
+}
+.welcome-hint svg { width: 16px; height: 16px; stroke-width: 2; }
 
-.user-avatar-sm {
-    width: 44px; height: 44px; border-radius: 50%;
-    background: linear-gradient(135deg, #0a84ff, #bf5af2);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 17px; font-weight: 600; flex-shrink: 0;
+/* QUICK GRID */
+.quick-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 16px;
 }
 
-.user-info-sm { flex: 1; min-width: 0; }
+.quick-card {
+  background: var(--bg-elev);
+  border-radius: 14px;
+  padding: 16px 14px;
+  cursor: pointer;
+  display: flex; flex-direction: column; gap: 10px;
+  border: none; text-align: left;
+  font-family: inherit;
+  transition: transform 0.1s, background 0.15s;
+}
+.quick-card:active { transform: scale(0.97); background: var(--bg-elev-2); }
 
-.user-name-sm {
-    font-size: 16px; font-weight: 500;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+.quick-card-icon {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,122,255,0.12);
+  color: var(--accent);
+}
+.quick-card-icon.green { background: rgba(52,199,89,0.12); color: var(--green); }
+.quick-card-icon.orange { background: rgba(255,149,0,0.12); color: var(--orange); }
+.quick-card-icon.purple { background: rgba(175,82,222,0.12); color: var(--purple); }
+.quick-card-icon.pink { background: rgba(255,45,85,0.12); color: var(--pink); }
+.quick-card-icon.red { background: rgba(255,59,48,0.12); color: var(--red); }
+.quick-card-icon svg { width: 20px; height: 20px; stroke-width: 2; }
+
+.quick-card-title {
+  font-size: 15px; font-weight: 600;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+.quick-card-sub {
+  font-size: 12px; color: var(--text-mute);
+  line-height: 1.3;
 }
 
-.user-id-sm {
-    font-size: 13px; color: var(--ios-text-2);
-    font-family: 'SF Mono', monospace;
+/* STATS */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 16px;
 }
 
-.btn-primary {
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-    padding: 14px; border-radius: var(--r-md);
-    background: var(--ios-blue); color: white;
-    font-size: 16px; font-weight: 600;
-    border: none; cursor: pointer; font-family: inherit;
-    transition: opacity 0.15s;
+.stat-card {
+  background: var(--bg-elev);
+  border-radius: 14px;
+  padding: 16px 14px;
+  text-align: center;
+}
+.stat-value {
+  font-size: 24px; font-weight: 700;
+  color: var(--text); letter-spacing: -0.5px;
+  margin-bottom: 4px;
+}
+.stat-label {
+  font-size: 11px; color: var(--text-mute);
+  text-transform: uppercase;
+  letter-spacing: 0.5px; font-weight: 500;
 }
 
-.btn-primary:active { opacity: 0.8; }
-
-.btn-secondary {
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-    padding: 14px; border-radius: var(--r-md);
-    background: var(--ios-bg-3); color: var(--ios-text);
-    font-size: 16px; font-weight: 500;
-    border: none; cursor: pointer; font-family: inherit;
-    transition: opacity 0.15s;
+/* SECTION */
+.section-title {
+  font-size: 13px; font-weight: 600;
+  color: var(--text-mute);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 20px 0 8px;
+  padding: 0 4px;
 }
 
-.btn-secondary:active { opacity: 0.8; }
-
-.full-width { width: 100%; margin-top: 12px; }
-
-.loading {
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    padding: 60px 20px; color: var(--ios-text-2);
+/* RESULT */
+.result-card {
+  background: var(--bg);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 0.5px solid var(--border-soft);
 }
 
-.spinner {
-    width: 32px; height: 32px;
-    border: 3px solid rgba(255,255,255,0.1);
-    border-top-color: var(--ios-blue);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    margin-bottom: 16px;
+.result-row {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 0.5px solid var(--border-soft);
+}
+.result-row:last-child { border-bottom: none; }
+
+.result-icon {
+  width: 22px; height: 22px;
+  flex-shrink: 0; color: var(--accent);
+  margin-top: 1px;
+}
+.result-icon svg { width: 22px; height: 22px; stroke-width: 2; }
+.result-content { flex: 1; min-width: 0; }
+
+.result-label { font-size: 13px; color: var(--text-mute); margin-bottom: 1px; }
+.result-value { font-size: 17px; color: var(--text); word-break: break-word; }
+.result-value.mono { font-family: 'SF Mono', 'Menlo', monospace; font-size: 15px; }
+.result-value.accent { color: var(--accent); font-weight: 600; }
+
+/* PANELS */
+.panel {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  background: var(--bg);
+  border-top-left-radius: 14px;
+  border-top-right-radius: 14px;
+  box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.18);
+  transform: translateY(100%);
+  transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+  max-height: 85%;
+  display: flex; flex-direction: column;
+  z-index: 200;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.panel.open { transform: translateY(0); }
+
+.panel-handle {
+  width: 36px; height: 5px;
+  background: var(--border);
+  border-radius: 3px;
+  margin: 8px auto 4px;
+  flex-shrink: 0;
 }
 
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.empty-state { text-align: center; padding: 40px 20px; color: var(--ios-text-2); }
-.empty-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.5; }
-.empty-text { font-size: 15px; }
-
-.ios-tabbar {
-    position: fixed; bottom: 0; left: 0; right: 0;
-    background: rgba(28,28,30,0.85);
-    backdrop-filter: saturate(180%) blur(20px);
-    -webkit-backdrop-filter: saturate(180%) blur(20px);
-    border-top: 0.5px solid var(--ios-sep);
-    display: flex; justify-content: space-around;
-    padding: 8px 0 calc(8px + var(--safe-bottom));
-    z-index: 200;
+.panel-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 16px 12px;
+  flex-shrink: 0;
+  border-bottom: 0.5px solid var(--border-soft);
+  position: relative;
 }
 
-.tab-item {
-    display: flex; flex-direction: column; align-items: center; gap: 3px;
-    padding: 4px 12px; cursor: pointer;
-    color: var(--ios-text-2);
-    transition: color 0.2s;
-    background: none; border: none; font-family: inherit;
+.panel-title {
+  font-size: 18px; font-weight: 600;
+  color: var(--text); flex: 1; text-align: center;
 }
 
-.tab-item.active { color: var(--ios-blue); }
-.tab-icon { font-size: 22px; line-height: 1; }
-.tab-label { font-size: 10px; font-weight: 500; letter-spacing: 0.2px; }
+.panel-close {
+  position: absolute; right: 16px; top: 50%;
+  transform: translateY(-50%);
+  width: 30px; height: 30px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg-elev);
+  border: none; border-radius: 50%;
+  color: var(--text-mute); cursor: pointer;
+}
+
+.panel-body {
+  padding: 16px;
+  overflow-y: auto;
+  flex: 1;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* FORM */
+.field { margin-bottom: 14px; }
+.field-label { display: block; font-size: 13px; color: var(--text-mute); margin-bottom: 6px; }
+.field-input {
+  width: 100%; padding: 12px 14px;
+  background: var(--bg-elev);
+  border: none; border-radius: 10px;
+  color: var(--text); font-family: inherit; font-size: 17px;
+  outline: none;
+}
+.field-input:focus { background: var(--bg-elev-2); }
+.field-input::placeholder { color: var(--text-mute); }
+.field-hint { font-size: 12px; color: var(--text-mute); margin-top: 5px; }
+
+.btn {
+  width: 100%; padding: 14px 20px;
+  background: var(--accent);
+  border: none; border-radius: 12px;
+  color: white; font-family: inherit;
+  font-size: 17px; font-weight: 600;
+  cursor: pointer;
+}
+.btn:active { background: var(--accent-dim); transform: scale(0.98); }
+.btn:disabled { opacity: 0.4; }
+.btn.secondary { background: var(--bg-elev); color: var(--accent); }
+.btn.danger { background: var(--red); }
+
+/* LIST */
+.list {
+  list-style: none;
+  background: var(--bg);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 0.5px solid var(--border-soft);
+}
+
+.list-item {
+  display: flex; align-items: center; gap: 14px;
+  padding: 11px 16px;
+  border-bottom: 0.5px solid var(--border-soft);
+  cursor: pointer;
+  -webkit-tap-highlight-color: rgba(0, 122, 255, 0.1);
+}
+.list-item:last-child { border-bottom: none; }
+.list-item:active { background: var(--bg-elev); }
+
+.list-icon {
+  width: 29px; height: 29px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--accent);
+  border-radius: 7px;
+  color: white; flex-shrink: 0;
+}
+.list-icon svg { width: 18px; height: 18px; stroke-width: 2; }
+.list-content { flex: 1; min-width: 0; }
+.list-title { font-size: 17px; color: var(--text); margin-bottom: 1px; }
+.list-sub { font-size: 13px; color: var(--text-mute); }
+.list-chevron { color: var(--text-mute); flex-shrink: 0; opacity: 0.5; }
+.list-chevron svg { width: 16px; height: 16px; stroke-width: 2.5; }
+
+.list-icon.red { background: var(--red); }
+.list-icon.green { background: var(--green); }
+.list-icon.orange { background: var(--orange); }
+.list-icon.purple { background: var(--purple); }
+.list-icon.pink { background: var(--pink); }
+.list-icon.gray { background: var(--text-mute); }
+
+/* SETTINGS TOGGLE */
+.setting-row {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  padding: 14px 0;
+  border-bottom: 0.5px solid var(--border-soft);
+}
+.setting-row:last-child { border-bottom: none; }
+.setting-label { font-size: 17px; color: var(--text); }
+.setting-desc { font-size: 12px; color: var(--text-mute); margin-top: 2px; }
+
+.toggle {
+  position: relative;
+  width: 51px; height: 31px;
+  flex-shrink: 0;
+}
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+  position: absolute; inset: 0;
+  background: var(--bg-elev-2);
+  border-radius: 15.5px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 27px; height: 27px;
+  left: 2px; top: 2px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transition: 0.3s;
+}
+.toggle input:checked + .toggle-slider { background: #34c759; }
+.toggle input:checked + .toggle-slider::before { transform: translateX(20px); }
+
+/* TABS */
+.tabs {
+  display: flex;
+  background: var(--bg);
+  border-top: 0.5px solid var(--border-soft);
+  padding: 6px 0 calc(env(safe-area-inset-bottom, 0px) + 2px);
+  flex-shrink: 0; z-index: 100;
+}
+
+.tab {
+  flex: 1;
+  display: flex; flex-direction: column; align-items: center;
+  gap: 2px; padding: 4px;
+  background: transparent; border: none;
+  color: var(--text-mute); cursor: pointer;
+  font-family: inherit;
+  border-radius: 8px;
+}
+.tab:active { opacity: 0.5; }
+.tab.active { color: var(--accent); }
+.tab svg { width: 26px; height: 26px; stroke-width: 1.8; }
+.tab span { font-size: 10px; font-weight: 500; }
+
+/* TOAST */
+.toast-wrap {
+  position: fixed;
+  left: 50%; transform: translateX(-50%);
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 90px);
+  z-index: 1000;
+  display: flex; flex-direction: column;
+  gap: 8px; pointer-events: none;
+  width: calc(100% - 32px);
+  max-width: 340px;
+}
 
 .toast {
-    position: fixed;
-    bottom: calc(100px + var(--safe-bottom));
-    left: 50%;
-    transform: translateX(-50%) translateY(20px);
-    background: rgba(44,44,46,0.95);
-    backdrop-filter: blur(10px);
-    color: white; padding: 12px 20px;
-    border-radius: 20px;
-    font-size: 14px; font-weight: 500;
-    opacity: 0; transition: all 0.3s ease;
-    z-index: 1000; pointer-events: none;
-    max-width: 90%; text-align: center;
+  padding: 12px 16px;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(20px);
+  border-radius: 14px;
+  font-size: 14px; font-weight: 500;
+  color: white; text-align: center;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  transform: translateY(20px) scale(0.95);
+  opacity: 0;
+  transition: transform 0.25s, opacity 0.25s;
+  pointer-events: auto;
+}
+.toast.show { transform: translateY(0) scale(1); opacity: 1; }
+.toast.error { background: rgba(255, 59, 48, 0.95); }
+.toast.ok { background: rgba(52, 199, 89, 0.95); }
+
+/* LOADING */
+.loading {
+  position: fixed; inset: 0;
+  background: var(--bg);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 20px;
+  z-index: 9999;
+  transition: opacity 0.4s;
+}
+.loading.hidden { opacity: 0; pointer-events: none; }
+.loading-logo { width: 90px; height: 90px; }
+.loading-text {
+  font-family: 'SF Mono', 'Menlo', monospace;
+  font-size: 11px; letter-spacing: 3px;
+  color: var(--text-mute); text-transform: uppercase;
+}
+.loading-bar {
+  width: 100px; height: 3px;
+  background: var(--bg-elev-2);
+  border-radius: 2px; overflow: hidden;
+}
+.loading-bar::after {
+  content: ''; display: block;
+  width: 40%; height: 100%;
+  background: var(--accent);
+  animation: loading 1.2s ease-in-out infinite;
+}
+@keyframes loading {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(350%); }
 }
 
-.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-.modal-overlay {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.7);
-    backdrop-filter: blur(10px);
-    display: flex; align-items: center; justify-content: center;
-    z-index: 500; padding: 20px;
-    animation: fadeIn 0.2s ease;
+.logo-rotator { transform-origin: 50px 50px; animation: logoSpin 4s linear infinite; }
+@keyframes logoSpin { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+.logo-pulse { transform-origin: 50px 50px; animation: logoPulse 2s ease-in-out infinite; }
+@keyframes logoPulse { 0%, 100% { opacity: 0.9; } 50% { opacity: 0.5; } }
+.logo-triangle {
+  stroke-dasharray: 260; stroke-dashoffset: 260;
+  animation: logoDraw 1.5s cubic-bezier(0.6, 0.05, 0.3, 1) 0.2s forwards;
 }
+@keyframes logoDraw { to { stroke-dashoffset: 0; } }
 
-.modal-overlay.hidden { display: none; }
-
-.modal {
-    background: var(--ios-bg-2);
-    border-radius: var(--r-lg);
-    width: 100%; max-width: 400px;
-    max-height: 85vh; overflow-y: auto;
-    animation: modalIn 0.25s ease;
+/* CHART */
+.chart-wrap {
+  background: var(--bg-elev);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 16px;
 }
-
-@keyframes modalIn {
-    from { opacity: 0; transform: scale(0.95); }
-    to { opacity: 1; transform: scale(1); }
+.chart-title {
+  font-size: 14px; font-weight: 600;
+  color: var(--text);
+  margin-bottom: 12px;
+  display: flex; align-items: center; gap: 8px;
 }
-
-.modal-header {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 16px 20px;
-    border-bottom: 0.5px solid var(--ios-sep);
-    position: sticky; top: 0;
-    background: var(--ios-bg-2); z-index: 10;
-}
-
-.modal-title { font-size: 17px; font-weight: 600; }
-
-.modal-close {
-    background: none; border: none;
-    color: var(--ios-text-2); font-size: 18px;
-    cursor: pointer; padding: 4px; font-family: inherit;
-}
-
-.modal-body { padding: 20px; }
-.modal-desc { font-size: 14px; color: var(--ios-text-2); margin-bottom: 16px; line-height: 1.5; }
-
-.modal-input {
-    width: 100%;
-    background: var(--ios-bg-3);
-    border: 1px solid transparent;
-    border-radius: 10px;
-    padding: 12px 14px;
-    color: var(--ios-text);
-    font-size: 15px;
-    font-family: 'SF Mono', monospace;
-    outline: none;
-    transition: border-color 0.2s;
-}
-
-.modal-input:focus { border-color: var(--ios-blue); }
-.modal-hint { font-size: 13px; margin-top: 10px; min-height: 18px; }
-
-.modal-footer {
-    display: flex; gap: 10px;
-    padding: 16px 20px;
-    border-top: 0.5px solid var(--ios-sep);
-    position: sticky; bottom: 0;
-    background: var(--ios-bg-2);
-}
-
-.modal-footer button { flex: 1; }
-
-.input-group { margin-bottom: 14px; }
-.input-label {
-    font-size: 13px; color: var(--ios-text-2);
-    margin-bottom: 6px; display: block; font-weight: 500;
-}
-.input-field {
-    width: 100%;
-    background: var(--ios-bg-3);
-    border: 1px solid transparent;
-    border-radius: 10px;
-    padding: 12px 14px;
-    color: var(--ios-text);
-    font-size: 15px; outline: none; font-family: inherit;
-    transition: border-color 0.2s;
-}
-.input-field:focus { border-color: var(--ios-blue); }
-
-@media (max-width: 360px) {
-    .profile-name { font-size: 18px; }
-    .stat-value { font-size: 20px; }
-    .app-icon { width: 56px; height: 56px; font-size: 26px; border-radius: 14px; }
-    .app-label { font-size: 10px; }
-}
+.chart-title svg { width: 18px; height: 18px; color: var(--accent); stroke-width: 2; }
+.chart-canvas-wrap { height: 180px; position: relative; }
 </style>
 </head>
 <body>
 
-<header class="ios-header">
-    <button class="back-btn" id="backBtn" onclick="goBack()">‹ Назад</button>
-    <div class="ios-header-title" id="pageTitle">AGENT ANALYTICS</div>
-    <div class="ios-header-sub" id="pageSubtitle">Мини-приложение</div>
-</header>
+<!-- LOADING -->
+<div class="loading" id="loading">
+  <div class="loading-logo">
+    <svg viewBox="0 0 100 100">
+      <defs>
+        <linearGradient id="lg" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#60a5fa"/>
+          <stop offset="100%" stop-color="#007aff"/>
+        </linearGradient>
+      </defs>
+      <circle cx="50" cy="50" r="46" fill="none" stroke="url(#lg)" stroke-width="1" opacity="0.3"/>
+      <g class="logo-rotator">
+        <path d="M50 50 L50 4 A46 46 0 0 1 82 18 Z" fill="url(#lg)" opacity="0.15"/>
+        <line x1="50" y1="50" x2="50" y2="4" stroke="url(#lg)" stroke-width="1" opacity="0.6"/>
+      </g>
+      <polygon class="logo-triangle" points="50,18 82,78 18,78" fill="none" stroke="url(#lg)" stroke-width="2.5" stroke-linejoin="round" pathLength="260"/>
+      <circle class="logo-pulse" cx="58" cy="58" r="9" fill="none" stroke="url(#lg)" stroke-width="2"/>
+      <circle cx="58" cy="55" r="2.5" fill="url(#lg)"/>
+      <line x1="65" y1="65" x2="70" y2="70" stroke="url(#lg)" stroke-width="2.5" stroke-linecap="round"/>
+    </svg>
+  </div>
+  <div class="loading-bar"></div>
+  <div class="loading-text">INITIALIZING</div>
+</div>
 
-<main class="ios-content" id="content">
-    <div class="loading">
-        <div class="spinner"></div>
-        <div>Загрузка...</div>
+<div id="app">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="logo">
+      <svg viewBox="0 0 100 100">
+        <defs>
+          <linearGradient id="lg2" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#60a5fa"/>
+            <stop offset="100%" stop-color="#007aff"/>
+          </linearGradient>
+        </defs>
+        <circle cx="50" cy="50" r="46" fill="none" stroke="url(#lg2)" stroke-width="1" opacity="0.25"/>
+        <g class="logo-rotator">
+          <path d="M50 50 L50 4 A46 46 0 0 1 82 18 Z" fill="url(#lg2)" opacity="0.12"/>
+          <line x1="50" y1="50" x2="50" y2="4" stroke="url(#lg2)" stroke-width="1" opacity="0.5"/>
+        </g>
+        <polygon points="50,18 82,78 18,78" fill="none" stroke="url(#lg2)" stroke-width="2.5" stroke-linejoin="round"/>
+        <circle cx="58" cy="58" r="9" fill="none" stroke="url(#lg2)" stroke-width="2"/>
+        <circle cx="58" cy="55" r="2.5" fill="url(#lg2)"/>
+        <line x1="65" y1="65" x2="70" y2="70" stroke="url(#lg2)" stroke-width="2.5" stroke-linecap="round"/>
+      </svg>
     </div>
-</main>
+    <div class="brand-text">
+      <span class="brand-name">AGENT</span>
+      <span class="brand-sub">ANALYTICS</span>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn" id="refresh-btn" title="Обновить">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <polyline points="23 4 23 10 17 10"/>
+          <polyline points="1 20 1 14 7 14"/>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+        </svg>
+      </button>
+      <button class="icon-btn" id="settings-btn" title="Настройки">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+      </button>
+    </div>
+  </header>
 
-<nav class="ios-tabbar" id="tabbar">
-    <button class="tab-item active" data-tab="home" onclick="switchTab('home')">
-        <span class="tab-icon">🏠</span>
-        <span class="tab-label">Главная</span>
-    </button>
-    <button class="tab-item" data-tab="search" onclick="switchTab('search')">
-        <span class="tab-icon">🔍</span>
-        <span class="tab-label">Поиск</span>
-    </button>
-    <button class="tab-item" data-tab="stats" onclick="switchTab('stats')">
-        <span class="tab-icon">📊</span>
-        <span class="tab-label">Стата</span>
-    </button>
-    <button class="tab-item" data-tab="me" onclick="switchTab('me')">
-        <span class="tab-icon">👤</span>
-        <span class="tab-label">Профиль</span>
-    </button>
-</nav>
+  <!-- SEARCH -->
+  <div class="search-wrap">
+    <div class="search-bar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <circle cx="11" cy="11" r="7"/>
+        <line x1="16.5" y1="16.5" x2="21" y2="21"/>
+      </svg>
+      <input type="text" id="search-input" placeholder="ID, @username или телефон"
+             autocomplete="off" inputmode="text" enterkeyhint="search">
+      <button class="search-submit" id="search-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </button>
+    </div>
+  </div>
 
-<div class="toast" id="toast"></div>
-<div id="modalsContainer"></div>
+  <!-- CONTENT -->
+  <div class="content-wrap" id="content-wrap">
+    <!-- dynamic -->
+  </div>
+
+  <!-- TABS -->
+  <nav class="tabs">
+    <button class="tab active" data-tab="home">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+        <polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+      <span>Главная</span>
+    </button>
+    <button class="tab" data-tab="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/>
+      </svg>
+      <span>Поиск</span>
+    </button>
+    <button class="tab" data-tab="stats">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <line x1="12" y1="20" x2="12" y2="10"/>
+        <line x1="18" y1="20" x2="18" y2="4"/>
+        <line x1="6" y1="20" x2="6" y2="16"/>
+      </svg>
+      <span>Стата</span>
+    </button>
+    <button class="tab" data-tab="me">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+      </svg>
+      <span>Профиль</span>
+    </button>
+  </nav>
+
+  <!-- PANEL: RESULT -->
+  <div class="panel" id="panel-result">
+    <div class="panel-handle"></div>
+    <div class="panel-header">
+      <div class="panel-title" id="result-title">Результат</div>
+      <button class="panel-close" data-close="panel-result">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div class="panel-body" id="result-body"></div>
+  </div>
+
+  <!-- PANEL: SETTINGS -->
+  <div class="panel" id="panel-settings">
+    <div class="panel-handle"></div>
+    <div class="panel-header">
+      <div class="panel-title">Настройки</div>
+      <button class="panel-close" data-close="panel-settings">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div class="panel-body">
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">Тёмная тема</div>
+          <div class="setting-desc">Переключить светлую / тёмную</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="theme-toggle">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <div class="field" style="margin-top: 20px;">
+        <label class="field-label">API Токен</label>
+        <input type="password" class="field-input" id="set-token" placeholder="Ваш токен из бота">
+        <div class="field-hint">Получить можно в боте: меню 🔌 API ТОКЕН</div>
+      </div>
+      <button class="btn" id="set-save">Сохранить</button>
+      <button class="btn secondary" id="set-clear" style="margin-top: 8px;">Сбросить токен</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast-wrap" id="toasts"></div>
 
 <script>
-/* ============================================================
-   КОНФИГ — УЖЕ ЗАПОЛНЕН
-   ============================================================ */
+// ============================================================
+// CONFIG — ЗАПОЛНИ
+// ============================================================
 const CONFIG = {
-    API_BASE: "https://precise-subject-makeshift.ngrok-free.dev",
-    API_KEY: "SC3xksKXvYEKx_2oRjgLVDl6OOsNUpVI",
-    APP_NAME: "AGENT ANALYTICS",
-    BOT_USERNAME: "dev1_robot",
-    ADMIN_ID: 8682108827
+  API_BASE: "https://precise-subject-makeshift.ngrok-free.dev",
+  API_KEY: "SC3xksKXvYEKx_2oRjgLVDl6OOsNUpVI",
+  BOT_USERNAME: "dev1_robot",
+  APP_NAME: "AGENT ANALYTICS"
 };
 
-/* ============================================================
-   TELEGRAM WEBAPP
-   ============================================================ */
-const tg = window.Telegram?.WebApp;
-if (tg) {
-    tg.ready();
-    tg.expand();
-    try {
-        tg.setHeaderColor('#000000');
-        tg.setBackgroundColor('#000000');
-    } catch (e) {}
+// ============================================================
+// TELEGRAM
+// ============================================================
+try {
+  const tg = window.Telegram?.WebApp;
+  if (tg) { tg.ready(); tg.expand(); tg.disableVerticalSwipes?.(); }
+} catch (e) {}
+
+// ============================================================
+// THEME
+// ============================================================
+let currentTheme = localStorage.getItem('aa_theme') || 'light';
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  currentTheme = theme;
+  localStorage.setItem('aa_theme', theme);
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute('content', theme === 'dark' ? '#000000' : '#ffffff');
+  try {
+    const tg = window.Telegram?.WebApp;
+    tg?.setHeaderColor?.(theme === 'dark' ? '#000000' : '#ffffff');
+    tg?.setBackgroundColor?.(theme === 'dark' ? '#000000' : '#ffffff');
+  } catch (e) {}
+  const toggle = document.getElementById('theme-toggle');
+  if (toggle) toggle.checked = (theme === 'dark');
+  // Перерисовать график
+  if (window._currentChart && document.getElementById('activityChart')) {
+    window._currentChart.destroy?.();
+    window._currentChart = null;
+    setTimeout(renderChart, 50);
+  }
 }
 
-/* ============================================================
-   API КЛИЕНТ
-   ============================================================ */
-const STORAGE_KEY = 'agent_api_key';
-const STORAGE_REQ = 'agent_requests_used';
-const STORAGE_USER = 'agent_user_info';
+document.documentElement.setAttribute('data-theme', currentTheme);
 
-class AgentAPI {
-    constructor(baseUrl, apiKey) {
-        this.baseUrl = (baseUrl || '').replace(/\/+$/, '');
-        this.apiKey = apiKey || localStorage.getItem(STORAGE_KEY) || '';
-        this.requestsUsed = parseInt(localStorage.getItem(STORAGE_REQ) || '0', 10);
-    }
+// ============================================================
+// STATE
+// ============================================================
+const $ = id => document.getElementById(id);
+const searchInput = $('search-input');
+const searchBtn = $('search-btn');
+const toasts = $('toasts');
+const contentWrap = $('content-wrap');
 
-    setApiKey(key) {
-        this.apiKey = key;
-        localStorage.setItem(STORAGE_KEY, key);
-    }
+let APIFY_TOKEN = localStorage.getItem('aa_token') || CONFIG.API_KEY;
+let currentTab = 'home';
+let currentUser = null;
+const STORAGE_KEY = 'aa_api_key';
 
-    clearApiKey() {
-        this.apiKey = '';
-        localStorage.removeItem(STORAGE_KEY);
-    }
-
-    hasApiKey() {
-        return !!this.apiKey && this.apiKey.length > 8;
-    }
-
-    async request(path, options = {}) {
-        if (!this.hasApiKey()) throw new Error('NO_API_KEY');
-
-        const headers = {
-            'Authorization': `Bearer ${this.apiKey}`,
-            'Content-Type': 'application/json',
-            'ngrok-skip-browser-warning': 'true',
-            ...(options.headers || {})
-        };
-
-        let res;
-        try {
-            res = await fetch(this.baseUrl + path, { ...options, headers });
-        } catch (e) {
-            throw new Error('Сеть недоступна. Проверьте API_BASE.');
-        }
-
-        if (res.status === 401) throw new Error('Неверный API-токен');
-        if (res.status === 403) {
-            let detail = '';
-            try { detail = (await res.json()).error || ''; } catch (e) {}
-            throw new Error(detail || 'Доступ запрещён');
-        }
-        if (!res.ok) throw new Error(`Ошибка ${res.status}`);
-
-        this.requestsUsed++;
-        localStorage.setItem(STORAGE_REQ, String(this.requestsUsed));
-        return res.json();
-    }
-
-    getUsers()            { return this.request('/api/users'); }
-    getChats()            { return this.request('/api/chats'); }
-    getActivity()         { return this.request('/api/activity'); }
-    getWords()            { return this.request('/api/words'); }
-    getTopInterlocutors() { return this.request('/api/top_interlocutors'); }
-    getPhoneLookups()     { return this.request('/api/phone_lookups'); }
-    getUser(id, inc = 'all', lim = 20) {
-        return this.request(`/api/v1/users/${id}?include=${inc}&limit=${lim}`);
-    }
-    async getPublicStats() {
-        // Публичный эндпоинт — реальная статистика
-        const res = await fetch(this.baseUrl + '/api/public/stats', {
-            headers: { 'ngrok-skip-browser-warning': 'true' }
-        });
-        if (!res.ok) throw new Error('Не удалось получить статистику');
-        return res.json();
-    }
-    async getStats() {
-        const res = await fetch(this.baseUrl + '/api/stats');
-        return res.json();
-    }
+// ============================================================
+// HELPERS
+// ============================================================
+function esc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
 }
 
-const urlParams = new URLSearchParams(window.location.search);
-const urlKey = urlParams.get('key');
-if (urlKey) {
-    localStorage.setItem(STORAGE_KEY, urlKey);
-    window.history.replaceState({}, '', window.location.pathname);
+function toast(msg, type = '') {
+  const el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.textContent = msg;
+  toasts.appendChild(el);
+  requestAnimationFrame(() => el.classList.add('show'));
+  setTimeout(() => {
+    el.classList.remove('show');
+    setTimeout(() => el.remove(), 300);
+  }, 3000);
 }
 
-const api = new AgentAPI(CONFIG.API_BASE, CONFIG.API_KEY);
-
-/* ============================================================
-   ПОЛЬЗОВАТЕЛЬ
-   ============================================================ */
-function getCurrentUser() {
-    if (tg?.initDataUnsafe?.user) {
-        const u = tg.initDataUnsafe.user;
-        localStorage.setItem(STORAGE_USER, JSON.stringify(u));
-        return u;
-    }
-    try {
-        const saved = localStorage.getItem(STORAGE_USER);
-        return saved ? JSON.parse(saved) : null;
-    } catch (e) { return null; }
-}
-
-/* ============================================================
-   УТИЛИТЫ
-   ============================================================ */
-function escapeHtml(s) {
-    if (s == null) return '';
-    return String(s).replace(/[&<>"']/g, c => ({
-        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-    }[c]));
+function vibrate(ms = 10) {
+  if (navigator.vibrate) try { navigator.vibrate(ms); } catch (e) {}
 }
 
 function formatNumber(n) {
-    if (n == null) return '0';
-    return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  if (n == null) return '0';
+  return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 }
 
-function showToast(msg, duration = 2500) {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.classList.add('show');
-    clearTimeout(showToast._timer);
-    showToast._timer = setTimeout(() => t.classList.remove('show'), duration);
-}
-
-function haptic(type = 'light') {
-    try {
-        if (type === 'success') tg?.HapticFeedback?.notificationOccurred('success');
-        else if (type === 'error') tg?.HapticFeedback?.notificationOccurred('error');
-        else tg?.HapticFeedback?.impactOccurred(type);
-    } catch (e) {}
-}
-
-function setTitle(title, subtitle) {
-    document.getElementById('pageTitle').textContent = title;
-    document.getElementById('pageSubtitle').textContent = subtitle || '';
-}
-
-function setContent(html) {
-    document.getElementById('content').innerHTML = html;
-    window.scrollTo(0, 0);
-}
-
-function loading(text = 'Загрузка...') {
-    setContent(`<div class="loading"><div class="spinner"></div><div>${escapeHtml(text)}</div></div>`);
-}
-
-function emptyState(icon, text) {
-    return `<div class="empty-state">
-        <div class="empty-icon">${icon}</div>
-        <div class="empty-text">${escapeHtml(text)}</div>
-    </div>`;
-}
-
-function errorState(message) {
-    return `<div class="empty-state">
-        <div class="empty-icon">⚠️</div>
-        <div class="empty-text">${escapeHtml(message)}</div>
-        <button class="btn-primary" style="margin-top:16px;" onclick="openApiModal()">🔑 Ввести API-токен</button>
-    </div>`;
-}
-
-/* ============================================================
-   НАВИГАЦИЯ
-   ============================================================ */
-let navStack = [];
-let currentTab = 'home';
-
-function setBackVisible(visible) {
-    document.getElementById('backBtn').classList.toggle('visible', visible);
-}
-
-function goBack() {
-    haptic();
-    if (navStack.length > 0) {
-        const prev = navStack.pop();
-        prev();
-        if (navStack.length === 0) setBackVisible(false);
-    } else {
-        switchTab('home');
+function getTelegramUser() {
+  try {
+    const u = window.Telegram?.WebApp?.initDataUnsafe?.user;
+    if (u) {
+      localStorage.setItem('aa_tg_user', JSON.stringify(u));
+      return u;
     }
+    const saved = localStorage.getItem('aa_tg_user');
+    return saved ? JSON.parse(saved) : null;
+  } catch (e) { return null; }
 }
 
-function pushNav(fn) {
-    navStack.push(fn);
-    setBackVisible(true);
+// ============================================================
+// API
+// ============================================================
+async function apiRequest(path, opts = {}) {
+  const headers = {
+    'Authorization': 'Bearer ' + APIFY_TOKEN,
+    'Content-Type': 'application/json',
+    'ngrok-skip-browser-warning': 'true',
+    ...(opts.headers || {})
+  };
+  const r = await fetch(CONFIG.API_BASE + path, { ...opts, headers });
+  if (r.status === 401) throw new Error('Неверный API-токен');
+  if (r.status === 403) {
+    let d = '';
+    try { d = (await r.json()).error || ''; } catch (e) {}
+    throw new Error(d || 'Доступ запрещён');
+  }
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  return r.json();
 }
 
-function resetNav() {
-    navStack = [];
-    setBackVisible(false);
+async function apiGetUsers()          { return apiRequest('/api/users'); }
+async function apiGetChats()          { return apiRequest('/api/chats'); }
+async function apiGetActivity()       { return apiRequest('/api/activity'); }
+async function apiGetWords()          { return apiRequest('/api/words'); }
+async function apiGetTopInterlocutors() { return apiRequest('/api/top_interlocutors'); }
+async function apiGetUser(id, inc='all', lim=20) { return apiRequest(`/api/v1/users/${id}?include=${inc}&limit=${lim}`); }
+
+async function apiGetPublicStats() {
+  const r = await fetch(CONFIG.API_BASE + '/api/public/stats', {
+    headers: { 'ngrok-skip-browser-warning': 'true' }
+  });
+  if (!r.ok) throw new Error('Не удалось получить статистику');
+  return r.json();
 }
 
-/* ============================================================
-   API-KEY MODAL
-   ============================================================ */
-function openApiModal() {
-    haptic();
-    const html = `
-        <div class="modal-overlay" id="apiModal" onclick="if(event.target.id==='apiModal')closeModal('apiModal')">
-            <div class="modal">
-                <div class="modal-header">
-                    <div class="modal-title">🔑 API Токен</div>
-                    <button class="modal-close" onclick="closeModal('apiModal')">✕</button>
-                </div>
-                <div class="modal-body">
-                    <p class="modal-desc">
-                        Введите API-токен, который вы получили в боте.<br>
-                        Меню → <b>🔌 API ТОКЕН</b> → купить пакет
-                    </p>
-                    <input type="text" id="apiKeyInput" class="modal-input"
-                           placeholder="Вставьте токен..." autocomplete="off">
-                    <div class="modal-hint" id="modalHint"></div>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn-secondary" onclick="clearApiKey()">Очистить</button>
-                    <button class="btn-primary" onclick="saveApiKey()">Сохранить</button>
-                </div>
+// ============================================================
+// ICONS
+// ============================================================
+const I = {
+  user:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+  search:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>',
+  users: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+  chart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>',
+  msg:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
+  phone: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>',
+  star:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+  gem:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 3h12l4 6-10 12L2 9z"/><path d="M11 3 8 9l4 12 4-12-3-6"/><path d="M2 9h20"/></svg>',
+  key:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>',
+  bell:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>',
+  gear:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
+  info:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
+  bot:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4M8 16h.01M16 16h.01"/></svg>',
+  eye:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
+  trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>',
+  share: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>',
+  copy:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>',
+  send:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>',
+  clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+  monitor:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>',
+  shield:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>'
+};
+
+// ============================================================
+// TABS
+// ============================================================
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    const t = tab.dataset.tab;
+    document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x === tab));
+    vibrate(8);
+    currentTab = t;
+    if (t === 'home')  renderHome();
+    else if (t === 'search') renderSearchTab();
+    else if (t === 'stats') renderStats();
+    else if (t === 'me')    renderMe();
+  });
+});
+
+// ============================================================
+// PANELS
+// ============================================================
+function openPanel(id) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('open'));
+  const p = $(id); if (p) p.classList.add('open');
+}
+function closePanel(id) { const p = $(id); if (p) p.classList.remove('open'); }
+function closeAllPanels() { document.querySelectorAll('.panel').forEach(p => p.classList.remove('open')); }
+
+document.querySelectorAll('[data-close]').forEach(btn => {
+  btn.addEventListener('click', () => closePanel(btn.dataset.close));
+});
+
+// ============================================================
+// RENDER: HOME
+// ============================================================
+async function renderHome() {
+  contentWrap.innerHTML = `
+    <div class="welcome">
+      <div class="welcome-icon">
+        <svg viewBox="0 0 100 100">
+          <defs>
+            <linearGradient id="lgH" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#60a5fa"/>
+              <stop offset="100%" stop-color="#007aff"/>
+            </linearGradient>
+          </defs>
+          <circle cx="50" cy="50" r="46" fill="none" stroke="url(#lgH)" stroke-width="2" opacity="0.3"/>
+          <polygon points="50,18 82,78 18,78" fill="none" stroke="url(#lgH)" stroke-width="4" stroke-linejoin="round"/>
+          <circle cx="58" cy="58" r="9" fill="none" stroke="url(#lgH)" stroke-width="4"/>
+          <circle cx="58" cy="55" r="3" fill="url(#lgH)"/>
+          <line x1="65" y1="65" x2="72" y2="72" stroke="url(#lgH)" stroke-width="4" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="welcome-title">AGENT ANALYTICS</div>
+      <div class="welcome-sub">Аналитика Telegram-активности</div>
+      <div class="welcome-hint">
+        ${I.search}
+        <span>Введи ID, @username или номер</span>
+      </div>
+    </div>
+
+    <div class="section-title">Статистика</div>
+    <div class="stats-row" id="stats-row">
+      <div class="stat-card"><div class="stat-value" id="st-users">—</div><div class="stat-label">Пользователей</div></div>
+      <div class="stat-card"><div class="stat-value" id="st-comments">—</div><div class="stat-label">Сообщений</div></div>
+    </div>
+
+    <div class="section-title">Быстрые действия</div>
+    <div class="quick-grid">
+      <button class="quick-card" onclick="goSearch()">
+        <div class="quick-card-icon">${I.search}</div>
+        <div>
+          <div class="quick-card-title">Поиск</div>
+          <div class="quick-card-sub">Найти пользователя</div>
+        </div>
+      </button>
+      <button class="quick-card" onclick="openMyProfile()">
+        <div class="quick-card-icon green">${I.user}</div>
+        <div>
+          <div class="quick-card-title">Мой профиль</div>
+          <div class="quick-card-sub">Ваши данные</div>
+        </div>
+      </button>
+      <button class="quick-card" onclick="openBot()">
+        <div class="quick-card-icon purple">${I.bot}</div>
+        <div>
+          <div class="quick-card-title">Открыть бота</div>
+          <div class="quick-card-sub">@${CONFIG.BOT_USERNAME}</div>
+        </div>
+      </button>
+      <button class="quick-card" onclick="openDashboard()">
+        <div class="quick-card-icon orange">${I.monitor}</div>
+        <div>
+          <div class="quick-card-title">Веб-панель</div>
+          <div class="quick-card-sub">Дашборд</div>
+        </div>
+      </button>
+    </div>
+
+    <div class="section-title">Инструменты</div>
+    <ul class="list">
+      <li class="list-item" onclick="openPhoneCheck()">
+        <div class="list-icon">${I.phone}</div>
+        <div class="list-content">
+          <div class="list-title">Проверить номер</div>
+          <div class="list-sub">Страна, оператор, Telegram</div>
+        </div>
+        <div class="list-chevron">${I.search}</div>
+      </li>
+      <li class="list-item" onclick="openSubscription()">
+        <div class="list-icon orange">${I.star}</div>
+        <div class="list-content">
+          <div class="list-title">Подписка</div>
+          <div class="list-sub">Безлимитный доступ</div>
+        </div>
+        <div class="list-chevron">${I.search}</div>
+      </li>
+      <li class="list-item" onclick="openApiTokens()">
+        <div class="list-icon green">${I.key}</div>
+        <div class="list-content">
+          <div class="list-title">API Токены</div>
+          <div class="list-sub">Для разработчиков</div>
+        </div>
+        <div class="list-chevron">${I.search}</div>
+      </li>
+      <li class="list-item" onclick="openTracking()">
+        <div class="list-icon purple">${I.eye}</div>
+        <div class="list-content">
+          <div class="list-title">Отслеживание</div>
+          <div class="list-sub">20 алмазов / 7 дней</div>
+        </div>
+        <div class="list-chevron">${I.search}</div>
+      </li>
+      <li class="list-item" onclick="openAbout()">
+        <div class="list-icon gray">${I.info}</div>
+        <div class="list-content">
+          <div class="list-title">О боте</div>
+          <div class="list-sub">Возможности и правила</div>
+        </div>
+        <div class="list-chevron">${I.search}</div>
+      </li>
+    </ul>
+  `;
+
+  // загружаем статистику
+  try {
+    const stats = await apiGetPublicStats();
+    $('st-users').textContent = formatNumber(stats.users || 0);
+    $('st-comments').textContent = formatNumber(stats.comments || 0);
+  } catch (e) {
+    console.warn(e);
+    $('st-users').textContent = '—';
+    $('st-comments').textContent = '—';
+  }
+}
+
+// ============================================================
+// RENDER: SEARCH TAB
+// ============================================================
+function renderSearchTab() {
+  contentWrap.innerHTML = `
+    <div class="welcome" style="padding: 20px 0 10px;">
+      <div class="welcome-title" style="font-size: 20px;">Поиск</div>
+      <div class="welcome-sub" style="margin-bottom: 0;">Введите ID, @username или телефон</div>
+    </div>
+    <div id="search-results"></div>
+  `;
+  searchInput.focus();
+}
+
+// ============================================================
+// RENDER: STATS
+// ============================================================
+async function renderStats() {
+  contentWrap.innerHTML = `
+    <div class="section-title">Аналитика</div>
+    <div class="chart-wrap">
+      <div class="chart-title">${I.chart} Активность (30 дней)</div>
+      <div class="chart-canvas-wrap"><canvas id="activityChart"></canvas></div>
+    </div>
+    <div class="section-title">Топ чатов</div>
+    <ul class="list" id="top-chats"><li class="list-item"><div class="list-content"><div class="list-sub">Загрузка...</div></div></li></ul>
+    <div class="section-title">Популярные слова</div>
+    <ul class="list" id="top-words"><li class="list-item"><div class="list-content"><div class="list-sub">Загрузка...</div></div></li></ul>
+  `;
+
+  try {
+    const [activity, chats, words] = await Promise.all([
+      apiGetActivity().catch(() => []),
+      apiGetTopInterlocutors().catch(() => []),
+      apiGetWords().catch(() => [])
+    ]);
+
+    $('top-chats').innerHTML = chats.length
+      ? chats.slice(0, 10).map(c => `
+          <li class="list-item">
+            <div class="list-icon">${I.msg}</div>
+            <div class="list-content">
+              <div class="list-title">${esc((c.chat || '').slice(0, 28))}</div>
+              <div class="list-sub">${formatNumber(c.messages)} сообщений</div>
             </div>
-        </div>
-    `;
-    document.getElementById('modalsContainer').insertAdjacentHTML('beforeend', html);
-    const input = document.getElementById('apiKeyInput');
-    input.value = api.hasApiKey() ? api.apiKey : '';
-    setTimeout(() => input.focus(), 200);
+          </li>`).join('')
+      : '<li class="list-item"><div class="list-content"><div class="list-sub">Нет данных</div></div></li>';
+
+    $('top-words').innerHTML = words.length
+      ? words.slice(0, 15).map(w => `
+          <li class="list-item">
+            <div class="list-icon purple">#</div>
+            <div class="list-content"><div class="list-title">${esc(w.word)}</div></div>
+            <div class="list-chevron">${formatNumber(w.count)}</div>
+          </li>`).join('')
+      : '<li class="list-item"><div class="list-content"><div class="list-sub">Нет данных</div></div></li>';
+
+    renderChart(activity);
+  } catch (e) {
+    toast(e.message, 'error');
+  }
 }
 
-function closeModal(id) {
-    const el = document.getElementById(id);
-    if (el) el.remove();
-}
+function renderChart(activity) {
+  const canvas = $('activityChart');
+  if (!canvas || !activity || !activity.length) return;
+  if (window._currentChart) { window._currentChart.destroy(); window._currentChart = null; }
+  if (typeof Chart === 'undefined') return;
 
-async function saveApiKey() {
-    const input = document.getElementById('apiKeyInput');
-    const key = input.value.trim();
-    const hint = document.getElementById('modalHint');
+  const isDark = currentTheme === 'dark';
+  const gridColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+  const textColor = isDark ? '#8e8e93' : '#8e8e93';
 
-    if (key.length < 10) {
-        hint.textContent = '❌ Токен слишком короткий';
-        hint.style.color = '#ff453a';
-        haptic('error');
-        return;
+  window._currentChart = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: activity.map(x => (x.date || '').slice(5)),
+      datasets: [{
+        data: activity.map(x => x.count),
+        backgroundColor: isDark ? 'rgba(10,132,255,0.6)' : 'rgba(0,122,255,0.6)',
+        borderColor: isDark ? '#0a84ff' : '#007aff',
+        borderWidth: 0,
+        borderRadius: 4,
+        barThickness: 8
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor, font: { size: 10 }, maxTicksLimit: 5 } },
+        x: { grid: { display: false }, ticks: { color: textColor, font: { size: 9 }, maxTicksLimit: 8 } }
+      }
     }
-
-    hint.textContent = '⏳ Проверка токена...';
-    hint.style.color = '#8e8e93';
-
-    api.setApiKey(key);
-    try {
-        await api.getUsers();
-        hint.textContent = '✅ Токен работает!';
-        hint.style.color = '#30d158';
-        haptic('success');
-        setTimeout(() => { closeModal('apiModal'); switchTab('home'); }, 600);
-    } catch (e) {
-        api.clearApiKey();
-        hint.textContent = '❌ ' + e.message;
-        hint.style.color = '#ff453a';
-        haptic('error');
-    }
+  });
 }
 
-function clearApiKey() {
-    api.clearApiKey();
-    const input = document.getElementById('apiKeyInput');
-    if (input) input.value = '';
-    const hint = document.getElementById('modalHint');
-    if (hint) {
-        hint.textContent = '🗑 Токен удалён';
-        hint.style.color = '#8e8e93';
-    }
-    haptic();
-}
-
-/* ============================================================
-   TABS
-   ============================================================ */
-let currentChart = null;
-
-function switchTab(tab) {
-    haptic();
-    currentTab = tab;
-    resetNav();
-    document.querySelectorAll('.tab-item').forEach(el => {
-        el.classList.toggle('active', el.dataset.tab === tab);
-    });
-
-    if (!api.hasApiKey()) {
-        setTitle(CONFIG.APP_NAME, 'Введите API-токен');
-        setContent(errorState('Требуется API-токен'));
-        return;
-    }
-
-    if (tab === 'home') loadHome();
-    else if (tab === 'search') loadSearch();
-    else if (tab === 'stats') loadStats();
-    else if (tab === 'me') loadMe();
-}
-
-/* ============================================================
-   🏠 HOME — с iOS-иконками + реальная статистика
-   ============================================================ */
-async function loadHome() {
-    setTitle(CONFIG.APP_NAME, 'Мини-приложение');
-    loading();
-
-    try {
-        // Загружаем юзеров и статистику параллельно
-        const [users, stats] = await Promise.all([
-            api.getUsers().catch(() => []),
-            api.getPublicStats().catch(() => ({}))
-        ]);
-
-        const total = stats.users || users.length;
-        const active = stats.started_bot || users.filter(u => u.started_bot).length;
-        const me = getCurrentUser();
-
-        setContent(`
-            <div class="page">
-                ${me ? `
-                <section class="section">
-                    <div class="profile-card">
-                        <div class="profile-avatar">${escapeHtml((me.first_name || '?')[0].toUpperCase())}</div>
-                        <div class="profile-info">
-                            <div class="profile-name">${escapeHtml(me.first_name || 'Пользователь')}</div>
-                            <div class="profile-username">${me.username ? '@' + escapeHtml(me.username) : 'ID: ' + me.id}</div>
-                            <span class="profile-badge">${me.is_premium ? '⚡ PREMIUM' : '👤 USER'}</span>
-                        </div>
-                    </div>
-                </section>` : ''}
-
-                <section class="section">
-                    <div class="section-header">Статистика</div>
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-icon blue">👥</div>
-                            <div class="stat-value">${formatNumber(total)}</div>
-                            <div class="stat-label">Пользователей</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-icon green">🟢</div>
-                            <div class="stat-value">${formatNumber(active)}</div>
-                            <div class="stat-label">Активных</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-icon purple">📡</div>
-                            <div class="stat-value">${formatNumber(api.requestsUsed)}</div>
-                            <div class="stat-label">Запросов</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-icon orange">💬</div>
-                            <div class="stat-value">${formatNumber(stats.comments || 0)}</div>
-                            <div class="stat-label">Сообщений</div>
-                        </div>
-                    </div>
-                </section>
-
-                <section class="section">
-                    <div class="section-header">Приложения</div>
-                    <div class="app-grid">
-                        <a class="app-item" onclick="openMyProfile()">
-                            <div class="app-icon blue">👤</div>
-                            <div class="app-label">Профиль</div>
-                        </a>
-                        <a class="app-item" onclick="openTopup()">
-                            <div class="app-icon green">💰</div>
-                            <div class="app-label">Пополнить</div>
-                        </a>
-                        <a class="app-item" onclick="openBonus()">
-                            <div class="app-icon yellow">🎁</div>
-                            <div class="app-label">Бонус</div>
-                        </a>
-                        <a class="app-item" onclick="openReferral()">
-                            <div class="app-icon purple">🤝</div>
-                            <div class="app-label">Реферал</div>
-                        </a>
-                        <a class="app-item" onclick="openAiAssistant()">
-                            <div class="app-icon teal">🕵️</div>
-                            <div class="app-label">Маям AI</div>
-                        </a>
-                        <a class="app-item" onclick="openPhoneCheck()">
-                            <div class="app-icon blue">📱</div>
-                            <div class="app-label">Номер</div>
-                        </a>
-                        <a class="app-item" onclick="openStickerCheck()">
-                            <div class="app-icon orange">🔍</div>
-                            <div class="app-label">Стикер</div>
-                        </a>
-                        <a class="app-item" onclick="openSubscription()">
-                            <div class="app-icon yellow">⭐</div>
-                            <div class="app-label">Подписка</div>
-                        </a>
-                        <a class="app-item" onclick="openApiTokens()">
-                            <div class="app-icon green">🔌</div>
-                            <div class="app-label">API</div>
-                        </a>
-                        <a class="app-item" onclick="openNotifications()">
-                            <div class="app-icon pink">🔔</div>
-                            <div class="app-label">Уведомл.</div>
-                        </a>
-                        <a class="app-item" onclick="openTracking()">
-                            <div class="app-icon blue">👀</div>
-                            <div class="app-label">Трекинг</div>
-                        </a>
-                        <a class="app-item" onclick="openDeleteData()">
-                            <div class="app-icon red">🗑️</div>
-                            <div class="app-label">Удалить</div>
-                        </a>
-                        <a class="app-item" onclick="openBotStats()">
-                            <div class="app-icon green">📊</div>
-                            <div class="app-label">Стата</div>
-                        </a>
-                        <a class="app-item" onclick="openDashboard()">
-                            <div class="app-icon orange">🖥️</div>
-                            <div class="app-label">Панель</div>
-                        </a>
-                        <a class="app-item" onclick="openContactAdmin()">
-                            <div class="app-icon purple">💬</div>
-                            <div class="app-label">Админ</div>
-                        </a>
-                        <a class="app-item" onclick="openAbout()">
-                            <div class="app-icon teal">ℹ️</div>
-                            <div class="app-label">О боте</div>
-                        </a>
-                    </div>
-                </section>
-            </div>
-        `);
-    } catch (e) {
-        setContent(errorState(e.message));
-    }
-}
-
-/* ============================================================
-   👤 МОЙ ПРОФИЛЬ
-   ============================================================ */
-async function openMyProfile() {
-    haptic();
-    pushNav(loadHome);
-    setTitle('Мой профиль', '');
-    loading();
-
-    const me = getCurrentUser();
-    if (!me) {
-        setContent(emptyState('👤', 'Откройте через Telegram'));
-        return;
-    }
-
-    try {
-        const u = await api.getUser(me.id, 'all', 20).catch(() => null);
-
-        setContent(`
-            <div class="page">
-                <div class="profile-card">
-                    <div class="profile-avatar">${escapeHtml((me.first_name || '?')[0].toUpperCase())}</div>
-                    <div class="profile-info">
-                        <div class="profile-name">${escapeHtml(me.first_name || 'Пользователь')}</div>
-                        <div class="profile-username">${me.username ? '@' + escapeHtml(me.username) : 'ID: ' + me.id}</div>
-                        <span class="profile-badge">${me.is_premium ? '⚡ PREMIUM' : '👤 USER'}</span>
-                    </div>
-                </div>
-
-                <section class="section">
-                    <div class="section-header">Основное</div>
-                    <div class="detail-card">
-                        <div class="detail-row">
-                            <span class="detail-label">ID</span>
-                            <span class="detail-value blue">${me.id}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-label">Username</span>
-                            <span class="detail-value">${me.username ? '@' + escapeHtml(me.username) : '—'}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-label">Язык</span>
-                            <span class="detail-value">${escapeHtml(me.language_code || 'ru')}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-label">Premium</span>
-                            <span class="detail-value ${me.is_premium ? 'green' : ''}">${me.is_premium ? '✅ Да' : '—'}</span>
-                        </div>
-                    </div>
-                </section>
-
-                ${u && !u.error ? `
-                <section class="section">
-                    <div class="section-header">Из базы</div>
-                    <div class="detail-card">
-                        <div class="detail-row">
-                            <span class="detail-label">Регистрация</span>
-                            <span class="detail-value">${escapeHtml(u.estimated_reg || '—')}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-label">Телефон</span>
-                            <span class="detail-value">${escapeHtml(u.phone || '—')}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-label">Платформа</span>
-                            <span class="detail-value">${escapeHtml(u.last_platform || '—')}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-label">Чатов</span>
-                            <span class="detail-value blue">${(u.chats || []).length}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-label">Сообщений</span>
-                            <span class="detail-value blue">${(u.comments || []).length}</span>
-                        </div>
-                    </div>
-                </section>` : ''}
-
-                <button class="btn-primary full-width" onclick="openBot()">
-                    🤖 Открыть бота в Telegram
-                </button>
-            </div>
-        `);
-    } catch (e) {
-        setContent(errorState(e.message));
-    }
-}
-
-/* ============================================================
-   Остальные экраны — коротко
-   ============================================================ */
-function openTopup() {
-    haptic();
-    pushNav(loadHome);
-    setTitle('Пополнить баланс', 'Выберите способ');
-    const methods = [
-        { name: 'CryptoCloud', desc: 'Криптовалюта', icon: '🏦' },
-        { name: 'CryptoBot', desc: 'USDT, BTC, TON', icon: '🤖' },
-        { name: 'OxaPay', desc: 'Карты и крипта', icon: '💎' }
-    ];
-    setContent(`
-        <div class="page">
-            <section class="section">
-                <div class="menu-list">
-                    ${methods.map(m => `
-                        <div class="menu-item" onclick="openBot()">
-                            <div class="menu-icon" style="background:rgba(10,132,255,0.15);">${m.icon}</div>
-                            <div class="menu-text">
-                                <div>${m.name}</div>
-                                <div style="font-size:12px;color:var(--ios-text-2);margin-top:2px;">${m.desc}</div>
-                            </div>
-                            <div class="menu-chevron">›</div>
-                        </div>
-                    `).join('')}
-                </div>
-            </section>
-            <section class="section">
-                <div class="detail-card">
-                    <div class="detail-row">
-                        <span class="detail-label">💎 150 алмазов</span>
-                        <span class="detail-value blue">= 1 USD</span>
-                    </div>
-                </div>
-            </section>
-            <button class="btn-primary full-width" onclick="openBot()">🤖 Открыть бота для оплаты</button>
+// ============================================================
+// RENDER: ME
+// ============================================================
+function renderMe() {
+  const u = getTelegramUser();
+  contentWrap.innerHTML = `
+    ${u ? `
+    <div class="result-card" style="margin-top: 20px;">
+      <div class="result-row">
+        <div class="result-icon">${I.user}</div>
+        <div class="result-content">
+          <div class="result-label">Имя</div>
+          <div class="result-value">${esc(u.first_name || '')} ${esc(u.last_name || '')}</div>
         </div>
-    `);
-}
-
-function openBonus() {
-    haptic();
-    pushNav(loadHome);
-    setTitle('Ежедневный бонус', '+10 алмазов');
-    setContent(`
-        <div class="page">
-            <section class="section">
-                <div class="detail-card">
-                    <div class="detail-row"><span class="detail-label">💰 Бонус</span><span class="detail-value green">+10 алмазов</span></div>
-                    <div class="detail-row"><span class="detail-label">⏰ Период</span><span class="detail-value">1 раз в 24 часа</span></div>
-                </div>
-            </section>
-            <button class="btn-primary full-width" onclick="openBot()">🎁 Получить в боте</button>
+      </div>
+      <div class="result-row">
+        <div class="result-icon">${I.user}</div>
+        <div class="result-content">
+          <div class="result-label">Username</div>
+          <div class="result-value">${u.username ? '@' + esc(u.username) : '—'}</div>
         </div>
-    `);
-}
-
-function openReferral() {
-    haptic();
-    pushNav(loadHome);
-    setTitle('Реферальная программа', 'Приглашайте друзей');
-    const me = getCurrentUser();
-    const refLink = me
-        ? `https://t.me/${CONFIG.BOT_USERNAME}?start=ref_REF${me.id}`
-        : `https://t.me/${CONFIG.BOT_USERNAME}`;
-    setContent(`
-        <div class="page">
-            <section class="section">
-                <div class="detail-card">
-                    <div class="detail-row"><span class="detail-label">🎁 1-е приглашение</span><span class="detail-value green">+50 алмазов</span></div>
-                    <div class="detail-row"><span class="detail-label">🎁 2-е и далее</span><span class="detail-value green">+20 алмазов</span></div>
-                    <div class="detail-row"><span class="detail-label">👥 Новый юзер</span><span class="detail-value blue">+20 алмазов</span></div>
-                </div>
-            </section>
-            <section class="section">
-                <div class="section-header">🔗 Ваша ссылка</div>
-                <div class="detail-card">
-                    <div class="detail-row">
-                        <span class="detail-value" style="text-align:left;max-width:100%;font-size:12px;font-family:monospace;word-break:break-all;">
-                            ${escapeHtml(refLink)}
-                        </span>
-                    </div>
-                </div>
-            </section>
-            <button class="btn-primary full-width" onclick="copyText('${escapeHtml(refLink)}')">📋 Скопировать</button>
-            <button class="btn-secondary full-width" onclick="shareRefLink('${escapeHtml(refLink)}')">📤 Поделиться</button>
+      </div>
+      <div class="result-row">
+        <div class="result-icon">${I.info}</div>
+        <div class="result-content">
+          <div class="result-label">ID</div>
+          <div class="result-value mono">${u.id}</div>
         </div>
-    `);
+      </div>
+    </div>` : ''}
+
+    <div class="section-title">Действия</div>
+    <ul class="list">
+      <li class="list-item" onclick="openMyProfile()">
+        <div class="list-icon">${I.user}</div>
+        <div class="list-content"><div class="list-title">Мой профиль в базе</div></div>
+        <div class="list-chevron">${I.search}</div>
+      </li>
+      <li class="list-item" onclick="openBot()">
+        <div class="list-icon purple">${I.bot}</div>
+        <div class="list-content"><div class="list-title">Открыть бота</div></div>
+        <div class="list-chevron">${I.search}</div>
+      </li>
+      <li class="list-item" onclick="openDashboard()">
+        <div class="list-icon orange">${I.monitor}</div>
+        <div class="list-content"><div class="list-title">Веб-панель</div></div>
+        <div class="list-chevron">${I.search}</div>
+      </li>
+      <li class="list-item" onclick="openSettings()">
+        <div class="list-icon gray">${I.gear}</div>
+        <div class="list-content"><div class="list-title">Настройки</div></div>
+        <div class="list-chevron">${I.search}</div>
+      </li>
+    </ul>
+  `;
 }
 
-function copyText(text) {
-    haptic('success');
-    navigator.clipboard.writeText(text).then(() => showToast('✅ Скопировано'))
-        .catch(() => showToast('Не удалось скопировать'));
+// ============================================================
+// ACTIONS
+// ============================================================
+function goSearch() {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === 'search'));
+  renderSearchTab();
 }
 
-function shareRefLink(link) {
-    haptic();
-    const text = encodeURIComponent('Попробуй этого бота! ' + link);
-    if (tg) tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${text}`);
-    else window.open(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${text}`, '_blank');
+function openSettings() {
+  $('set-token').value = APIFY_TOKEN;
+  $('theme-toggle').checked = (currentTheme === 'dark');
+  closeAllPanels();
+  openPanel('panel-settings');
 }
 
-function openAiAssistant() {
-    haptic();
-    pushNav(loadHome);
-    setTitle('Маям Помощник', 'AI ассистент');
-    setContent(`
-        <div class="page">
-            <section class="section">
-                <div class="profile-card">
-                    <div class="profile-avatar" style="background:linear-gradient(135deg,#64d2ff,#bf5af2);">🤖</div>
-                    <div class="profile-info">
-                        <div class="profile-name">Маям</div>
-                        <div class="profile-username">AI-помощник</div>
-                        <span class="profile-badge" style="background:rgba(48,209,88,0.15);color:#30d158;">🟢 ONLINE</span>
-                    </div>
-                </div>
-            </section>
-            <div class="empty-state" style="padding:20px;">
-                <div class="empty-icon">💬</div>
-                <div class="empty-text">AI-помощник работает в Telegram-боте.<br>Напишите «Маям» для активации</div>
-            </div>
-            <button class="btn-primary full-width" onclick="openBot()">💬 Открыть в боте</button>
-        </div>
-    `);
-}
-
-function openPhoneCheck() {
-    haptic();
-    pushNav(loadHome);
-    setTitle('Проверить номер', 'Страна, оператор, регион');
-    setContent(`
-        <div class="page">
-            <div class="search-bar">
-                <span class="search-icon">📱</span>
-                <input type="tel" id="phoneInput" placeholder="+992901234567" autocomplete="off">
-            </div>
-            <button class="btn-primary full-width" onclick="doPhoneCheck()">📱 Проверить номер</button>
-            <div class="empty-state" style="padding:20px;">
-                <div class="empty-text" style="font-size:13px;">
-                    Проверка показывает:<br>
-                    🌍 Страну с флагом<br>
-                    🏢 Оператора<br>
-                    🗺 Регион<br>
-                    ⏰ Часовой пояс<br>
-                    📱 Тип номера<br>
-                    ✈️ Telegram, 💬 WhatsApp
-                </div>
-            </div>
-        </div>
-    `);
-    setTimeout(() => document.getElementById('phoneInput')?.focus(), 200);
-}
-
-function doPhoneCheck() {
-    const phone = document.getElementById('phoneInput').value.trim();
-    if (!phone) { showToast('Введите номер'); return; }
-    haptic();
-    showToast('Откройте бота для проверки');
-    setTimeout(() => openBot(), 500);
-}
-
-function openStickerCheck() {
-    haptic();
-    pushNav(loadHome);
-    setTitle('Проверить стикер', 'Информация о паке');
-    setContent(`
-        <div class="page">
-            <div class="empty-state" style="padding:40px 20px;">
-                <div class="empty-icon">🔍</div>
-                <div class="empty-text">
-                    Отправьте стикер в Telegram-бот,<br>
-                    чтобы получить информацию о паке:<br><br>
-                    📦 Название пака<br>
-                    🏷 Название стикера<br>
-                    📊 Количество стикеров<br>
-                    🔗 Ссылка на пак<br>
-                    👤 Создатель
-                </div>
-            </div>
-            <button class="btn-primary full-width" onclick="openBot()">🔍 Открыть бота</button>
-        </div>
-    `);
-}
-
-function openSubscription() {
-    haptic();
-    pushNav(loadHome);
-    setTitle('Подписка', 'Безлимитный доступ');
-    const plans = [
-        { name: '1 месяц', price: '5 USD' },
-        { name: '6 месяцев', price: '20 USD', save: 'Выгода 33%' },
-        { name: '1 год', price: '45 USD', save: 'Выгода 40%' }
-    ];
-    setContent(`
-        <div class="page">
-            <section class="section">
-                <div class="detail-card">
-                    <div class="detail-row"><span class="detail-label">⭐ Лимит запросов</span><span class="detail-value green">Безлимит</span></div>
-                    <div class="detail-row"><span class="detail-label">📊 HTML отчёты</span><span class="detail-value green">✅</span></div>
-                    <div class="detail-row"><span class="detail-label">🔍 Поиск</span><span class="detail-value green">✅</span></div>
-                    <div class="detail-row"><span class="detail-label">📱 Проверка номеров</span><span class="detail-value green">✅</span></div>
-                </div>
-            </section>
-            <section class="section">
-                <div class="section-header">💳 Планы</div>
-                <div class="menu-list">
-                    ${plans.map(p => `
-                        <div class="menu-item" onclick="openBot()">
-                            <div class="menu-icon" style="background:rgba(255,159,10,0.15);">⭐</div>
-                            <div class="menu-text">
-                                <div>${p.name}</div>
-                                <div style="font-size:12px;color:var(--ios-text-2);margin-top:2px;">${p.price} ${p.save ? '• ' + p.save : ''}</div>
-                            </div>
-                            <div class="menu-chevron">›</div>
-                        </div>
-                    `).join('')}
-                </div>
-            </section>
-            <button class="btn-primary full-width" onclick="openBot()">⭐ Купить в боте</button>
-        </div>
-    `);
-}
-
-function openApiTokens() {
-    haptic();
-    pushNav(loadHome);
-    setTitle('API Токены', 'Для разработчиков');
-    const plans = [
-        { name: '100 запросов', price: '1 USD' },
-        { name: '500 запросов', price: '4 USD' },
-        { name: '1000 запросов', price: '7 USD' },
-        { name: '5000 запросов', price: '30 USD' }
-    ];
-    setContent(`
-        <div class="page">
-            <section class="section">
-                <div class="detail-card">
-                    <div class="detail-row"><span class="detail-label">👥 Список юзеров</span><span class="detail-value green">✅</span></div>
-                    <div class="detail-row"><span class="detail-label">🔍 Поиск по ID</span><span class="detail-value green">✅</span></div>
-                    <div class="detail-row"><span class="detail-label">📊 Статистика</span><span class="detail-value green">✅</span></div>
-                    <div class="detail-row"><span class="detail-label">⏰ Срок</span><span class="detail-value">30 дней</span></div>
-                </div>
-            </section>
-            <section class="section">
-                <div class="section-header">📦 Пакеты</div>
-                <div class="menu-list">
-                    ${plans.map(p => `
-                        <div class="menu-item" onclick="openBot()">
-                            <div class="menu-icon" style="background:rgba(48,209,88,0.15);">🔌</div>
-                            <div class="menu-text">
-                                <div>${p.name}</div>
-                                <div style="font-size:12px;color:var(--ios-text-2);margin-top:2px;">${p.price}</div>
-                            </div>
-                            <div class="menu-chevron">›</div>
-                        </div>
-                    `).join('')}
-                </div>
-            </section>
-            <button class="btn-primary full-width" onclick="openBot()">🔌 Купить в боте</button>
-        </div>
-    `);
-}
-
-function openNotifications() {
-    haptic();
-    pushNav(loadHome);
-    setTitle('Уведомления', '');
-    setContent(`<div class="page">${emptyState('🔔', 'Нет новых уведомлений')}</div>`);
-}
-
-function openTracking() {
-    haptic();
-    pushNav(loadHome);
-    setTitle('Отслеживание', '20 алмазов / 7 дней');
-    setContent(`
-        <div class="page">
-            <section class="section">
-                <div class="detail-card">
-                    <div class="detail-row"><span class="detail-label">🔔 Уведомления</span><span class="detail-value">О новых сообщениях</span></div>
-                    <div class="detail-row"><span class="detail-label">💰 Стоимость</span><span class="detail-value orange">20 алмазов</span></div>
-                    <div class="detail-row"><span class="detail-label">⏰ Период</span><span class="detail-value">7 дней</span></div>
-                </div>
-            </section>
-            <section class="section">
-                <div class="input-group">
-                    <label class="input-label">ID пользователя</label>
-                    <input type="number" id="trackInput" class="input-field" placeholder="123456789">
-                </div>
-                <button class="btn-primary full-width" onclick="doTrack()">👀 Активировать</button>
-            </section>
-        </div>
-    `);
-}
-
-function doTrack() {
-    haptic();
-    showToast('Откройте бота для активации');
-    setTimeout(() => openBot(), 500);
-}
-
-function openDeleteData() {
-    haptic();
-    pushNav(loadHome);
-    setTitle('Удалить данные', '⚠️ Опасно');
-    setContent(`
-        <div class="page">
-            <section class="section">
-                <div class="detail-card">
-                    <div class="detail-row"><span class="detail-label">💰 Стоимость</span><span class="detail-value orange">200 алмазов</span></div>
-                </div>
-            </section>
-            <section class="section">
-                <div class="detail-card">
-                    <div class="detail-row stacked">
-                        <div class="detail-label" style="color:#ff453a;font-weight:600;">⚠️ ВНИМАНИЕ</div>
-                        <div class="detail-value" style="text-align:left;max-width:100%;color:var(--ios-text-2);font-size:14px;">
-                            • Удаляет ВСЕ ваши данные<br>
-                            • Очищает историю имён<br>
-                            • Удаляет список чатов<br>
-                            • Удаляет все сообщения<br><br>
-                            Данные будут собраны заново при следующей активности
-                        </div>
-                    </div>
-                </div>
-            </section>
-            <button class="btn-primary full-width" onclick="openBot()">🗑️ Удалить в боте</button>
-        </div>
-    `);
-}
-
-async function openBotStats() {
-    haptic();
-    pushNav(loadHome);
-    setTitle('Статистика бота', '');
-    loading();
-    try {
-        const stats = await api.getPublicStats();
-        setContent(`
-            <div class="page">
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-icon blue">👥</div>
-                        <div class="stat-value">${formatNumber(stats.users || 0)}</div>
-                        <div class="stat-label">Всего юзеров</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon green">🟢</div>
-                        <div class="stat-value">${formatNumber(stats.started_bot || 0)}</div>
-                        <div class="stat-label">Запускали</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon purple">📢</div>
-                        <div class="stat-value">${formatNumber(stats.chats || 0)}</div>
-                        <div class="stat-label">Чатов</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon orange">💬</div>
-                        <div class="stat-value">${formatNumber(stats.comments || 0)}</div>
-                        <div class="stat-label">Сообщений</div>
-                    </div>
-                </div>
-            </div>
-        `);
-    } catch (e) {
-        setContent(errorState(e.message));
-    }
+function openBot() {
+  vibrate();
+  const url = 'https://t.me/' + CONFIG.BOT_USERNAME;
+  try { window.Telegram?.WebApp?.openTelegramLink(url); }
+  catch (e) { window.open(url, '_blank'); }
 }
 
 function openDashboard() {
-    haptic();
-    const url = CONFIG.API_BASE + '/dashboard';
-    if (tg) tg.openLink(url);
-    else window.open(url, '_blank');
+  vibrate();
+  const url = CONFIG.API_BASE + '/dashboard';
+  try { window.Telegram?.WebApp?.openLink(url); }
+  catch (e) { window.open(url, '_blank'); }
 }
 
-function openContactAdmin() {
-    haptic();
-    pushNav(loadHome);
-    setTitle('Связь с админом', '');
-    setContent(`
-        <div class="page">
-            <section class="section">
-                <div class="detail-card">
-                    <div class="detail-row"><span class="detail-label">👑 Админ</span><span class="detail-value blue">@sherlok032</span></div>
-                </div>
-            </section>
-            <div class="empty-state" style="padding:20px;">
-                <div class="empty-icon">💬</div>
-                <div class="empty-text">Напишите сообщение в боте<br>и админ ответит вам</div>
-            </div>
-            <button class="btn-primary full-width" onclick="openBot()">💬 Открыть бота</button>
-        </div>
-    `);
+function openPhoneCheck() {
+  vibrate();
+  showResult('📱 Проверка номера', [
+    { icon: I.phone, label: 'Где', value: 'В боте @' + CONFIG.BOT_USERNAME }
+  ], [
+    { icon: I.bot, label: 'Открыть', onClick: openBot }
+  ]);
+}
+
+function openSubscription() {
+  vibrate();
+  showResult('⭐ Подписка', [
+    { icon: I.star, label: '1 месяц', value: '5 USD' },
+    { icon: I.star, label: '6 месяцев', value: '20 USD' },
+    { icon: I.star, label: '1 год', value: '45 USD' }
+  ], [{ icon: I.bot, label: 'В боте', onClick: openBot }]);
+}
+
+function openApiTokens() {
+  vibrate();
+  showResult('🔌 API Токены', [
+    { icon: I.key, label: '100 запросов', value: '1 USD' },
+    { icon: I.key, label: '500 запросов', value: '4 USD' },
+    { icon: I.key, label: '1000 запросов', value: '7 USD' },
+    { icon: I.key, label: '5000 запросов', value: '30 USD' }
+  ], [{ icon: I.bot, label: 'Купить', onClick: openBot }]);
+}
+
+function openTracking() {
+  vibrate();
+  showResult('👀 Отслеживание', [
+    { icon: I.eye, label: 'Стоимость', value: '20 алмазов' },
+    { icon: I.clock, label: 'Период', value: '7 дней' }
+  ], [{ icon: I.bot, label: 'В боте', onClick: openBot }]);
 }
 
 function openAbout() {
-    haptic();
-    pushNav(loadHome);
-    setTitle('О боте', 'AGENT ANALYTICS');
-    setContent(`
-        <div class="page">
-            <section class="section">
-                <div class="profile-card">
-                    <div class="profile-avatar">🤖</div>
-                    <div class="profile-info">
-                        <div class="profile-name">AGENT ANALYTICS</div>
-                        <div class="profile-username">Версия 2.0</div>
-                        <span class="profile-badge">⚡ PREMIUM</span>
-                    </div>
-                </div>
-            </section>
-            <section class="section">
-                <div class="section-header">📊 О проекте</div>
-                <div class="detail-card">
-                    <div class="detail-row stacked">
-                        <div class="detail-value" style="text-align:left;max-width:100%;font-size:14px;line-height:1.6;">
-                            Многофункциональный бот для анализа Telegram-активности. Работает в личных чатах и группах.
-                        </div>
-                    </div>
-                </div>
-            </section>
-            <section class="section">
-                <div class="section-header">🛡️ Для пользователей</div>
-                <div class="detail-card">
-                    <div class="detail-row"><span class="detail-label">🔍 Поиск людей</span></div>
-                    <div class="detail-row"><span class="detail-label">📊 HTML-отчёты</span></div>
-                    <div class="detail-row"><span class="detail-label">📱 Проверка номеров</span></div>
-                    <div class="detail-row"><span class="detail-label">👥 Анализ чатов</span></div>
-                    <div class="detail-row"><span class="detail-label">💬 AI Помощник «Маям»</span></div>
-                    <div class="detail-row"><span class="detail-label">🎁 Бонусы и рефералы</span></div>
-                </div>
-            </section>
-            <section class="section">
-                <div class="section-header">🛡️ Для групп</div>
-                <div class="detail-card">
-                    <div class="detail-row"><span class="detail-label">🚫 Анти-спам</span></div>
-                    <div class="detail-row"><span class="detail-label">⛔ Анти-оскорбления</span></div>
-                    <div class="detail-row"><span class="detail-label">👋 Приветствие новичков</span></div>
-                    <div class="detail-row"><span class="detail-label">🤖 AI в групповом чате</span></div>
-                </div>
-            </section>
-        </div>
-    `);
+  vibrate();
+  showResult('ℹ️ О боте', [
+    { icon: I.bot, label: 'Название', value: 'AGENT ANALYTICS' },
+    { icon: I.star, label: 'Версия', value: '2.0' },
+    { icon: I.shield, label: 'Возможности', value: 'Поиск, отчёты, AI, модерация' },
+    { icon: I.user, label: 'Админ', value: '@sherlok032' }
+  ], [
+    { icon: I.bot, label: 'Открыть бота', onClick: openBot },
+    { icon: I.monitor, label: 'Дашборд', onClick: openDashboard }
+  ]);
 }
 
-/* ============================================================
-   🔍 SEARCH TAB
-   ============================================================ */
-function loadSearch() {
-    setTitle('Поиск', 'Найти пользователя');
-    resetNav();
-    setContent(`
-        <div class="page">
-            <div class="search-bar">
-                <span class="search-icon">🔍</span>
-                <input type="text" id="searchInput" placeholder="ID или @username" autocomplete="off">
-            </div>
-            <button class="btn-primary full-width" onclick="doSearch()">🔍 Найти</button>
-            <div id="searchResults" style="margin-top:20px;"></div>
-        </div>
-    `);
-    document.getElementById('searchInput').addEventListener('keypress', e => {
-        if (e.key === 'Enter') doSearch();
-    });
-    setTimeout(() => document.getElementById('searchInput')?.focus(), 200);
-}
+// ============================================================
+// RESULT PANEL
+// ============================================================
+function showResult(title, rows, actions = []) {
+  $('result-title').textContent = title;
 
-async function doSearch() {
-    const q = document.getElementById('searchInput').value.trim();
-    if (!q) { showToast('Введите запрос'); return; }
-    haptic();
-    const results = document.getElementById('searchResults');
-    results.innerHTML = `<div class="loading"><div class="spinner"></div><div>Поиск...</div></div>`;
-    try {
-        let user = null;
-        if (/^\d{5,15}$/.test(q)) {
-            try { user = await api.getUser(q); } catch (e) {}
-        }
-        if (!user) {
-            const users = await api.getUsers();
-            const query = q.toLowerCase().replace('@', '');
-            const found = users.filter(u =>
-                String(u.user_id).includes(query) ||
-                (u.username || '').toLowerCase().includes(query) ||
-                ((u.first_name || '') + ' ' + (u.last_name || '')).toLowerCase().includes(query)
-            );
-            if (found.length === 0) {
-                results.innerHTML = emptyState('🔍', 'Ничего не найдено');
-                return;
-            }
-            results.innerHTML = found.slice(0, 30).map(renderUserCard).join('');
-            return;
-        }
-        results.innerHTML = renderUserCard(user);
-    } catch (e) {
-        results.innerHTML = errorState(e.message);
-    }
-}
-
-function renderUserCard(u) {
-    const name = ((u.first_name || '') + ' ' + (u.last_name || '')).trim() || 'Без имени';
-    const initial = (name[0] || '?').toUpperCase();
-    const username = u.username ? '@' + u.username : '';
-    return `
-        <div class="user-card" onclick="openUser(${u.user_id})">
-            <div class="user-avatar-sm">${escapeHtml(initial)}</div>
-            <div class="user-info-sm">
-                <div class="user-name-sm">${escapeHtml(name)}</div>
-                <div class="user-id-sm">${escapeHtml(username || 'ID: ' + u.user_id)}</div>
-            </div>
-            <div class="menu-chevron">›</div>
+  let html = '<div class="result-card">';
+  rows.forEach(r => {
+    html += `
+      <div class="result-row">
+        <div class="result-icon">${r.icon || ''}</div>
+        <div class="result-content">
+          <div class="result-label">${esc(r.label)}</div>
+          <div class="result-value ${r.mono ? 'mono' : ''} ${r.accent ? 'accent' : ''}">${r.value}</div>
         </div>
+      </div>
     `;
+  });
+  html += '</div>';
+
+  $('result-body').innerHTML = html;
+  openPanel('panel-result');
 }
 
-async function openUser(userId) {
-    haptic();
-    pushNav(() => switchTab('search'));
-    setTitle('Профиль', 'ID: ' + userId);
-    loading('Загрузка профиля...');
-    try {
-        const u = await api.getUser(userId, 'all', 20);
-        if (u.error) throw new Error(u.error);
-        const name = ((u.first_name || '') + ' ' + (u.last_name || '')).trim() || 'Без имени';
-        const initial = (name[0] || '?').toUpperCase();
-        const tier = u.started_bot ? '⚡ PREMIUM' : '👤 USER';
-        let chatsHtml = '';
-        if (u.chats && u.chats.length) {
-            chatsHtml = `
-                <section class="section">
-                    <div class="section-header">Чаты (${u.chats.length})</div>
-                    <div class="detail-card">
-                        ${u.chats.slice(0, 15).map(c => `
-                            <div class="detail-row">
-                                <span class="detail-label">${c.type === 'channel' ? '📢' : '💬'} ${escapeHtml((c.title || '').slice(0, 24))}</span>
-                                <span class="detail-value" style="font-size:12px;">${escapeHtml((c.last_date || '').slice(0, 10))}</span>
-                            </div>
-                        `).join('')}
-                    </div>
-                </section>`;
-        }
-        let commentsHtml = '';
-        if (u.comments && u.comments.length) {
-            commentsHtml = `
-                <section class="section">
-                    <div class="section-header">Сообщения (${u.comments.length})</div>
-                    <div class="detail-card">
-                        ${u.comments.slice(0, 10).map(c => `
-                            <div class="detail-row stacked">
-                                <div class="comment-meta">📌 ${escapeHtml((c.chat || '').slice(0, 30))} • ${escapeHtml((c.date || '').slice(0, 10))}</div>
-                                <div class="comment-text">${escapeHtml((c.text || '').slice(0, 200))}</div>
-                            </div>
-                        `).join('')}
-                    </div>
-                </section>`;
-        }
-        setContent(`
-            <div class="page">
-                <div class="profile-card">
-                    <div class="profile-avatar">${escapeHtml(initial)}</div>
-                    <div class="profile-info">
-                        <div class="profile-name">${escapeHtml(name)}</div>
-                        <div class="profile-username">${u.username ? '@' + escapeHtml(u.username) : 'ID: ' + u.user_id}</div>
-                        <span class="profile-badge">${tier}</span>
-                    </div>
-                </div>
-                <section class="section">
-                    <div class="section-header">Основное</div>
-                    <div class="detail-card">
-                        <div class="detail-row"><span class="detail-label">ID</span><span class="detail-value blue">${u.user_id}</span></div>
-                        <div class="detail-row"><span class="detail-label">Регистрация</span><span class="detail-value">${escapeHtml(u.estimated_reg || '—')}</span></div>
-                        <div class="detail-row"><span class="detail-label">Телефон</span><span class="detail-value">${escapeHtml(u.phone || '—')}</span></div>
-                        <div class="detail-row"><span class="detail-label">Платформа</span><span class="detail-value">${escapeHtml(u.last_platform || '—')}</span></div>
-                        <div class="detail-row"><span class="detail-label">Бот запущен</span><span class="detail-value ${u.started_bot ? 'green' : 'red'}">${u.started_bot ? '✅ Да' : '❌ Нет'}</span></div>
-                    </div>
-                </section>
-                ${chatsHtml}
-                ${commentsHtml}
-                <button class="btn-primary full-width" onclick="openBotReport(${u.user_id})">📊 Полный отчёт в боте</button>
-            </div>
-        `);
-    } catch (e) {
-        setContent(errorState(e.message));
+// ============================================================
+// SEARCH HANDLER
+// ============================================================
+async function handleSearch() {
+  const q = searchInput.value.trim();
+  if (!q) return;
+  searchBtn.disabled = true;
+  vibrate(10);
+
+  try {
+    const isId = /^\d{5,15}$/.test(q);
+    const isUsername = q.startsWith('@') && q.length > 1;
+    const isPhone = /^\+?\d{10,15}$/.test(q.replace(/[\s\-]/g, ''));
+
+    let targetId = null;
+    let user = null;
+
+    if (isId) targetId = parseInt(q);
+    else if (isPhone) targetId = null; // ищем в боте
+
+    if (targetId) {
+      try { user = await apiGetUser(targetId); }
+      catch (e) { /* not found */ }
     }
-}
 
-/* ============================================================
-   📊 STATS TAB
-   ============================================================ */
-async function loadStats() {
-    setTitle('Аналитика', 'Статистика');
-    resetNav();
-    loading();
-    try {
-        const [activity, chats, words, phones] = await Promise.all([
-            api.getActivity().catch(() => []),
-            api.getTopInterlocutors().catch(() => []),
-            api.getWords().catch(() => []),
-            api.getPhoneLookups().catch(() => [])
-        ]);
-        setContent(`
-            <div class="page">
-                <section class="section">
-                    <div class="chart-card">
-                        <div class="chart-header">
-                            <div class="chart-title">📈 Активность</div>
-                            <div class="chart-period">30 дней</div>
-                        </div>
-                        <div class="chart-container"><canvas id="activityChart"></canvas></div>
-                    </div>
-                </section>
-                <section class="section">
-                    <div class="section-header">💬 Топ чатов</div>
-                    <div class="detail-card">
-                        ${chats.length
-                            ? chats.slice(0, 10).map(c => `
-                                <div class="detail-row">
-                                    <span class="detail-label">${escapeHtml((c.chat || '').slice(0, 28))}</span>
-                                    <span class="detail-value blue">${formatNumber(c.messages)}</span>
-                                </div>
-                            `).join('')
-                            : '<div style="padding:20px;text-align:center;color:var(--ios-text-2);">Нет данных</div>'}
-                    </div>
-                </section>
-                <section class="section">
-                    <div class="section-header">🔤 Популярные слова</div>
-                    <div class="detail-card">
-                        ${words.length
-                            ? words.slice(0, 15).map(w => `
-                                <div class="detail-row">
-                                    <span class="detail-label">${escapeHtml(w.word)}</span>
-                                    <span class="detail-value">${w.count}</span>
-                                </div>
-                            `).join('')
-                            : '<div style="padding:20px;text-align:center;color:var(--ios-text-2);">Нет данных</div>'}
-                    </div>
-                </section>
-            </div>
-        `);
-        setTimeout(() => {
-            const ctx = document.getElementById('activityChart');
-            if (!ctx || !activity.length) return;
-            if (currentChart) currentChart.destroy();
-            currentChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: activity.map(x => (x.date || '').slice(5)),
-                    datasets: [{
-                        data: activity.map(x => x.count),
-                        backgroundColor: 'rgba(10,132,255,0.6)',
-                        borderColor: '#0a84ff',
-                        borderWidth: 0,
-                        borderRadius: 4,
-                        barThickness: 8
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#8e8e93', font: { size: 10 }, maxTicksLimit: 5 } },
-                        x: { grid: { display: false }, ticks: { color: '#8e8e93', font: { size: 9 }, maxTicksLimit: 8 } }
-                    }
-                }
-            });
-        }, 50);
-    } catch (e) {
-        setContent(errorState(e.message));
+    if (!user) {
+      // ищем среди users
+      const users = await apiGetUsers();
+      const query = q.toLowerCase().replace('@', '').replace(/[\s\-]/g, '');
+      const found = users.filter(u =>
+        String(u.user_id).includes(query) ||
+        (u.username || '').toLowerCase().includes(query) ||
+        ((u.first_name || '') + ' ' + (u.last_name || '')).toLowerCase().includes(query)
+      );
+
+      if (found.length === 0) {
+        toast('Ничего не найдено', 'error');
+        return;
+      }
+      if (found.length === 1) user = await apiGetUser(found[0].user_id);
+      else {
+        // показать список
+        showResult(`Найдено: ${found.length}`, found.slice(0, 30).map(u => ({
+          icon: I.user,
+          label: (u.first_name || '') + ' ' + (u.last_name || '') || 'Без имени',
+          value: u.username ? '@' + esc(u.username) : 'ID: ' + u.user_id
+        })));
+        return;
+      }
     }
+
+    if (user && !user.error) {
+      showResult(`👤 ${user.first_name || ''} ${user.last_name || ''}`.trim(), [
+        { icon: I.user,  label: 'ID',         value: user.user_id, mono: true, accent: true },
+        { icon: I.user,  label: 'Username',   value: user.username ? '@' + esc(user.username) : '—' },
+        { icon: I.info,  label: 'Телефон',    value: user.phone || '—' },
+        { icon: I.clock, label: 'Регистрация', value: user.estimated_reg || '—' },
+        { icon: I.msg,   label: 'Сообщений',  value: formatNumber((user.comments || []).length) },
+        { icon: I.users, label: 'Чатов',      value: formatNumber((user.chats || []).length) },
+        { icon: I.bot,   label: 'Бот запущен', value: user.started_bot ? '✅ Да' : '❌ Нет' }
+      ]);
+    }
+  } catch (e) {
+    toast(e.message || 'Ошибка', 'error');
+  } finally {
+    searchBtn.disabled = false;
+  }
 }
 
-/* ============================================================
-   👤 ME TAB
-   ============================================================ */
-function loadMe() {
-    setTitle('Профиль', 'Управление');
-    resetNav();
-    const user = getCurrentUser();
-    setContent(`
-        <div class="page">
-            ${user ? `
-            <section class="section">
-                <div class="profile-card">
-                    <div class="profile-avatar">${escapeHtml((user.first_name || '?')[0].toUpperCase())}</div>
-                    <div class="profile-info">
-                        <div class="profile-name">${escapeHtml(user.first_name || 'Пользователь')}</div>
-                        <div class="profile-username">${user.username ? '@' + escapeHtml(user.username) : 'ID: ' + user.id}</div>
-                        <span class="profile-badge">${user.is_premium ? '⚡ PREMIUM' : '👤 USER'}</span>
-                    </div>
-                </div>
-            </section>` : ''}
-            <section class="section">
-                <div class="section-header">🔑 API</div>
-                <div class="menu-list">
-                    <div class="menu-item" onclick="openApiModal()">
-                        <div class="menu-icon" style="background:rgba(10,132,255,0.15);">🔑</div>
-                        <div class="menu-text">API Токен</div>
-                        <div class="menu-chevron">${api.hasApiKey() ? '✅' : '›'}</div>
-                    </div>
-                    <div class="menu-item" onclick="showToast('Использовано: ${api.requestsUsed}')">
-                        <div class="menu-icon" style="background:rgba(48,209,88,0.15);">📊</div>
-                        <div class="menu-text">Использовано запросов</div>
-                        <div class="menu-chevron">${api.requestsUsed}</div>
-                    </div>
-                </div>
-            </section>
-            <section class="section">
-                <div class="section-header">🎯 Действия</div>
-                <div class="menu-list">
-                    <div class="menu-item" onclick="openBot()">
-                        <div class="menu-icon" style="background:rgba(191,90,242,0.15);">🤖</div>
-                        <div class="menu-text">Открыть бота</div>
-                        <div class="menu-chevron">›</div>
-                    </div>
-                    <div class="menu-item" onclick="openDashboard()">
-                        <div class="menu-icon" style="background:rgba(255,159,10,0.15);">🖥️</div>
-                        <div class="menu-text">Веб-панель</div>
-                        <div class="menu-chevron">›</div>
-                    </div>
-                    <div class="menu-item" onclick="clearAndReload()">
-                        <div class="menu-icon" style="background:rgba(255,69,58,0.15);">🗑️</div>
-                        <div class="menu-text" style="color:#ff453a;">Сбросить токен</div>
-                        <div class="menu-chevron">›</div>
-                    </div>
-                </div>
-            </section>
-            <section class="section">
-                <div class="section-header">ℹ️ О приложении</div>
-                <div class="detail-card">
-                    <div class="detail-row"><span class="detail-label">Версия</span><span class="detail-value">2.0</span></div>
-                    <div class="detail-row"><span class="detail-label">API URL</span><span class="detail-value" style="font-size:11px;">${escapeHtml(CONFIG.API_BASE)}</span></div>
-                    <div class="detail-row"><span class="detail-label">Telegram</span><span class="detail-value">${tg ? '✅ WebApp' : '❌ Browser'}</span></div>
-                </div>
-            </section>
-            ${tg ? `<button class="btn-secondary full-width" onclick="tg.close()">Закрыть приложение</button>` : ''}
-        </div>
-    `);
+function openMyProfile() {
+  const u = getTelegramUser();
+  if (!u) { toast('Откройте через Telegram', 'error'); return; }
+  searchInput.value = String(u.id);
+  handleSearch();
 }
 
-function clearAndReload() {
-    if (!confirm('Удалить API-токен из localStorage?')) return;
-    api.clearApiKey();
-    api.requestsUsed = 0;
-    localStorage.removeItem(STORAGE_REQ);
-    showToast('🗑 Токен удалён');
-    haptic();
-    setTimeout(() => switchTab('home'), 500);
-}
+// ============================================================
+// EVENTS
+// ============================================================
+searchBtn.addEventListener('click', handleSearch);
+searchInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); handleSearch(); }
+});
 
-/* ============================================================
-   ACTIONS
-   ============================================================ */
-function openBot() {
-    haptic();
-    const url = 'https://t.me/' + CONFIG.BOT_USERNAME;
-    if (tg) tg.openTelegramLink(url);
-    else window.open(url, '_blank');
-}
+$('refresh-btn').addEventListener('click', () => {
+  vibrate();
+  if (currentTab === 'home')  renderHome();
+  else if (currentTab === 'stats') renderStats();
+  else if (currentTab === 'me')    renderMe();
+  else toast('Обновлено', 'ok');
+});
 
-function openBotReport(userId) {
-    haptic();
-    const url = `https://t.me/${CONFIG.BOT_USERNAME}?start=report_${userId}`;
-    if (tg) tg.openTelegramLink(url);
-    else window.open(url, '_blank');
-}
+$('settings-btn').addEventListener('click', openSettings);
 
-/* ============================================================
-   INIT
-   ============================================================ */
-if (!api.hasApiKey()) {
-    setTitle(CONFIG.APP_NAME, 'Введите API-токен');
-    setContent(errorState('Требуется API-токен'));
-    setTimeout(openApiModal, 500);
-} else {
-    loadHome();
-}
+$('theme-toggle').addEventListener('change', (e) => {
+  applyTheme(e.target.checked ? 'dark' : 'light');
+  vibrate(10);
+});
+
+$('set-save').addEventListener('click', () => {
+  APIFY_TOKEN = $('set-token').value.trim() || APIFY_TOKEN;
+  localStorage.setItem('aa_token', APIFY_TOKEN);
+  closePanel('panel-settings');
+  toast('Сохранено', 'ok');
+});
+
+$('set-clear').addEventListener('click', () => {
+  APIFY_TOKEN = CONFIG.API_KEY;
+  $('set-token').value = APIFY_TOKEN;
+  localStorage.setItem('aa_token', APIFY_TOKEN);
+  toast('Токен сброшен', 'ok');
+});
+
+// ============================================================
+// START
+// ============================================================
+setTimeout(() => {
+  const el = document.getElementById('loading');
+  if (el && !el.classList.contains('hidden')) {
+    el.classList.add('hidden');
+    setTimeout(() => el.remove(), 400);
+  }
+}, 1500);
+
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    const el = document.getElementById('loading');
+    if (el) el.classList.add('hidden');
+    setTimeout(() => { const e = document.getElementById('loading'); if (e) e.remove(); }, 500);
+    renderHome();
+  }, 500);
+});
 </script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </body>
 </html>

@@ -65,11 +65,7 @@ input, textarea { user-select: text; -webkit-user-select: text; }
 * { scrollbar-width: none; -ms-overflow-style: none; }
 .content-wrap::-webkit-scrollbar, .panel-body::-webkit-scrollbar { display: none; width: 0; }
 
-#app {
-  position: fixed; inset: 0;
-  display: flex; flex-direction: column;
-  background: var(--bg);
-}
+#app { position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--bg); }
 
 .header {
   display: flex; align-items: center; gap: 12px;
@@ -78,104 +74,41 @@ input, textarea { user-select: text; -webkit-user-select: text; }
   border-bottom: 0.5px solid var(--border-soft);
   flex-shrink: 0; z-index: 100;
 }
-.logo {
-  width: 48px; height: 48px; flex-shrink: 0;
-  filter: drop-shadow(0 0 6px rgba(96,165,250,0.5));
-  animation: logoGlow 2.4s ease-in-out infinite;
-}
+.logo { width: 48px; height: 48px; flex-shrink: 0; filter: drop-shadow(0 0 6px rgba(96,165,250,0.5)); animation: logoGlow 2.4s ease-in-out infinite; }
 .logo svg { width: 48px; height: 48px; overflow: visible; }
-@keyframes logoGlow {
-  0%, 100% { filter: drop-shadow(0 0 4px rgba(96,165,250,0.4)); }
-  50% { filter: drop-shadow(0 0 14px rgba(96,165,250,0.9)); }
-}
-
+@keyframes logoGlow { 0%, 100% { filter: drop-shadow(0 0 4px rgba(96,165,250,0.4)); } 50% { filter: drop-shadow(0 0 14px rgba(96,165,250,0.9)); } }
 .brand-text { display: flex; flex-direction: column; line-height: 1.1; }
 .brand-name { font-size: 15px; font-weight: 600; letter-spacing: 0.3px; color: var(--text); }
 .brand-sub { font-size: 11px; font-weight: 400; letter-spacing: 0.5px; color: var(--text-mute); margin-top: 1px; }
 .header-actions { margin-left: auto; display: flex; gap: 6px; }
-.icon-btn {
-  width: 32px; height: 32px;
-  display: flex; align-items: center; justify-content: center;
-  background: transparent; border: none; border-radius: 50%;
-  color: var(--accent); cursor: pointer;
-}
+.icon-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: transparent; border: none; border-radius: 50%; color: var(--accent); cursor: pointer; }
 .icon-btn:active { background: rgba(120, 120, 128, 0.16); }
 .icon-btn svg { width: 22px; height: 22px; stroke-width: 2; }
 
 .search-wrap { padding: 8px 16px 12px; background: var(--bg); flex-shrink: 0; z-index: 90; }
-.search-bar {
-  display: flex; align-items: center; gap: 8px;
-  background: var(--bg-elev);
-  border: none; border-radius: 12px;
-  padding: 6px 6px 6px 12px;
-  min-height: 44px;
-}
+.search-bar { display: flex; align-items: center; gap: 8px; background: var(--bg-elev); border: none; border-radius: 12px; padding: 6px 6px 6px 12px; min-height: 44px; }
 .search-bar:focus-within { background: var(--bg-elev-2); }
 .search-bar > svg { width: 18px; height: 18px; color: var(--text-mute); flex-shrink: 0; stroke-width: 2.5; }
-.search-bar input {
-  flex: 1; min-width: 0;
-  background: transparent; border: none; outline: none;
-  color: var(--text); font-family: inherit; font-size: 17px;
-  padding: 0 2px;
-}
+.search-bar input { flex: 1; min-width: 0; background: transparent; border: none; outline: none; color: var(--text); font-family: inherit; font-size: 17px; padding: 0 2px; }
 .search-bar input::placeholder { color: var(--text-mute); }
-.search-submit {
-  width: 32px; height: 32px;
-  display: flex; align-items: center; justify-content: center;
-  background: var(--accent); border: none; border-radius: 50%;
-  color: white; cursor: pointer; flex-shrink: 0;
-  transition: transform 0.1s;
-}
+.search-submit { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: var(--accent); border: none; border-radius: 50%; color: white; cursor: pointer; flex-shrink: 0; transition: transform 0.1s; }
 .search-submit:active { transform: scale(0.9); opacity: 0.8; }
 .search-submit:disabled { opacity: 0.3; }
 .search-submit svg { width: 18px; height: 18px; stroke-width: 3; }
 
-.content-wrap {
-  flex: 1; position: relative;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  padding: 0 16px 16px;
-  min-height: 0;
-}
+.content-wrap { flex: 1; position: relative; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 0 16px 16px; min-height: 0; }
 
-.section-title {
-  font-size: 13px; font-weight: 600;
-  color: var(--text-mute);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin: 20px 0 8px;
-  padding: 0 4px;
-}
+.section-title { font-size: 13px; font-weight: 600; color: var(--text-mute); text-transform: uppercase; letter-spacing: 0.5px; margin: 20px 0 8px; padding: 0 4px; }
 
 .stats-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px; }
-.stat-card {
-  background: var(--bg-elev);
-  border-radius: 14px;
-  padding: 16px 14px;
-  text-align: center;
-}
+.stat-card { background: var(--bg-elev); border-radius: 14px; padding: 16px 14px; text-align: center; }
 .stat-value { font-size: 24px; font-weight: 700; color: var(--text); letter-spacing: -0.5px; margin-bottom: 4px; }
 .stat-label { font-size: 11px; color: var(--text-mute); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500; }
 
 .quick-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px; }
-.quick-card {
-  background: var(--bg-elev);
-  border-radius: 14px;
-  padding: 20px 16px;
-  cursor: pointer;
-  display: flex; flex-direction: column; gap: 12px;
-  border: none; text-align: left;
-  font-family: inherit; color: var(--text);
-  transition: transform 0.1s, background 0.15s;
-  min-height: 130px;
-}
+.quick-card { background: var(--bg-elev); border-radius: 14px; padding: 20px 16px; cursor: pointer; display: flex; flex-direction: column; gap: 12px; border: none; text-align: left; font-family: inherit; color: var(--text); transition: transform 0.1s, background 0.15s; min-height: 130px; }
 .quick-card:active { transform: scale(0.97); background: var(--bg-elev-2); }
-.quick-card-icon {
-  width: 44px; height: 44px;
-  border-radius: 12px;
-  display: flex; align-items: center; justify-content: center;
-  background: rgba(0,122,255,0.12); color: var(--accent);
-}
+.quick-card-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: rgba(0,122,255,0.12); color: var(--accent); }
 .quick-card-icon.green { background: rgba(52,199,89,0.12); color: var(--green); }
 .quick-card-icon.orange { background: rgba(255,149,0,0.12); color: var(--orange); }
 .quick-card-icon.purple { background: rgba(175,82,222,0.12); color: var(--purple); }
@@ -185,30 +118,11 @@ input, textarea { user-select: text; -webkit-user-select: text; }
 .quick-card-title { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
 .quick-card-sub { font-size: 12px; color: var(--text-mute); line-height: 1.3; }
 
-.list {
-  list-style: none;
-  background: var(--bg);
-  border-radius: 12px;
-  overflow: hidden;
-  border: 0.5px solid var(--border-soft);
-  margin-bottom: 16px;
-}
-.list-item {
-  display: flex; align-items: center; gap: 14px;
-  padding: 11px 16px;
-  border-bottom: 0.5px solid var(--border-soft);
-  cursor: pointer;
-}
+.list { list-style: none; background: var(--bg); border-radius: 12px; overflow: hidden; border: 0.5px solid var(--border-soft); margin-bottom: 16px; }
+.list-item { display: flex; align-items: center; gap: 14px; padding: 11px 16px; border-bottom: 0.5px solid var(--border-soft); cursor: pointer; }
 .list-item:last-child { border-bottom: none; }
 .list-item:active { background: var(--bg-elev); }
-.list-icon {
-  width: 29px; height: 29px;
-  display: flex; align-items: center; justify-content: center;
-  background: var(--accent);
-  border-radius: 7px;
-  color: white; flex-shrink: 0;
-  font-size: 15px;
-}
+.list-icon { width: 29px; height: 29px; display: flex; align-items: center; justify-content: center; background: var(--accent); border-radius: 7px; color: white; flex-shrink: 0; font-size: 15px; }
 .list-icon svg { width: 18px; height: 18px; stroke-width: 2; }
 .list-content { flex: 1; min-width: 0; }
 .list-title { font-size: 16px; color: var(--text); margin-bottom: 1px; }
@@ -222,18 +136,8 @@ input, textarea { user-select: text; -webkit-user-select: text; }
 .list-icon.pink { background: var(--pink); }
 .list-icon.gray { background: var(--text-mute); }
 
-.result-card {
-  background: var(--bg);
-  border-radius: 12px;
-  overflow: hidden;
-  border: 0.5px solid var(--border-soft);
-  margin-bottom: 12px;
-}
-.result-row {
-  display: flex; align-items: flex-start; gap: 12px;
-  padding: 12px 16px;
-  border-bottom: 0.5px solid var(--border-soft);
-}
+.result-card { background: var(--bg); border-radius: 12px; overflow: hidden; border: 0.5px solid var(--border-soft); margin-bottom: 12px; }
+.result-row { display: flex; align-items: flex-start; gap: 12px; padding: 12px 16px; border-bottom: 0.5px solid var(--border-soft); }
 .result-row:last-child { border-bottom: none; }
 .result-icon { width: 22px; height: 22px; flex-shrink: 0; color: var(--accent); margin-top: 1px; }
 .result-icon svg { width: 22px; height: 22px; stroke-width: 2; }
@@ -245,26 +149,12 @@ input, textarea { user-select: text; -webkit-user-select: text; }
 
 .field { margin-bottom: 14px; }
 .field-label { display: block; font-size: 13px; color: var(--text-mute); margin-bottom: 6px; }
-.field-input {
-  width: 100%; padding: 12px 14px;
-  background: var(--bg-elev);
-  border: none; border-radius: 10px;
-  color: var(--text); font-family: inherit; font-size: 17px;
-  outline: none;
-}
+.field-input { width: 100%; padding: 12px 14px; background: var(--bg-elev); border: none; border-radius: 10px; color: var(--text); font-family: inherit; font-size: 17px; outline: none; }
 .field-input:focus { background: var(--bg-elev-2); }
 .field-input::placeholder { color: var(--text-mute); }
 .field-hint { font-size: 12px; color: var(--text-mute); margin-top: 5px; }
 
-.btn {
-  width: 100%; padding: 14px 20px;
-  background: var(--accent);
-  border: none; border-radius: 12px;
-  color: white; font-family: inherit;
-  font-size: 16px; font-weight: 600;
-  cursor: pointer;
-  margin-bottom: 8px;
-}
+.btn { width: 100%; padding: 14px 20px; background: var(--accent); border: none; border-radius: 12px; color: white; font-family: inherit; font-size: 16px; font-weight: 600; cursor: pointer; margin-bottom: 8px; }
 .btn:active { background: var(--accent-dim); transform: scale(0.98); }
 .btn:disabled { opacity: 0.4; }
 .btn.secondary { background: var(--bg-elev); color: var(--accent); }
@@ -272,171 +162,55 @@ input, textarea { user-select: text; -webkit-user-select: text; }
 
 .toggle { position: relative; width: 51px; height: 31px; flex-shrink: 0; }
 .toggle input { opacity: 0; width: 0; height: 0; }
-.toggle-slider {
-  position: absolute; inset: 0;
-  background: var(--bg-elev-2);
-  border-radius: 15.5px; cursor: pointer;
-  transition: 0.3s;
-}
-.toggle-slider::before {
-  content: ''; position: absolute;
-  width: 27px; height: 27px; left: 2px; top: 2px;
-  background: white; border-radius: 50%;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-  transition: 0.3s;
-}
+.toggle-slider { position: absolute; inset: 0; background: var(--bg-elev-2); border-radius: 15.5px; cursor: pointer; transition: 0.3s; }
+.toggle-slider::before { content: ''; position: absolute; width: 27px; height: 27px; left: 2px; top: 2px; background: white; border-radius: 50%; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2); transition: 0.3s; }
 .toggle input:checked + .toggle-slider { background: #34c759; }
 .toggle input:checked + .toggle-slider::before { transform: translateX(20px); }
 
-.tabs {
-  display: flex;
-  background: var(--bg);
-  border-top: 0.5px solid var(--border-soft);
-  padding: 6px 0 calc(env(safe-area-inset-bottom, 0px) + 2px);
-  flex-shrink: 0; z-index: 100;
-}
-.tab {
-  flex: 1;
-  display: flex; flex-direction: column; align-items: center;
-  gap: 2px; padding: 4px;
-  background: transparent; border: none;
-  color: var(--text-mute); cursor: pointer;
-  font-family: inherit;
-  border-radius: 8px;
-}
+.tabs { display: flex; background: var(--bg); border-top: 0.5px solid var(--border-soft); padding: 6px 0 calc(env(safe-area-inset-bottom, 0px) + 2px); flex-shrink: 0; z-index: 100; }
+.tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px; background: transparent; border: none; color: var(--text-mute); cursor: pointer; font-family: inherit; border-radius: 8px; }
 .tab:active { opacity: 0.5; }
 .tab.active { color: var(--accent); }
 .tab svg { width: 26px; height: 26px; stroke-width: 1.8; }
 .tab span { font-size: 10px; font-weight: 500; }
 
-.toast-wrap {
-  position: fixed; left: 50%; transform: translateX(-50%);
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 90px);
-  z-index: 1000;
-  display: flex; flex-direction: column; gap: 8px;
-  pointer-events: none;
-  width: calc(100% - 32px); max-width: 340px;
-}
-.toast {
-  padding: 12px 16px;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(20px);
-  border-radius: 14px;
-  font-size: 14px; font-weight: 500;
-  color: white; text-align: center;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-  transform: translateY(20px) scale(0.95);
-  opacity: 0;
-  transition: transform 0.25s, opacity 0.25s;
-  pointer-events: auto;
-}
+.toast-wrap { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(env(safe-area-inset-bottom, 0px) + 90px); z-index: 1000; display: flex; flex-direction: column; gap: 8px; pointer-events: none; width: calc(100% - 32px); max-width: 340px; }
+.toast { padding: 12px 16px; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(20px); border-radius: 14px; font-size: 14px; font-weight: 500; color: white; text-align: center; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2); transform: translateY(20px) scale(0.95); opacity: 0; transition: transform 0.25s, opacity 0.25s; pointer-events: auto; }
 .toast.show { transform: translateY(0) scale(1); opacity: 1; }
 .toast.error { background: rgba(255, 59, 48, 0.95); }
 .toast.ok { background: rgba(52, 199, 89, 0.95); }
 
-.loading {
-  position: fixed; inset: 0;
-  background: var(--bg);
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  gap: 20px; z-index: 9999;
-  transition: opacity 0.4s;
-}
+.loading { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; z-index: 9999; transition: opacity 0.4s; }
 .loading.hidden { opacity: 0; pointer-events: none; }
 .loading-logo { width: 90px; height: 90px; }
-.loading-text {
-  font-family: 'SF Mono', 'Menlo', monospace;
-  font-size: 11px; letter-spacing: 3px;
-  color: var(--text-mute); text-transform: uppercase;
-}
-.loading-bar {
-  width: 100px; height: 3px;
-  background: var(--bg-elev-2);
-  border-radius: 2px; overflow: hidden;
-}
-.loading-bar::after {
-  content: ''; display: block;
-  width: 40%; height: 100%;
-  background: var(--accent);
-  animation: loading 1.2s ease-in-out infinite;
-}
-@keyframes loading {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(350%); }
-}
+.loading-text { font-family: 'SF Mono', 'Menlo', monospace; font-size: 11px; letter-spacing: 3px; color: var(--text-mute); text-transform: uppercase; }
+.loading-bar { width: 100px; height: 3px; background: var(--bg-elev-2); border-radius: 2px; overflow: hidden; }
+.loading-bar::after { content: ''; display: block; width: 40%; height: 100%; background: var(--accent); animation: loading 1.2s ease-in-out infinite; }
+@keyframes loading { 0% { transform: translateX(-100%); } 100% { transform: translateX(350%); } }
 
 .logo-rotator { transform-origin: 50px 50px; animation: logoSpin 3s linear infinite; }
 @keyframes logoSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 .logo-pulse { transform-origin: 58px 58px; animation: logoPulse 1.8s ease-in-out infinite; }
-@keyframes logoPulse {
-  0%, 100% { opacity: 1; transform: scale(1); stroke-width: 2.5; }
-  50% { opacity: 0.4; transform: scale(1.25); stroke-width: 1.5; }
-}
-.logo-triangle {
-  stroke-dasharray: 260; stroke-dashoffset: 260;
-  animation: logoDraw 3s ease-in-out infinite;
-}
-@keyframes logoDraw {
-  0% { stroke-dashoffset: 260; opacity: 0.4; }
-  50% { stroke-dashoffset: 0; opacity: 1; }
-  100% { stroke-dashoffset: -260; opacity: 0.4; }
-}
+@keyframes logoPulse { 0%, 100% { opacity: 1; transform: scale(1); stroke-width: 2.5; } 50% { opacity: 0.4; transform: scale(1.25); stroke-width: 1.5; } }
+.logo-triangle { stroke-dasharray: 260; stroke-dashoffset: 260; animation: logoDraw 3s ease-in-out infinite; }
+@keyframes logoDraw { 0% { stroke-dashoffset: 260; opacity: 0.4; } 50% { stroke-dashoffset: 0; opacity: 1; } 100% { stroke-dashoffset: -260; opacity: 0.4; } }
 
-.chart-wrap {
-  background: var(--bg-elev);
-  border-radius: 14px;
-  padding: 16px;
-  margin-bottom: 16px;
-}
+.chart-wrap { background: var(--bg-elev); border-radius: 14px; padding: 16px; margin-bottom: 16px; }
 .chart-canvas-wrap { height: 180px; position: relative; }
 
-.modal-overlay {
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,0.7);
-  backdrop-filter: blur(10px);
-  display: flex; align-items: center; justify-content: center;
-  z-index: 2000; padding: 20px;
-  animation: fadeIn 0.2s ease;
-}
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; z-index: 2000; padding: 20px; animation: fadeIn 0.2s ease; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-.modal {
-  background: var(--bg);
-  border-radius: 20px;
-  width: 100%; max-width: 400px;
-  max-height: 85vh; overflow-y: auto;
-  padding: 24px;
-  animation: modalIn 0.25s ease;
-}
-@keyframes modalIn {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
-}
+.modal { background: var(--bg); border-radius: 20px; width: 100%; max-width: 400px; max-height: 85vh; overflow-y: auto; padding: 24px; animation: modalIn 0.25s ease; }
+@keyframes modalIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
 .modal-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; color: var(--text); }
 .modal-desc { font-size: 14px; color: var(--text-mute); margin-bottom: 20px; line-height: 1.5; }
 
-@keyframes slideUp {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
-}
-@keyframes pulsePin {
-  0% { transform: scale(0.7); opacity: 0.6; }
-  100% { transform: scale(1.6); opacity: 0; }
-}
-#phone-map .leaflet-control-zoom a {
-  background: var(--bg) !important;
-  color: var(--accent) !important;
-  border: none !important;
-  width: 36px !important; height: 36px !important;
-  line-height: 34px !important; font-size: 18px !important;
-}
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+@keyframes pulsePin { 0% { transform: scale(0.7); opacity: 0.6; } 100% { transform: scale(1.6); opacity: 0; } }
+#phone-map .leaflet-control-zoom a { background: var(--bg) !important; color: var(--accent) !important; border: none !important; width: 36px !important; height: 36px !important; line-height: 34px !important; font-size: 18px !important; }
 #phone-map .leaflet-control-zoom-in { border-radius: 10px 10px 0 0 !important; }
 #phone-map .leaflet-control-zoom-out { border-radius: 0 0 10px 10px !important; }
-#phone-map .leaflet-popup-content-wrapper {
-  background: var(--bg) !important;
-  color: var(--text) !important;
-  border-radius: 12px !important;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.15) !important;
-}
+#phone-map .leaflet-popup-content-wrapper { background: var(--bg) !important; color: var(--text) !important; border-radius: 12px !important; box-shadow: 0 8px 24px rgba(0,0,0,0.15) !important; }
 #phone-map .leaflet-popup-tip { background: var(--bg) !important; }
 #phone-map .leaflet-control-attribution { display: none !important; }
 </style>
@@ -446,17 +220,9 @@ input, textarea { user-select: text; -webkit-user-select: text; }
 <div class="loading" id="loading">
   <div class="loading-logo">
     <svg viewBox="0 0 100 100">
-      <defs>
-        <linearGradient id="lgL" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#60a5fa"/>
-          <stop offset="100%" stop-color="#007aff"/>
-        </linearGradient>
-      </defs>
+      <defs><linearGradient id="lgL" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#60a5fa"/><stop offset="100%" stop-color="#007aff"/></linearGradient></defs>
       <circle cx="50" cy="50" r="46" fill="none" stroke="url(#lgL)" stroke-width="1.5" opacity="0.3" stroke-dasharray="20 8" class="logo-rotator"/>
-      <g class="logo-rotator">
-        <path d="M50 50 L50 4 A46 46 0 0 1 82 18 Z" fill="url(#lgL)" opacity="0.25"/>
-        <line x1="50" y1="50" x2="50" y2="4" stroke="url(#lgL)" stroke-width="2" opacity="0.9"/>
-      </g>
+      <g class="logo-rotator"><path d="M50 50 L50 4 A46 46 0 0 1 82 18 Z" fill="url(#lgL)" opacity="0.25"/><line x1="50" y1="50" x2="50" y2="4" stroke="url(#lgL)" stroke-width="2" opacity="0.9"/></g>
       <polygon class="logo-triangle" points="50,18 82,78 18,78" fill="none" stroke="url(#lgL)" stroke-width="3" stroke-linejoin="round" pathLength="260"/>
       <circle class="logo-pulse" cx="58" cy="58" r="9" fill="none" stroke="url(#lgL)" stroke-width="2.5"/>
       <circle cx="58" cy="55" r="2.5" fill="url(#lgL)"/>
@@ -468,21 +234,12 @@ input, textarea { user-select: text; -webkit-user-select: text; }
 </div>
 
 <div id="app">
-
   <header class="header">
     <div class="logo">
       <svg viewBox="0 0 100 100">
-        <defs>
-          <linearGradient id="lgH" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="#60a5fa"/>
-            <stop offset="100%" stop-color="#007aff"/>
-          </linearGradient>
-        </defs>
+        <defs><linearGradient id="lgH" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#60a5fa"/><stop offset="100%" stop-color="#007aff"/></linearGradient></defs>
         <circle cx="50" cy="50" r="46" fill="none" stroke="url(#lgH)" stroke-width="1.5" opacity="0.3" stroke-dasharray="20 8" class="logo-rotator"/>
-        <g class="logo-rotator">
-          <path d="M50 50 L50 4 A46 46 0 0 1 82 18 Z" fill="url(#lgH)" opacity="0.25"/>
-          <line x1="50" y1="50" x2="50" y2="4" stroke="url(#lgH)" stroke-width="2" opacity="0.9"/>
-        </g>
+        <g class="logo-rotator"><path d="M50 50 L50 4 A46 46 0 0 1 82 18 Z" fill="url(#lgH)" opacity="0.25"/><line x1="50" y1="50" x2="50" y2="4" stroke="url(#lgH)" stroke-width="2" opacity="0.9"/></g>
         <polygon points="50,18 82,78 18,78" fill="none" stroke="url(#lgH)" stroke-width="3" stroke-linejoin="round"/>
         <circle class="logo-pulse" cx="58" cy="58" r="9" fill="none" stroke="url(#lgH)" stroke-width="2.5"/>
         <circle cx="58" cy="55" r="2.5" fill="url(#lgH)"/>
@@ -495,33 +252,20 @@ input, textarea { user-select: text; -webkit-user-select: text; }
     </div>
     <div class="header-actions">
       <button class="icon-btn" id="refresh-btn" title="Обновить">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <polyline points="23 4 23 10 17 10"/>
-          <polyline points="1 20 1 14 7 14"/>
-          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
-        </svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
       </button>
       <button class="icon-btn" id="settings-btn" title="Настройки">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <circle cx="12" cy="12" r="3"/>
-          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-        </svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       </button>
     </div>
   </header>
 
   <div class="search-wrap">
     <div class="search-bar">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-        <circle cx="11" cy="11" r="7"/>
-        <line x1="16.5" y1="16.5" x2="21" y2="21"/>
-      </svg>
-      <input type="text" id="search-input" placeholder="ID, @username или телефон"
-             autocomplete="off" inputmode="text" enterkeyhint="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
+      <input type="text" id="search-input" placeholder="ID, @username или телефон" autocomplete="off" inputmode="text" enterkeyhint="search">
       <button class="search-submit" id="search-btn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
-          <polyline points="9 18 15 12 9 6"/>
-        </svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
       </button>
     </div>
   </div>
@@ -529,34 +273,10 @@ input, textarea { user-select: text; -webkit-user-select: text; }
   <div class="content-wrap" id="content-wrap"></div>
 
   <nav class="tabs">
-    <button class="tab active" data-tab="home">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-        <polyline points="9 22 9 12 15 12 15 22"/>
-      </svg>
-      <span>Главная</span>
-    </button>
-    <button class="tab" data-tab="search">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-        <circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/>
-      </svg>
-      <span>Поиск</span>
-    </button>
-    <button class="tab" data-tab="stats">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-        <line x1="12" y1="20" x2="12" y2="10"/>
-        <line x1="18" y1="20" x2="18" y2="4"/>
-        <line x1="6" y1="20" x2="6" y2="16"/>
-      </svg>
-      <span>Стата</span>
-    </button>
-    <button class="tab" data-tab="me">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-        <circle cx="12" cy="7" r="4"/>
-      </svg>
-      <span>Профиль</span>
-    </button>
+    <button class="tab active" data-tab="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Главная</span></button>
+    <button class="tab" data-tab="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg><span>Поиск</span></button>
+    <button class="tab" data-tab="stats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg><span>Стата</span></button>
+    <button class="tab" data-tab="me"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Профиль</span></button>
   </nav>
 </div>
 
@@ -568,19 +288,24 @@ input, textarea { user-select: text; -webkit-user-select: text; }
 // ============================================================
 const CONFIG = {
   API_BASE: "https://precise-subject-makeshift.ngrok-free.dev",
-  API_KEY: "SC3xksKXvYEKx_2oRjgLVDl6OOsNUpVI",
+  API_KEY: "BHf4kSVv1MgHdAGYM3_JbU50UwkYJ1BB",
+  API_KEY_VERSION: "v2",
   BOT_USERNAME: "dev1_robot",
-  ADMIN_ID: 8682108827
+  ADMIN_ID: 8682108827,
+  DAILY_LIMIT: 5
 };
+
+const savedVer = localStorage.getItem('aa_key_version');
+if (savedVer !== CONFIG.API_KEY_VERSION) {
+  localStorage.removeItem('aa_token');
+  localStorage.setItem('aa_key_version', CONFIG.API_KEY_VERSION);
+}
 
 try {
   const tg = window.Telegram?.WebApp;
   if (tg) { tg.ready(); tg.expand(); tg.disableVerticalSwipes?.(); }
 } catch (e) {}
 
-// ============================================================
-// THEME
-// ============================================================
 let currentTheme = localStorage.getItem('aa_theme') || 'dark';
 function applyTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
@@ -593,14 +318,9 @@ function applyTheme(theme) {
     tg?.setHeaderColor?.(theme === 'dark' ? '#000000' : '#ffffff');
     tg?.setBackgroundColor?.(theme === 'dark' ? '#000000' : '#ffffff');
   } catch (e) {}
-  const toggle = document.getElementById('theme-toggle');
-  if (toggle) toggle.checked = (theme === 'dark');
 }
 document.documentElement.setAttribute('data-theme', currentTheme);
 
-// ============================================================
-// STATE
-// ============================================================
 const $ = id => document.getElementById(id);
 const searchInput = $('search-input');
 const searchBtn = $('search-btn');
@@ -646,6 +366,74 @@ function copyToClipboard(text) {
       toast('✅ Скопировано', 'ok');
     });
   } catch (e) { toast('Не удалось скопировать', 'error'); }
+}
+
+// ============================================================
+// DAILY LIMIT
+// ============================================================
+function todayStr() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function getDailyUsage() {
+  try {
+    const data = localStorage.getItem('aa_daily_usage');
+    if (!data) return { used: 0, date: todayStr() };
+    const parsed = JSON.parse(data);
+    if (parsed.date !== todayStr()) return { used: 0, date: todayStr() };
+    return parsed;
+  } catch (e) { return { used: 0, date: todayStr() }; }
+}
+function saveDailyUsage(usage) { try { localStorage.setItem('aa_daily_usage', JSON.stringify(usage)); } catch (e) {} }
+function getRequestsLeft() {
+  if (isAdmin()) return Infinity;
+  const u = getDailyUsage();
+  return Math.max(0, CONFIG.DAILY_LIMIT - u.used);
+}
+function useRequest() {
+  if (isAdmin()) return true;
+  const u = getDailyUsage();
+  if (u.used >= CONFIG.DAILY_LIMIT) return false;
+  u.used++;
+  u.date = todayStr();
+  saveDailyUsage(u);
+  updateRequestsBadge();
+  return true;
+}
+function checkAndUseRequest() {
+  if (isAdmin()) return { ok: true, message: '' };
+  const left = getRequestsLeft();
+  if (left <= 0) {
+    return { ok: false, message: '❌ Лимит запросов исчерпан!' };
+  }
+  useRequest();
+  return { ok: true, message: '' };
+}
+function updateRequestsBadge() {
+  const badge = document.getElementById('requests-badge');
+  if (!badge) return;
+  if (isAdmin()) {
+    badge.textContent = '👑 Безлимит';
+    badge.style.background = 'rgba(255,149,0,0.15)';
+    badge.style.color = 'var(--orange)';
+  } else {
+    const left = getRequestsLeft();
+    badge.textContent = '📊 ' + left + '/' + CONFIG.DAILY_LIMIT;
+    if (left === 0) {
+      badge.style.background = 'rgba(255,59,48,0.15)';
+      badge.style.color = 'var(--red)';
+    } else if (left <= 2) {
+      badge.style.background = 'rgba(255,149,0,0.15)';
+      badge.style.color = 'var(--orange)';
+    } else {
+      badge.style.background = 'rgba(52,199,89,0.15)';
+      badge.style.color = 'var(--green)';
+    }
+  }
+}
+function showLimitModal() {
+  vibrate();
+  showModal('<div class="modal-title">❌ Лимит запросов исчерпан</div><div class="modal-desc">Вы использовали все <b>' + CONFIG.DAILY_LIMIT + '</b> бесплатных запросов на сегодня.<br><br>⏰ Лимит автоматически обновится через 24 часа.<br><br>⭐ Или купите подписку для безлимитного доступа.</div><button class="btn" onclick="closeModal(); renderScreen(\'subscription\');">⭐ Купить подписку</button><button class="btn secondary" onclick="closeModal()">Понятно</button>');
 }
 
 // ============================================================
@@ -748,7 +536,6 @@ const I = {
   phone: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>',
   star:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
   gem:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 3h12l4 6-10 12L2 9z"/><path d="M11 3 8 9l4 12 4-12-3-6"/><path d="M2 9h20"/></svg>',
-  key:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>',
   bell:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>',
   gear:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
   info:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
@@ -756,7 +543,6 @@ const I = {
   eye:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
   trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>',
   clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
-  shield:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
   check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>',
   globe:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>',
   signal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 4v16"/></svg>',
@@ -811,7 +597,7 @@ async function renderHome() {
 
   contentWrap.innerHTML = `
     ${admin ? `
-      <button class="quick-card" onclick="renderScreen('admin')" style="background:linear-gradient(135deg, rgba(255,149,0,0.15), rgba(255,59,48,0.15)); border:1px solid rgba(255,149,0,0.3); flex-direction:row; align-items:center; min-height:auto; padding:16px; margin-bottom:16px; width:100%;">
+      <button class="quick-card" onclick="renderScreen('admin')" style="background:linear-gradient(135deg, rgba(255,149,0,0.15), rgba(255,59,48,0.15)); border:1px solid rgba(255,149,0,0.3); flex-direction:row; align-items:center; min-height:auto; padding:16px; margin-bottom:12px; width:100%;">
         <div class="quick-card-icon orange" style="width:44px;height:44px;">👑</div>
         <div style="margin-left:12px;">
           <div class="quick-card-title" style="color:var(--orange);">АДМИН ПАНЕЛЬ</div>
@@ -819,6 +605,14 @@ async function renderHome() {
         </div>
       </button>
     ` : ''}
+
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--bg-elev);border-radius:14px;margin-bottom:16px;">
+      <div>
+        <div style="font-size:13px;color:var(--text-mute);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Доступно запросов</div>
+        <div style="font-size:12px;color:var(--text-mute);margin-top:2px;">${admin ? 'Безлимитный доступ' : 'Обновление каждые 24 часа'}</div>
+      </div>
+      <div id="requests-badge" style="padding:6px 14px;border-radius:20px;font-size:13px;font-weight:700;"></div>
+    </div>
 
     <div class="stats-row">
       <div class="stat-card"><div class="stat-value" id="my-comments">—</div><div class="stat-label">Моих сообщений</div></div>
@@ -867,6 +661,9 @@ async function renderHome() {
       </li>
     </ul>
   `;
+
+  updateRequestsBadge();
+
   if (tgUser) {
     try {
       const u = await apiGetUser(tgUser.id, 'all', 100).catch(() => null);
@@ -893,17 +690,11 @@ function renderSearchTab() {
     <ul class="list">
       <li class="list-item" onclick="searchInput.focus()">
         <div class="list-icon">${I.search}</div>
-        <div class="list-content">
-          <div class="list-title">Введите запрос в поле выше</div>
-          <div class="list-sub">ID, @username или телефон</div>
-        </div>
+        <div class="list-content"><div class="list-title">Введите запрос в поле выше</div><div class="list-sub">ID, @username или телефон</div></div>
       </li>
       <li class="list-item" onclick="openMyProfile()">
         <div class="list-icon green">${I.user}</div>
-        <div class="list-content">
-          <div class="list-title">Мой профиль</div>
-          <div class="list-sub">Найти себя</div>
-        </div>
+        <div class="list-content"><div class="list-title">Мой профиль</div><div class="list-sub">Найти себя</div></div>
         <div class="list-chevron">${I.search}</div>
       </li>
     </ul>
@@ -913,7 +704,7 @@ function renderSearchTab() {
 }
 
 // ============================================================
-// STATS
+// STATS (БЕЗ "ПРОВЕРКИ НОМЕРОВ")
 // ============================================================
 async function renderStats() {
   contentWrap.innerHTML = `
@@ -932,16 +723,13 @@ async function renderStats() {
     <ul class="list" id="top-chats"><li class="list-item"><div class="list-content"><div class="list-sub">Загрузка...</div></div></li></ul>
     <div class="section-title">🔤 Популярные слова</div>
     <ul class="list" id="top-words"><li class="list-item"><div class="list-content"><div class="list-sub">Загрузка...</div></div></li></ul>
-    <div class="section-title">📱 Проверки номеров</div>
-    <ul class="list" id="phone-lookups"><li class="list-item"><div class="list-content"><div class="list-sub">Загрузка...</div></div></li></ul>
   `;
   try {
-    const [stats, activity, chats, words, phones] = await Promise.all([
+    const [stats, activity, chats, words] = await Promise.all([
       apiGetPublicStats().catch(() => ({})),
       apiGetActivity().catch(() => []),
       apiGetTopInterlocutors().catch(() => []),
-      apiGetWords().catch(() => []),
-      apiGetPhoneLookups().catch(() => [])
+      apiGetWords().catch(() => [])
     ]);
     $('bs-users').textContent = formatNumber(stats.users || 0);
     $('bs-comments').textContent = formatNumber(stats.comments || 0);
@@ -954,10 +742,6 @@ async function renderStats() {
 
     $('top-words').innerHTML = words.length
       ? words.slice(0, 15).map(w => '<li class="list-item"><div class="list-icon purple">#</div><div class="list-content"><div class="list-title">' + esc(w.word) + '</div></div><div class="list-chevron">' + formatNumber(w.count) + '</div></li>').join('')
-      : '<li class="list-item"><div class="list-content"><div class="list-sub">Нет данных</div></div></li>';
-
-    $('phone-lookups').innerHTML = phones.length
-      ? phones.slice(0, 10).map(p => '<li class="list-item"><div class="list-icon">' + I.phone + '</div><div class="list-content"><div class="list-title">' + esc(p.phone) + '</div><div class="list-sub">' + esc(p.carrier || '—') + ' · ' + esc(p.region || '—') + '</div></div></li>').join('')
       : '<li class="list-item"><div class="list-content"><div class="list-sub">Нет данных</div></div></li>';
 
     renderChart(activity);
@@ -974,12 +758,7 @@ function renderChart(activity) {
     type: 'bar',
     data: {
       labels: activity.map(x => (x.date || '').slice(5)),
-      datasets: [{
-        data: activity.map(x => x.count),
-        backgroundColor: isDark ? 'rgba(10,132,255,0.6)' : 'rgba(0,122,255,0.6)',
-        borderColor: isDark ? '#0a84ff' : '#007aff',
-        borderWidth: 0, borderRadius: 4, barThickness: 8
-      }]
+      datasets: [{ data: activity.map(x => x.count), backgroundColor: isDark ? 'rgba(10,132,255,0.6)' : 'rgba(0,122,255,0.6)', borderColor: isDark ? '#0a84ff' : '#007aff', borderWidth: 0, borderRadius: 4, barThickness: 8 }]
     },
     options: {
       responsive: true, maintainAspectRatio: false,
@@ -1001,21 +780,9 @@ function renderMe() {
     ${u ? '<div class="section-title">Мой Telegram</div><div class="result-card"><div class="result-row"><div class="result-icon">' + I.user + '</div><div class="result-content"><div class="result-label">Имя</div><div class="result-value">' + esc(u.first_name || '') + ' ' + esc(u.last_name || '') + '</div></div></div><div class="result-row"><div class="result-icon">' + I.user + '</div><div class="result-content"><div class="result-label">Username</div><div class="result-value">' + (u.username ? '@' + esc(u.username) : '—') + '</div></div></div><div class="result-row"><div class="result-icon">' + I.info + '</div><div class="result-content"><div class="result-label">ID</div><div class="result-value mono">' + u.id + '</div></div></div></div>' : ''}
     <div class="section-title">Действия</div>
     <ul class="list">
-      <li class="list-item" onclick="openMyProfile()">
-        <div class="list-icon">${I.user}</div>
-        <div class="list-content"><div class="list-title">Мой профиль в базе</div></div>
-        <div class="list-chevron">${I.search}</div>
-      </li>
-      <li class="list-item" onclick="renderScreen('phone-check')">
-        <div class="list-icon green">${I.phone}</div>
-        <div class="list-content"><div class="list-title">Проверка номеров</div></div>
-        <div class="list-chevron">${I.search}</div>
-      </li>
-      <li class="list-item" onclick="openSettings()">
-        <div class="list-icon gray">${I.gear}</div>
-        <div class="list-content"><div class="list-title">Настройки</div></div>
-        <div class="list-chevron">${I.search}</div>
-      </li>
+      <li class="list-item" onclick="openMyProfile()"><div class="list-icon">${I.user}</div><div class="list-content"><div class="list-title">Мой профиль в базе</div></div><div class="list-chevron">${I.search}</div></li>
+      <li class="list-item" onclick="renderScreen('phone-check')"><div class="list-icon green">${I.phone}</div><div class="list-content"><div class="list-title">Проверка номеров</div></div><div class="list-chevron">${I.search}</div></li>
+      <li class="list-item" onclick="openSettings()"><div class="list-icon gray">${I.gear}</div><div class="list-content"><div class="list-title">Настройки</div></div><div class="list-chevron">${I.search}</div></li>
     </ul>
   `;
 }
@@ -1038,40 +805,24 @@ async function renderProfile(userId) {
     const wordsCount = (u.words || []).length;
 
     const chatActivity = {};
-    (u.comments || []).forEach(c => {
-      const t = (c.chat || 'Неизвестно').slice(0, 20);
-      chatActivity[t] = (chatActivity[t] || 0) + 1;
-    });
+    (u.comments || []).forEach(c => { const t = (c.chat || 'Неизвестно').slice(0, 20); chatActivity[t] = (chatActivity[t] || 0) + 1; });
     const topChats = Object.entries(chatActivity).sort((a,b) => b[1] - a[1]).slice(0, 5);
     const maxChatCount = topChats[0] ? topChats[0][1] : 1;
 
     const dailyMap = {};
-    (u.comments || []).forEach(c => {
-      const d = (c.date || '').slice(0, 10);
-      if (d) dailyMap[d] = (dailyMap[d] || 0) + 1;
-    });
+    (u.comments || []).forEach(c => { const d = (c.date || '').slice(0, 10); if (d) dailyMap[d] = (dailyMap[d] || 0) + 1; });
     const last14Days = [];
-    for (let i = 13; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      const key = d.toISOString().slice(0, 10);
-      last14Days.push({ date: key, count: dailyMap[key] || 0 });
-    }
+    for (let i = 13; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); const key = d.toISOString().slice(0, 10); last14Days.push({ date: key, count: dailyMap[key] || 0 }); }
     const maxDaily = Math.max(...last14Days.map(d => d.count), 1);
 
     const topWords = (u.words || []).slice(0, 12);
     const maxWord = topWords[0] ? topWords[0].count : 1;
-
     const nameHistory = u.name_history || [];
 
     contentWrap.innerHTML = `
       <div style="position:relative;margin:-16px -16px 0;padding:32px 24px 24px;background:linear-gradient(180deg,${u.started_bot ? 'rgba(255,149,0,0.15)' : 'rgba(0,122,255,0.12)'} 0%,transparent 100%);text-align:center;">
-        <button class="icon-btn" onclick="renderScreen('home')" style="position:absolute;left:8px;top:8px;color:var(--text);">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
-        </button>
-        <button class="icon-btn" onclick="copyToClipboard('${u.user_id}')" style="position:absolute;right:8px;top:8px;color:var(--text);">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-        </button>
+        <button class="icon-btn" onclick="renderScreen('home')" style="position:absolute;left:8px;top:8px;color:var(--text);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+        <button class="icon-btn" onclick="copyToClipboard('${u.user_id}')" style="position:absolute;right:8px;top:8px;color:var(--text);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
         <div style="position:relative;width:96px;height:96px;margin:0 auto 16px;">
           <div id="profile-avatar-wrap" style="width:100%;height:100%;border-radius:50%;background:linear-gradient(135deg,#0a84ff,#bf5af2);color:white;display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:700;box-shadow:0 8px 24px rgba(0,122,255,0.3);border:3px solid var(--bg);overflow:hidden;position:relative;">
             <span id="profile-avatar-initials" style="position:relative;z-index:1;">${esc(initial)}</span>
@@ -1085,63 +836,28 @@ async function renderProfile(userId) {
       </div>
 
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:20px 0;">
-        <div style="background:var(--bg-elev);border-radius:14px;padding:16px 8px;text-align:center;">
-          <div style="font-size:22px;font-weight:700;color:var(--text);">${formatNumber(commentsCount)}</div>
-          <div style="font-size:10px;color:var(--text-mute);text-transform:uppercase;letter-spacing:0.5px;margin-top:2px;font-weight:600;">Сообщений</div>
-        </div>
-        <div style="background:var(--bg-elev);border-radius:14px;padding:16px 8px;text-align:center;">
-          <div style="font-size:22px;font-weight:700;color:var(--text);">${formatNumber(chatsCount)}</div>
-          <div style="font-size:10px;color:var(--text-mute);text-transform:uppercase;letter-spacing:0.5px;margin-top:2px;font-weight:600;">Чатов</div>
-        </div>
-        <div style="background:var(--bg-elev);border-radius:14px;padding:16px 8px;text-align:center;">
-          <div style="font-size:22px;font-weight:700;color:var(--text);">${formatNumber(wordsCount)}</div>
-          <div style="font-size:10px;color:var(--text-mute);text-transform:uppercase;letter-spacing:0.5px;margin-top:2px;font-weight:600;">Слов</div>
-        </div>
+        <div style="background:var(--bg-elev);border-radius:14px;padding:16px 8px;text-align:center;"><div style="font-size:22px;font-weight:700;color:var(--text);">${formatNumber(commentsCount)}</div><div style="font-size:10px;color:var(--text-mute);text-transform:uppercase;letter-spacing:0.5px;margin-top:2px;font-weight:600;">Сообщений</div></div>
+        <div style="background:var(--bg-elev);border-radius:14px;padding:16px 8px;text-align:center;"><div style="font-size:22px;font-weight:700;color:var(--text);">${formatNumber(chatsCount)}</div><div style="font-size:10px;color:var(--text-mute);text-transform:uppercase;letter-spacing:0.5px;margin-top:2px;font-weight:600;">Чатов</div></div>
+        <div style="background:var(--bg-elev);border-radius:14px;padding:16px 8px;text-align:center;"><div style="font-size:22px;font-weight:700;color:var(--text);">${formatNumber(wordsCount)}</div><div style="font-size:10px;color:var(--text-mute);text-transform:uppercase;letter-spacing:0.5px;margin-top:2px;font-weight:600;">Слов</div></div>
       </div>
 
       <div class="section-title">📋 Основное</div>
       <div style="background:var(--bg-elev);border-radius:14px;padding:4px 0;margin-bottom:16px;">
-        <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:0.5px solid var(--border-soft);">
-          <div style="width:36px;height:36px;background:rgba(0,122,255,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--accent);flex-shrink:0;">${I.user}</div>
-          <div style="flex:1;min-width:0;">
-            <div style="font-size:11px;color:var(--text-mute);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">ID</div>
-            <div style="font-size:15px;color:var(--text);font-family:'SF Mono',monospace;margin-top:2px;">${u.user_id}</div>
-          </div>
-        </div>
+        <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:0.5px solid var(--border-soft);"><div style="width:36px;height:36px;background:rgba(0,122,255,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--accent);flex-shrink:0;">${I.user}</div><div style="flex:1;min-width:0;"><div style="font-size:11px;color:var(--text-mute);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">ID</div><div style="font-size:15px;color:var(--text);font-family:'SF Mono',monospace;margin-top:2px;">${u.user_id}</div></div></div>
         ${u.phone ? '<div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:0.5px solid var(--border-soft);"><div style="width:36px;height:36px;background:rgba(52,199,89,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--green);flex-shrink:0;">' + I.phone + '</div><div style="flex:1;min-width:0;"><div style="font-size:11px;color:var(--text-mute);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Телефон</div><div style="font-size:15px;color:var(--text);font-family:\'SF Mono\',monospace;margin-top:2px;">' + esc(u.phone) + '</div></div></div>' : ''}
-        <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:0.5px solid var(--border-soft);">
-          <div style="width:36px;height:36px;background:rgba(175,82,222,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--purple);flex-shrink:0;">${I.clock}</div>
-          <div style="flex:1;min-width:0;">
-            <div style="font-size:11px;color:var(--text-mute);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Регистрация</div>
-            <div style="font-size:15px;color:var(--text);margin-top:2px;">${esc(u.estimated_reg || '—')}</div>
-          </div>
-        </div>
-        <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;">
-          <div style="width:36px;height:36px;background:rgba(255,45,85,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--pink);flex-shrink:0;">${I.bot}</div>
-          <div style="flex:1;min-width:0;">
-            <div style="font-size:11px;color:var(--text-mute);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Бот запущен</div>
-            <div style="font-size:15px;color:${u.started_bot ? 'var(--green)' : 'var(--red)'};margin-top:2px;font-weight:600;">${u.started_bot ? '✅ Да' : '❌ Нет'}</div>
-          </div>
-        </div>
+        <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:0.5px solid var(--border-soft);"><div style="width:36px;height:36px;background:rgba(175,82,222,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--purple);flex-shrink:0;">${I.clock}</div><div style="flex:1;min-width:0;"><div style="font-size:11px;color:var(--text-mute);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Регистрация</div><div style="font-size:15px;color:var(--text);margin-top:2px;">${esc(u.estimated_reg || '—')}</div></div></div>
+        <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;"><div style="width:36px;height:36px;background:rgba(255,45,85,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--pink);flex-shrink:0;">${I.bot}</div><div style="flex:1;min-width:0;"><div style="font-size:11px;color:var(--text-mute);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Бот запущен</div><div style="font-size:15px;color:${u.started_bot ? 'var(--green)' : 'var(--red)'};margin-top:2px;font-weight:600;">${u.started_bot ? '✅ Да' : '❌ Нет'}</div></div></div>
       </div>
 
       <div class="section-title">🟢 Активность</div>
       <div style="background:var(--bg-elev);border-radius:14px;padding:4px 0;margin-bottom:16px;">
         <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:0.5px solid var(--border-soft);">
-          <div style="width:36px;height:36px;background:${activityColor(u.last_platform)}22;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-            <span style="font-size:18px;">${activityIcon(u.last_platform)}</span>
-          </div>
-          <div style="flex:1;min-width:0;">
-            <div style="font-size:11px;color:var(--text-mute);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Статус</div>
-            <div style="font-size:15px;color:${activityColor(u.last_platform)};margin-top:2px;font-weight:600;">${activityLabel(u.last_platform)}</div>
-          </div>
+          <div style="width:36px;height:36px;background:${activityColor(u.last_platform)}22;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><span style="font-size:18px;">${activityIcon(u.last_platform)}</span></div>
+          <div style="flex:1;min-width:0;"><div style="font-size:11px;color:var(--text-mute);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Статус</div><div style="font-size:15px;color:${activityColor(u.last_platform)};margin-top:2px;font-weight:600;">${activityLabel(u.last_platform)}</div></div>
         </div>
         <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;">
           <div style="width:36px;height:36px;background:rgba(0,122,255,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--accent);flex-shrink:0;">${I.clock}</div>
-          <div style="flex:1;min-width:0;">
-            <div style="font-size:11px;color:var(--text-mute);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Последний визит</div>
-            <div style="font-size:15px;color:var(--text);margin-top:2px;">${esc(formatLastSeen(u.last_seen))}</div>
-          </div>
+          <div style="flex:1;min-width:0;"><div style="font-size:11px;color:var(--text-mute);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Последний визит</div><div style="font-size:15px;color:var(--text);margin-top:2px;">${esc(formatLastSeen(u.last_seen))}</div></div>
         </div>
       </div>
 
@@ -1150,16 +866,10 @@ async function renderProfile(userId) {
       <div style="background:var(--bg-elev);border-radius:14px;padding:16px;margin-bottom:16px;">
         ${nameHistory.map((h, i) => `
           <div style="display:flex;align-items:center;gap:10px;padding:8px 0;${i < nameHistory.length - 1 ? 'border-bottom:0.5px solid var(--border-soft);' : ''}">
-            <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--purple));display:flex;align-items:center;justify-content:center;color:white;font-weight:600;font-size:13px;flex-shrink:0;">
-              ${esc(String(h.name || '?').replace('@','')[0].toUpperCase())}
-            </div>
+            <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--purple));display:flex;align-items:center;justify-content:center;color:white;font-weight:600;font-size:13px;flex-shrink:0;">${esc(String(h.name || '?').replace('@','')[0].toUpperCase())}</div>
             <div style="flex:1;min-width:0;">
-              <div style="font-size:14px;color:var(--text);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
-                ${esc(h.name || '—')}
-              </div>
-              <div style="font-size:11px;color:var(--text-mute);margin-top:2px;">
-                ${h.date ? '📅 ' + esc(h.date) : ''}
-              </div>
+              <div style="font-size:14px;color:var(--text);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(h.name || '—')}</div>
+              <div style="font-size:11px;color:var(--text-mute);margin-top:2px;">${h.date ? '📅 ' + esc(h.date) : ''}</div>
             </div>
           </div>
         `).join('')}
@@ -1169,10 +879,7 @@ async function renderProfile(userId) {
       <div class="section-title">📈 Активность (14 дней)</div>
       <div style="background:var(--bg-elev);border-radius:14px;padding:16px;margin-bottom:16px;">
         <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:4px;height:80px;">
-          ${last14Days.map(d => {
-            const h = Math.max(4, (d.count / maxDaily) * 70);
-            return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;"><div style="width:100%;height:' + h + 'px;background:linear-gradient(180deg,var(--accent),var(--accent-dim));border-radius:4px;min-height:4px;"></div><div style="font-size:8px;color:var(--text-mute);">' + d.date.slice(8) + '</div></div>';
-          }).join('')}
+          ${last14Days.map(d => { const h = Math.max(4, (d.count / maxDaily) * 70); return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;"><div style="width:100%;height:' + h + 'px;background:linear-gradient(180deg,var(--accent),var(--accent-dim));border-radius:4px;min-height:4px;"></div><div style="font-size:8px;color:var(--text-mute);">' + d.date.slice(8) + '</div></div>'; }).join('')}
         </div>
       </div>` : ''}
 
@@ -1181,13 +888,8 @@ async function renderProfile(userId) {
       <div style="background:var(--bg-elev);border-radius:14px;padding:16px;margin-bottom:16px;">
         ${topChats.map(([chat, count]) => `
           <div style="margin-bottom:12px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-              <div style="font-size:13px;color:var(--text);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;margin-right:12px;">${esc(chat)}</div>
-              <div style="font-size:12px;color:var(--accent);font-weight:600;">${formatNumber(count)}</div>
-            </div>
-            <div style="height:6px;background:var(--bg-elev-2);border-radius:3px;overflow:hidden;">
-              <div style="height:100%;width:${(count/maxChatCount)*100}%;background:linear-gradient(90deg,var(--accent),var(--purple));border-radius:3px;"></div>
-            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;"><div style="font-size:13px;color:var(--text);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;margin-right:12px;">${esc(chat)}</div><div style="font-size:12px;color:var(--accent);font-weight:600;">${formatNumber(count)}</div></div>
+            <div style="height:6px;background:var(--bg-elev-2);border-radius:3px;overflow:hidden;"><div style="height:100%;width:${(count/maxChatCount)*100}%;background:linear-gradient(90deg,var(--accent),var(--purple));border-radius:3px;"></div></div>
           </div>
         `).join('')}
       </div>` : ''}
@@ -1196,11 +898,7 @@ async function renderProfile(userId) {
       <div class="section-title">🔤 Частые слова</div>
       <div style="background:var(--bg-elev);border-radius:14px;padding:16px;margin-bottom:16px;">
         <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;">
-          ${topWords.map(w => {
-            const size = 12 + (w.count / maxWord) * 14;
-            const opacity = 0.5 + (w.count / maxWord) * 0.5;
-            return '<span style="font-size:' + size + 'px;color:var(--accent);font-weight:600;opacity:' + opacity + ';">' + esc(w.word) + '</span>';
-          }).join('')}
+          ${topWords.map(w => { const size = 12 + (w.count / maxWord) * 14; const opacity = 0.5 + (w.count / maxWord) * 0.5; return '<span style="font-size:' + size + 'px;color:var(--accent);font-weight:600;opacity:' + opacity + ';">' + esc(w.word) + '</span>'; }).join('')}
         </div>
       </div>` : ''}
 
@@ -1229,7 +927,7 @@ async function renderProfile(userId) {
 }
 
 // ============================================================
-// LOAD PROFILE AVATAR — через API бота (обходит CORS)
+// LOAD AVATAR — 6 источников
 // ============================================================
 function loadProfileAvatar(userId) {
   const img = document.getElementById('profile-avatar-img');
@@ -1239,48 +937,25 @@ function loadProfileAvatar(userId) {
   img.style.display = 'none';
   if (initials) initials.style.display = 'flex';
 
-  const apiUrl = CONFIG.API_BASE + '/api/user_avatar/' + userId;
+  const sources = [
+    'https://t.me/i/userpic/320/' + userId + '.jpg',
+    'https://t.me/i/userpic/160/' + userId + '.jpg',
+    'https://t.me/i/userpic/80/' + userId + '.jpg',
+    CONFIG.API_BASE + '/api/user_avatar/' + userId,
+    'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://t.me/i/userpic/320/' + userId + '.jpg'),
+    'https://corsproxy.io/?url=' + encodeURIComponent('https://t.me/i/userpic/320/' + userId + '.jpg')
+  ];
 
-  const test = new Image();
-  test.crossOrigin = 'anonymous';
-
-  test.onload = () => {
-    console.log('[AVATAR] загружено через API');
-    img.src = apiUrl;
-    img.style.display = 'block';
-    if (initials) initials.style.display = 'none';
-  };
-
-  test.onerror = () => {
-    console.log('[AVATAR] API не отдал, пробуем t.me CDN');
-    const tgUrls = [
-      'https://t.me/i/userpic/320/' + userId + '.jpg',
-      'https://t.me/i/userpic/160/' + userId + '.jpg',
-      'https://t.me/i/userpic/80/' + userId + '.jpg'
-    ];
-    let idx = 0;
-    function tryNext() {
-      if (idx >= tgUrls.length) {
-        if (initials) initials.style.display = 'flex';
-        img.style.display = 'none';
-        return;
-      }
-      const url = tgUrls[idx++];
-      const t2 = new Image();
-      t2.crossOrigin = 'anonymous';
-      t2.onload = () => {
-        console.log('[AVATAR] загружено через t.me CDN');
-        img.src = url;
-        img.style.display = 'block';
-        if (initials) initials.style.display = 'none';
-      };
-      t2.onerror = tryNext;
-      t2.src = url;
-    }
-    tryNext();
-  };
-
-  test.src = apiUrl;
+  let idx = 0;
+  function tryNext() {
+    if (idx >= sources.length) { if (initials) initials.style.display = 'flex'; img.style.display = 'none'; return; }
+    const url = sources[idx++];
+    const test = new Image();
+    test.onload = () => { img.src = url; img.style.display = 'block'; if (initials) initials.style.display = 'none'; };
+    test.onerror = () => { tryNext(); };
+    test.src = url;
+  }
+  tryNext();
 }
 
 // ============================================================
@@ -1290,11 +965,7 @@ function renderPhoneCheck() {
   contentWrap.innerHTML = `
     <div class="section-title">📱 Проверка номера</div>
     <div class="chart-wrap">
-      <div class="field">
-        <label class="field-label">Номер телефона</label>
-        <input type="tel" class="field-input" id="pc-phone" placeholder="+992901234567" autocomplete="off">
-        <div class="field-hint">Покажет страну, оператора, регион и карту</div>
-      </div>
+      <div class="field"><label class="field-label">Номер телефона</label><input type="tel" class="field-input" id="pc-phone" placeholder="+992901234567" autocomplete="off"><div class="field-hint">Покажет страну, оператора, регион и карту</div></div>
       <button class="btn" id="pc-check">📱 Проверить</button>
     </div>
     <div id="pc-result"></div>
@@ -1303,6 +974,8 @@ function renderPhoneCheck() {
   $('pc-check').addEventListener('click', async () => {
     const phone = $('pc-phone').value.trim();
     if (!phone) { toast('Введите номер', 'error'); return; }
+    const limitCheck = checkAndUseRequest();
+    if (!limitCheck.ok) { showLimitModal(); return; }
     const btn = $('pc-check');
     btn.disabled = true;
     btn.textContent = '⏳ Проверка...';
@@ -1312,26 +985,13 @@ function renderPhoneCheck() {
       try {
         const lookups = await apiGetPhoneLookups().catch(() => []);
         const clean = phone.replace(/[\s\-\(\)]/g, '');
-        dbInfo = lookups.find(l => {
-          const lclean = (l.phone || '').replace(/[\s\-\(\)]/g, '');
-          return lclean === clean || lclean.includes(clean) || clean.includes(lclean);
-        });
+        dbInfo = lookups.find(l => { const lclean = (l.phone || '').replace(/[\s\-\(\)]/g, ''); return lclean === clean || lclean.includes(clean) || clean.includes(lclean); });
       } catch (e) {}
-      if (dbInfo) {
-        info.operator = dbInfo.carrier || info.operator;
-        info.region = dbInfo.region || info.region;
-        info.telegram = dbInfo.telegram;
-        info.telegram_username = dbInfo.telegram_username;
-        info.whatsapp = dbInfo.whatsapp;
-      }
+      if (dbInfo) { info.operator = dbInfo.carrier || info.operator; info.region = dbInfo.region || info.region; info.telegram = dbInfo.telegram; info.telegram_username = dbInfo.telegram_username; info.whatsapp = dbInfo.whatsapp; }
       renderPhoneInfo(info);
       if (info.lat && info.lon) showPhoneMap(info);
-    } catch (e) {
-      toast(e.message, 'error');
-    } finally {
-      btn.disabled = false;
-      btn.textContent = '📱 Проверить';
-    }
+    } catch (e) { toast(e.message, 'error'); }
+    finally { btn.disabled = false; btn.textContent = '📱 Проверить'; }
   });
 }
 
@@ -1339,17 +999,12 @@ function analyzePhoneNumber(phone) {
   let clean = phone.replace(/[\s\-\(\)\.]/g, '');
   if (clean.startsWith('+')) clean = clean.slice(1);
   if (clean.length === 11 && clean.startsWith('8')) clean = '7' + clean.slice(1);
-
   const countries = {
-    '992': { country: 'Таджикистан', flag: '🇹🇯', region: 'Таджикистан', tz: 'UTC+5', type: 'Мобильный', lat: 38.8610, lon: 71.2761,
-      operators: { '90': 'Beeline TJ', '91': 'Beeline TJ', '92': 'Megafon TJ', '93': 'MegaFon TJ', '50': 'Tcell', '55': 'Tcell', '77': 'Tcell', '88': 'Tcell', '98': 'Babilon Mobile', '99': 'Babilon Mobile' } },
-    '998': { country: 'Узбекистан', flag: '🇺🇿', region: 'Узбекистан', tz: 'UTC+5', type: 'Мобильный', lat: 41.3775, lon: 64.5853,
-      operators: { '90': 'Beeline UZ', '91': 'Beeline UZ', '93': 'Ucell', '94': 'Ucell', '95': 'Ucell', '97': 'UMS', '98': 'UMS', '99': 'UMS', '88': 'Perfectum' } },
-    '996': { country: 'Кыргызстан', flag: '🇰🇬', region: 'Кыргызстан', tz: 'UTC+6', type: 'Мобильный', lat: 41.2044, lon: 74.7661,
-      operators: { '50': 'MegaCom', '55': 'MegaCom', '70': 'Beeline KG', '77': 'Beeline KG', '99': 'O!', '20': 'O!', '22': 'O!' } },
+    '992': { country: 'Таджикистан', flag: '🇹🇯', region: 'Таджикистан', tz: 'UTC+5', type: 'Мобильный', lat: 38.8610, lon: 71.2761, operators: { '90': 'Beeline TJ', '91': 'Beeline TJ', '92': 'Megafon TJ', '93': 'MegaFon TJ', '50': 'Tcell', '55': 'Tcell', '77': 'Tcell', '88': 'Tcell', '98': 'Babilon Mobile', '99': 'Babilon Mobile' } },
+    '998': { country: 'Узбекистан', flag: '🇺🇿', region: 'Узбекистан', tz: 'UTC+5', type: 'Мобильный', lat: 41.3775, lon: 64.5853, operators: { '90': 'Beeline UZ', '91': 'Beeline UZ', '93': 'Ucell', '94': 'Ucell', '95': 'Ucell', '97': 'UMS', '98': 'UMS', '99': 'UMS', '88': 'Perfectum' } },
+    '996': { country: 'Кыргызстан', flag: '🇰🇬', region: 'Кыргызстан', tz: 'UTC+6', type: 'Мобильный', lat: 41.2044, lon: 74.7661, operators: { '50': 'MegaCom', '55': 'MegaCom', '70': 'Beeline KG', '77': 'Beeline KG', '99': 'O!', '20': 'O!', '22': 'O!' } },
     '993': { country: 'Туркменистан', flag: '🇹🇲', region: 'Туркменистан', tz: 'UTC+5', type: 'Мобильный', lat: 38.9697, lon: 59.5563 },
-    '7': { country: 'Россия', flag: '🇷🇺', region: 'Россия', tz: 'UTC+3', type: 'Мобильный', lat: 55.7558, lon: 37.6173,
-      operators: { '900': 'Beeline', '901': 'Beeline', '902': 'MegaFon', '903': 'Beeline', '904': 'MegaFon', '905': 'Beeline', '906': 'Beeline', '908': 'MegaFon', '909': 'MegaFon', '910': 'MegaFon', '911': 'MegaFon', '912': 'MegaFon', '913': 'MegaFon', '914': 'MegaFon', '915': 'MegaFon', '916': 'MegaFon', '917': 'MegaFon', '918': 'MegaFon', '919': 'MegaFon', '920': 'MegaFon', '921': 'MegaFon', '922': 'MegaFon', '923': 'MegaFon', '924': 'MegaFon', '925': 'MegaFon', '926': 'MegaFon', '927': 'MegaFon', '928': 'MegaFon', '929': 'MegaFon', '930': 'MegaFon', '931': 'MegaFon', '932': 'MegaFon', '933': 'MegaFon', '934': 'MegaFon', '936': 'MegaFon', '937': 'MegaFon', '938': 'MegaFon', '939': 'MegaFon', '950': 'Tele2', '951': 'Tele2', '952': 'Tele2', '953': 'Tele2', '958': 'Tele2', '960': 'Beeline', '961': 'Beeline', '962': 'Beeline', '963': 'Beeline', '964': 'Beeline', '965': 'Beeline', '966': 'Beeline', '967': 'Beeline', '968': 'Beeline', '969': 'Beeline', '977': 'MegaFon', '978': 'MegaFon', '980': 'MTS', '981': 'MTS', '982': 'MTS', '983': 'MTS', '984': 'MTS', '985': 'MTS', '986': 'MTS', '987': 'MTS', '988': 'MTS', '989': 'MTS', '995': 'MTS', '996': 'MTS', '997': 'MTS', '999': 'MTS' } },
+    '7': { country: 'Россия', flag: '🇷🇺', region: 'Россия', tz: 'UTC+3', type: 'Мобильный', lat: 55.7558, lon: 37.6173, operators: { '900': 'Beeline', '901': 'Beeline', '902': 'MegaFon', '903': 'Beeline', '904': 'MegaFon', '905': 'Beeline', '906': 'Beeline', '908': 'MegaFon', '909': 'MegaFon', '910': 'MegaFon', '911': 'MegaFon', '912': 'MegaFon', '913': 'MegaFon', '914': 'MegaFon', '915': 'MegaFon', '916': 'MegaFon', '917': 'MegaFon', '918': 'MegaFon', '919': 'MegaFon', '920': 'MegaFon', '921': 'MegaFon', '922': 'MegaFon', '923': 'MegaFon', '924': 'MegaFon', '925': 'MegaFon', '926': 'MegaFon', '927': 'MegaFon', '928': 'MegaFon', '929': 'MegaFon', '930': 'MegaFon', '931': 'MegaFon', '932': 'MegaFon', '933': 'MegaFon', '934': 'MegaFon', '936': 'MegaFon', '937': 'MegaFon', '938': 'MegaFon', '939': 'MegaFon', '950': 'Tele2', '951': 'Tele2', '952': 'Tele2', '953': 'Tele2', '958': 'Tele2', '960': 'Beeline', '961': 'Beeline', '962': 'Beeline', '963': 'Beeline', '964': 'Beeline', '965': 'Beeline', '966': 'Beeline', '967': 'Beeline', '968': 'Beeline', '969': 'Beeline', '977': 'MegaFon', '978': 'MegaFon', '980': 'MTS', '981': 'MTS', '982': 'MTS', '983': 'MTS', '984': 'MTS', '985': 'MTS', '986': 'MTS', '987': 'MTS', '988': 'MTS', '989': 'MTS', '995': 'MTS', '996': 'MTS', '997': 'MTS', '999': 'MTS' } },
     '1': { country: 'США/Канада', flag: '🇺🇸', region: 'США', tz: 'UTC-5', type: 'Мобильный', lat: 38.9072, lon: -77.0369 },
     '44': { country: 'Великобритания', flag: '🇬🇧', region: 'Англия', tz: 'UTC+0', type: 'Мобильный', lat: 51.5074, lon: -0.1278 },
     '49': { country: 'Германия', flag: '🇩🇪', region: 'Германия', tz: 'UTC+1', type: 'Мобильный', lat: 52.5200, lon: 13.4050 },
@@ -1385,23 +1040,12 @@ function analyzePhoneNumber(phone) {
     '351': { country: 'Португалия', flag: '🇵🇹', region: 'Португалия', tz: 'UTC+0', type: 'Мобильный', lat: 38.7223, lon: -9.1393 },
     '353': { country: 'Ирландия', flag: '🇮🇪', region: 'Ирландия', tz: 'UTC+0', type: 'Мобильный', lat: 53.3498, lon: -6.2603 }
   };
-
   let countryInfo = null;
   let countryCodeLen = 0;
-  for (let len = 3; len >= 1; len--) {
-    const prefix = clean.slice(0, len);
-    if (countries[prefix]) { countryInfo = countries[prefix]; countryCodeLen = len; break; }
-  }
+  for (let len = 3; len >= 1; len--) { const prefix = clean.slice(0, len); if (countries[prefix]) { countryInfo = countries[prefix]; countryCodeLen = len; break; } }
   if (!countryInfo) return { phone, country: 'Неизвестно', flag: '🏴', region: '—', operator: '—', tz: '—', type: 'Неизвестно' };
-
   let operator = '—';
-  if (countryInfo.operators) {
-    const afterCode = clean.slice(countryCodeLen);
-    for (let opLen = 3; opLen >= 2; opLen--) {
-      const opPrefix = afterCode.slice(0, opLen);
-      if (countryInfo.operators[opPrefix]) { operator = countryInfo.operators[opPrefix]; break; }
-    }
-  }
+  if (countryInfo.operators) { const afterCode = clean.slice(countryCodeLen); for (let opLen = 3; opLen >= 2; opLen--) { const opPrefix = afterCode.slice(0, opLen); if (countryInfo.operators[opPrefix]) { operator = countryInfo.operators[opPrefix]; break; } } }
   return { phone, country: countryInfo.country, flag: countryInfo.flag, region: countryInfo.region, operator, tz: countryInfo.tz, type: countryInfo.type, lat: countryInfo.lat, lon: countryInfo.lon };
 }
 
@@ -1409,32 +1053,12 @@ function renderPhoneInfo(info) {
   const phone = info.phone || '';
   const clean = phone.replace(/\D/g, '');
   const waLink = 'https://wa.me/' + clean;
-  const tgLink = info.telegram_username
-    ? 'https://t.me/' + info.telegram_username.replace('@', '')
-    : 'https://t.me/+' + clean;
-  const telegramStatus = info.telegram
-    ? '<a href="' + tgLink + '" target="_blank" style="color:var(--accent);text-decoration:none;">✅ Открыть профиль</a>'
-    : '⚠️ <a href="' + tgLink + '" target="_blank" style="color:var(--accent);text-decoration:none;">Проверить ссылку</a>';
-  const whatsappStatus = info.whatsapp
-    ? '<a href="' + waLink + '" target="_blank" style="color:var(--green);text-decoration:none;">✅ Открыть чат</a>'
-    : '⚠️ <a href="' + waLink + '" target="_blank" style="color:var(--green);text-decoration:none;">Проверить чат</a>';
-
+  const tgLink = info.telegram_username ? 'https://t.me/' + info.telegram_username.replace('@', '') : 'https://t.me/+' + clean;
+  const telegramStatus = info.telegram ? '<a href="' + tgLink + '" target="_blank" style="color:var(--accent);text-decoration:none;">✅ Открыть профиль</a>' : '⚠️ <a href="' + tgLink + '" target="_blank" style="color:var(--accent);text-decoration:none;">Проверить ссылку</a>';
+  const whatsappStatus = info.whatsapp ? '<a href="' + waLink + '" target="_blank" style="color:var(--green);text-decoration:none;">✅ Открыть чат</a>' : '⚠️ <a href="' + waLink + '" target="_blank" style="color:var(--green);text-decoration:none;">Проверить чат</a>';
   const result = $('pc-result');
   if (!result) return;
-  result.innerHTML = `
-    <div class="section-title">📱 Информация о номере</div>
-    <div class="result-card">
-      <div class="result-row"><div class="result-icon">${I.phone}</div><div class="result-content"><div class="result-label">Номер</div><div class="result-value mono accent">${esc(phone)}</div></div></div>
-      <div class="result-row"><div class="result-icon">${I.globe}</div><div class="result-content"><div class="result-label">Страна</div><div class="result-value">${esc(info.flag || '')} ${esc(info.country || '—')}</div></div></div>
-      <div class="result-row"><div class="result-icon">${I.signal}</div><div class="result-content"><div class="result-label">Оператор</div><div class="result-value">${esc(info.operator || '—')}</div></div></div>
-      <div class="result-row"><div class="result-icon">${I.map}</div><div class="result-content"><div class="result-label">Регион</div><div class="result-value">${esc(info.region || '—')}</div></div></div>
-      <div class="result-row"><div class="result-icon">${I.clock}</div><div class="result-content"><div class="result-label">Часовой пояс</div><div class="result-value">${esc(info.tz || '—')}</div></div></div>
-      <div class="result-row"><div class="result-icon">${I.info}</div><div class="result-content"><div class="result-label">Тип номера</div><div class="result-value">${esc(info.type || '—')}</div></div></div>
-      <div class="result-row"><div class="result-icon">${I.bot}</div><div class="result-content"><div class="result-label">Telegram</div><div class="result-value">${telegramStatus}</div></div></div>
-      <div class="result-row"><div class="result-icon">${I.msg}</div><div class="result-content"><div class="result-label">WhatsApp</div><div class="result-value">${whatsappStatus}</div></div></div>
-    </div>
-    ${info.lat && info.lon ? '<button class="btn" onclick="showPhoneMapCurrent()" style="margin-bottom:8px;">🗺 Показать на карте</button><button class="btn secondary" onclick="openPhoneFullReport()" style="margin-bottom:8px;">📊 Полный отчёт (HTML)</button>' : ''}
-  `;
+  result.innerHTML = '<div class="section-title">📱 Информация о номере</div><div class="result-card"><div class="result-row"><div class="result-icon">' + I.phone + '</div><div class="result-content"><div class="result-label">Номер</div><div class="result-value mono accent">' + esc(phone) + '</div></div></div><div class="result-row"><div class="result-icon">' + I.globe + '</div><div class="result-content"><div class="result-label">Страна</div><div class="result-value">' + esc(info.flag || '') + ' ' + esc(info.country || '—') + '</div></div></div><div class="result-row"><div class="result-icon">' + I.signal + '</div><div class="result-content"><div class="result-label">Оператор</div><div class="result-value">' + esc(info.operator || '—') + '</div></div></div><div class="result-row"><div class="result-icon">' + I.map + '</div><div class="result-content"><div class="result-label">Регион</div><div class="result-value">' + esc(info.region || '—') + '</div></div></div><div class="result-row"><div class="result-icon">' + I.clock + '</div><div class="result-content"><div class="result-label">Часовой пояс</div><div class="result-value">' + esc(info.tz || '—') + '</div></div></div><div class="result-row"><div class="result-icon">' + I.info + '</div><div class="result-content"><div class="result-label">Тип номера</div><div class="result-value">' + esc(info.type || '—') + '</div></div></div><div class="result-row"><div class="result-icon">' + I.bot + '</div><div class="result-content"><div class="result-label">Telegram</div><div class="result-value">' + telegramStatus + '</div></div></div><div class="result-row"><div class="result-icon">' + I.msg + '</div><div class="result-content"><div class="result-label">WhatsApp</div><div class="result-value">' + whatsappStatus + '</div></div></div></div>' + (info.lat && info.lon ? '<button class="btn" onclick="showPhoneMapCurrent()" style="margin-bottom:8px;">🗺 Показать на карте</button><button class="btn secondary" onclick="openPhoneFullReport()" style="margin-bottom:8px;">📊 Полный отчёт (HTML)</button>' : '');
   window._lastPhoneInfo = info;
 }
 
@@ -1447,49 +1071,13 @@ function openPhoneFullReport() {
   const clean = phone.replace(/\D/g, '');
   const waLink = 'https://wa.me/' + clean;
   const tgLink = info.telegram_username ? 'https://t.me/' + info.telegram_username.replace('@', '') : 'https://t.me/+' + clean;
-
   document.querySelectorAll('.modal-overlay').forEach(m => m.remove());
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay';
   overlay.id = 'phone-report-modal';
   overlay.style.padding = '0';
   overlay.style.alignItems = 'flex-end';
-  overlay.innerHTML = `
-    <div style="background:var(--bg);width:100%;max-width:600px;border-radius:20px 20px 0 0;overflow-y:auto;animation:slideUp 0.3s ease;max-height:95vh;padding:0;">
-      <div style="position:sticky;top:0;background:var(--bg);border-bottom:0.5px solid var(--border-soft);padding:16px 20px;z-index:10;display:flex;align-items:center;gap:12px;">
-        <div style="flex:1;"><div style="font-size:18px;font-weight:700;color:var(--text);">📊 Отчёт о номере</div><div style="font-size:12px;color:var(--text-mute);margin-top:2px;">Полная информация</div></div>
-        <button onclick="closePhoneReport()" style="width:32px;height:32px;border-radius:50%;background:var(--bg-elev);border:none;color:var(--text-mute);cursor:pointer;display:flex;align-items:center;justify-content:center;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-      </div>
-      <div style="padding:24px 20px;text-align:center;background:linear-gradient(180deg,rgba(0,122,255,0.15) 0%,transparent 100%);">
-        <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#0a84ff,#bf5af2);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:36px;">${esc(info.flag || '📱')}</div>
-        <div style="font-size:22px;font-weight:700;color:var(--text);font-family:'SF Mono',monospace;">${esc(phone)}</div>
-        <div style="font-size:14px;color:var(--text-mute);margin-top:4px;">${esc(info.country || '')} · ${esc(info.operator || '')}</div>
-      </div>
-      <div style="padding:0 20px 20px;">
-        <div class="section-title" style="margin-top:8px;">📍 Местоположение</div>
-        <div class="result-card">
-          <div class="result-row"><div class="result-icon">${I.globe}</div><div class="result-content"><div class="result-label">Страна</div><div class="result-value">${esc(info.flag || '')} ${esc(info.country || '—')}</div></div></div>
-          <div class="result-row"><div class="result-icon">${I.map}</div><div class="result-content"><div class="result-label">Регион</div><div class="result-value">${esc(info.region || '—')}</div></div></div>
-          <div class="result-row"><div class="result-icon">${I.clock}</div><div class="result-content"><div class="result-label">Часовой пояс</div><div class="result-value">${esc(info.tz || '—')}</div></div></div>
-          <div class="result-row"><div class="result-icon">${I.map}</div><div class="result-content"><div class="result-label">Координаты</div><div class="result-value mono">${(info.lat || 0).toFixed(4)}, ${(info.lon || 0).toFixed(4)}</div></div></div>
-        </div>
-        <div class="section-title">📡 Оператор и тип</div>
-        <div class="result-card">
-          <div class="result-row"><div class="result-icon">${I.signal}</div><div class="result-content"><div class="result-label">Оператор</div><div class="result-value">${esc(info.operator || '—')}</div></div></div>
-          <div class="result-row"><div class="result-icon">${I.info}</div><div class="result-content"><div class="result-label">Тип номера</div><div class="result-value">${esc(info.type || '—')}</div></div></div>
-          <div class="result-row"><div class="result-icon">${I.phone}</div><div class="result-content"><div class="result-label">Формат E.164</div><div class="result-value mono">+${clean}</div></div></div>
-        </div>
-        <div class="section-title">⚡ Действия</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-          <a href="tel:${phone}" class="btn" style="text-decoration:none;text-align:center;margin:0;">📞 Позвонить</a>
-          <a href="${waLink}" target="_blank" class="btn" style="text-decoration:none;text-align:center;margin:0;background:var(--green);">💬 WhatsApp</a>
-          <a href="${tgLink}" target="_blank" class="btn" style="text-decoration:none;text-align:center;margin:0;background:var(--purple);">✈️ Telegram</a>
-          <button class="btn" onclick="copyToClipboard('${phone}'); closePhoneReport();" style="margin:0;">📋 Скопировать</button>
-        </div>
-        <button class="btn secondary" onclick="closePhoneReport()" style="margin-top:12px;">← Закрыть отчёт</button>
-      </div>
-    </div>
-  `;
+  overlay.innerHTML = '<div style="background:var(--bg);width:100%;max-width:600px;border-radius:20px 20px 0 0;overflow-y:auto;animation:slideUp 0.3s ease;max-height:95vh;padding:0;"><div style="position:sticky;top:0;background:var(--bg);border-bottom:0.5px solid var(--border-soft);padding:16px 20px;z-index:10;display:flex;align-items:center;gap:12px;"><div style="flex:1;"><div style="font-size:18px;font-weight:700;color:var(--text);">📊 Отчёт о номере</div></div><button onclick="closePhoneReport()" style="width:32px;height:32px;border-radius:50%;background:var(--bg-elev);border:none;color:var(--text-mute);cursor:pointer;display:flex;align-items:center;justify-content:center;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div><div style="padding:24px 20px;text-align:center;"><div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#0a84ff,#bf5af2);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:36px;">' + esc(info.flag || '📱') + '</div><div style="font-size:22px;font-weight:700;color:var(--text);font-family:monospace;">' + esc(phone) + '</div><div style="font-size:14px;color:var(--text-mute);margin-top:4px;">' + esc(info.country || '') + ' · ' + esc(info.operator || '') + '</div></div><div style="padding:0 20px 20px;"><div class="result-card"><div class="result-row"><div class="result-icon">' + I.globe + '</div><div class="result-content"><div class="result-label">Страна</div><div class="result-value">' + esc(info.flag || '') + ' ' + esc(info.country || '—') + '</div></div></div><div class="result-row"><div class="result-icon">' + I.map + '</div><div class="result-content"><div class="result-label">Регион</div><div class="result-value">' + esc(info.region || '—') + '</div></div></div><div class="result-row"><div class="result-icon">' + I.clock + '</div><div class="result-content"><div class="result-label">Часовой пояс</div><div class="result-value">' + esc(info.tz || '—') + '</div></div></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;"><a href="tel:' + phone + '" class="btn" style="text-decoration:none;text-align:center;margin:0;">📞 Позвонить</a><a href="' + waLink + '" target="_blank" class="btn" style="text-decoration:none;text-align:center;margin:0;background:var(--green);">💬 WhatsApp</a><a href="' + tgLink + '" target="_blank" class="btn" style="text-decoration:none;text-align:center;margin:0;background:var(--purple);">✈️ Telegram</a><button class="btn" onclick="copyToClipboard(\'' + phone + '\'); closePhoneReport();" style="margin:0;">📋 Скопировать</button></div><button class="btn secondary" onclick="closePhoneReport()" style="margin-top:12px;">← Закрыть</button></div></div>';
   document.body.appendChild(overlay);
 }
 
@@ -1503,23 +1091,7 @@ function showPhoneMap(info) {
   overlay.id = 'phone-map-modal';
   overlay.style.padding = '0';
   overlay.style.alignItems = 'flex-end';
-  overlay.innerHTML = `
-    <div style="background:var(--bg);width:100%;max-width:600px;border-radius:20px 20px 0 0;overflow:hidden;animation:slideUp 0.3s ease;max-height:95vh;display:flex;flex-direction:column;">
-      <div style="padding:16px 20px;border-bottom:0.5px solid var(--border-soft);display:flex;align-items:center;gap:12px;">
-        <div style="flex:1;"><div style="font-size:17px;font-weight:700;color:var(--text);">${esc(info.flag || '')} ${esc(info.phone || '')}</div><div style="font-size:13px;color:var(--text-mute);margin-top:2px;">${esc(info.country || '')} · ${esc(info.operator || '')}</div></div>
-        <button onclick="closePhoneMap()" style="width:32px;height:32px;border-radius:50%;background:var(--bg-elev);border:none;color:var(--text-mute);cursor:pointer;display:flex;align-items:center;justify-content:center;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-      </div>
-      <div id="phone-map" style="height:340px;width:100%;background:var(--bg-elev);"></div>
-      <div style="padding:16px 20px;overflow-y:auto;">
-        <div class="result-card" style="margin:0;">
-          <div class="result-row"><div class="result-icon">${I.globe}</div><div class="result-content"><div class="result-label">Страна</div><div class="result-value">${esc(info.flag || '')} ${esc(info.country || '—')}</div></div></div>
-          <div class="result-row"><div class="result-icon">${I.signal}</div><div class="result-content"><div class="result-label">Оператор</div><div class="result-value">${esc(info.operator || '—')}</div></div></div>
-          <div class="result-row"><div class="result-icon">${I.clock}</div><div class="result-content"><div class="result-label">Часовой пояс</div><div class="result-value">${esc(info.tz || '—')}</div></div></div>
-        </div>
-        <button class="btn secondary" onclick="closePhoneMap()">Закрыть</button>
-      </div>
-    </div>
-  `;
+  overlay.innerHTML = '<div style="background:var(--bg);width:100%;max-width:600px;border-radius:20px 20px 0 0;overflow:hidden;animation:slideUp 0.3s ease;max-height:95vh;display:flex;flex-direction:column;"><div style="padding:16px 20px;border-bottom:0.5px solid var(--border-soft);display:flex;align-items:center;gap:12px;"><div style="flex:1;"><div style="font-size:17px;font-weight:700;color:var(--text);">' + esc(info.flag || '') + ' ' + esc(info.phone || '') + '</div><div style="font-size:13px;color:var(--text-mute);margin-top:2px;">' + esc(info.country || '') + ' · ' + esc(info.operator || '') + '</div></div><button onclick="closePhoneMap()" style="width:32px;height:32px;border-radius:50%;background:var(--bg-elev);border:none;color:var(--text-mute);cursor:pointer;display:flex;align-items:center;justify-content:center;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div><div id="phone-map" style="height:340px;width:100%;background:var(--bg-elev);"></div><div style="padding:16px 20px;"><button class="btn secondary" onclick="closePhoneMap()">Закрыть</button></div></div>';
   document.body.appendChild(overlay);
   setTimeout(() => initPhoneMap(info.lat, info.lon, info), 150);
 }
@@ -1536,26 +1108,13 @@ function initPhoneMap(lat, lon, info) {
   const mapEl = document.getElementById('phone-map');
   if (!mapEl) return;
   const map = L.map('phone-map', { zoomControl: false, attributionControl: false, center: [lat, lon], zoom: 6, minZoom: 2, maxZoom: 18 });
-  const tileUrl = isDark
-    ? 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}'
-    : 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+  const tileUrl = isDark ? 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}' : 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
   const tile = L.tileLayer(tileUrl, { maxZoom: 19, subdomains: isDark ? '' : 'abc', attribution: '' });
-  tile.on('tileerror', function() {
-    map.removeLayer(tile);
-    const fallback = isDark
-      ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-      : 'https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png';
-    L.tileLayer(fallback, { maxZoom: 19, subdomains: 'abcd' }).addTo(map);
-  });
+  tile.on('tileerror', function() { map.removeLayer(tile); const fallback = isDark ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png' : 'https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png'; L.tileLayer(fallback, { maxZoom: 19, subdomains: 'abcd' }).addTo(map); });
   tile.addTo(map);
   L.control.zoom({ position: 'bottomright' }).addTo(map);
-  const icon = L.divIcon({
-    className: '',
-    html: '<div style="position:relative;width:28px;height:28px;"><div style="position:absolute;inset:0;border-radius:50%;background:#007aff;border:3px solid white;box-shadow:0 3px 12px rgba(0,122,255,0.6);"></div><div style="position:absolute;inset:-12px;border-radius:50%;border:2px solid #007aff;opacity:0.5;animation:pulsePin 2s ease-out infinite;"></div></div>',
-    iconSize: [28, 28], iconAnchor: [14, 14]
-  });
-  L.marker([lat, lon], { icon }).addTo(map)
-    .bindPopup('<div style="font-family:-apple-system,sans-serif;padding:4px;"><b style="font-size:14px;">' + esc(info.flag || '') + ' ' + esc(info.country || '') + '</b><br><span style="font-size:12px;color:#8e8e93;">' + esc(info.operator || '') + '</span></div>').openPopup();
+  const icon = L.divIcon({ className: '', html: '<div style="position:relative;width:28px;height:28px;"><div style="position:absolute;inset:0;border-radius:50%;background:#007aff;border:3px solid white;box-shadow:0 3px 12px rgba(0,122,255,0.6);"></div><div style="position:absolute;inset:-12px;border-radius:50%;border:2px solid #007aff;opacity:0.5;animation:pulsePin 2s ease-out infinite;"></div></div>', iconSize: [28, 28], iconAnchor: [14, 14] });
+  L.marker([lat, lon], { icon }).addTo(map).bindPopup('<div style="font-family:-apple-system,sans-serif;padding:4px;"><b style="font-size:14px;">' + esc(info.flag || '') + ' ' + esc(info.country || '') + '</b><br><span style="font-size:12px;color:#8e8e93;">' + esc(info.operator || '') + '</span></div>').openPopup();
   window._phoneMap = map;
   setTimeout(() => map.invalidateSize(), 250);
 }
@@ -1590,7 +1149,7 @@ function confirmDelete() {
 }
 
 function renderAbout() {
-  contentWrap.innerHTML = '<div style="padding-top:20px;text-align:center;"><div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#60a5fa,#007aff);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:36px;">🤖</div><div style="font-size:22px;font-weight:700;color:var(--text);">AGENT ANALYTICS</div><div style="font-size:14px;color:var(--text-mute);margin-top:4px;">Версия 2.0</div></div><div class="section-title">📊 О проекте</div><div class="chart-wrap"><div style="color:var(--text-dim);font-size:14px;line-height:1.6;">Многофункциональный бот для анализа Telegram-активности. Работает в личных чатах и группах.</div></div><div class="section-title">🛡️ Для пользователей</div><ul class="list"><li class="list-item"><div class="list-icon">' + I.search + '</div><div class="list-content"><div class="list-title">Поиск людей</div><div class="list-sub">По ID, @username, телефону</div></div></li><li class="list-item"><div class="list-icon">' + I.chart + '</div><div class="list-content"><div class="list-title">HTML-отчёты</div><div class="list-sub">С диаграммами</div></div></li><li class="list-item"><div class="list-icon">' + I.phone + '</div><div class="list-content"><div class="list-title">Проверка номеров</div><div class="list-sub">Страна, оператор, карта</div></div></li></ul><button class="btn" onclick="openBot()">🤖 Открыть бота в Telegram</button><button class="btn secondary" onclick="renderScreen(\'home\')">← Назад</button>';
+  contentWrap.innerHTML = '<div style="padding-top:20px;text-align:center;"><div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#60a5fa,#007aff);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:36px;">🤖</div><div style="font-size:22px;font-weight:700;color:var(--text);">AGENT ANALYTICS</div><div style="font-size:14px;color:var(--text-mute);margin-top:4px;">Версия 2.0</div></div><div class="section-title">📊 О проекте</div><div class="chart-wrap"><div style="color:var(--text-dim);font-size:14px;line-height:1.6;">Многофункциональный бот для анализа Telegram-активности. Работает в личных чатах и группах.</div></div><div class="section-title">🎯 Лимиты</div><div class="chart-wrap"><div style="color:var(--text-dim);font-size:14px;line-height:1.6;">Бесплатно: <b>' + CONFIG.DAILY_LIMIT + ' запросов в день</b><br>Сброс каждые 24 часа<br>Безлимит — с подпиской</div></div><button class="btn" onclick="openBot()">🤖 Открыть бота в Telegram</button><button class="btn secondary" onclick="renderScreen(\'home\')">← Назад</button>';
 }
 
 // ============================================================
@@ -1598,75 +1157,55 @@ function renderAbout() {
 // ============================================================
 async function renderAdminPanel() {
   if (!isAdmin()) { toast('❌ Доступ запрещён', 'error'); return renderHome(); }
-  contentWrap.innerHTML = '<div style="padding-top:20px;text-align:center;"><div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#ff9500,#ff3b30);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:36px;">👑</div><div style="font-size:22px;font-weight:700;color:var(--text);">АДМИН ПАНЕЛЬ</div><div style="font-size:14px;color:var(--text-mute);margin-top:4px;">Управление ботом</div></div><div class="section-title">📊 Статистика</div><div class="stats-row"><div class="stat-card"><div class="stat-value" id="adm-users">—</div><div class="stat-label">Пользователей</div></div><div class="stat-card"><div class="stat-value" id="adm-comments">—</div><div class="stat-label">Сообщений</div></div></div><div class="section-title">🛠 Управление</div><ul class="list"><li class="list-item" onclick="openAdminAddBalance()"><div class="list-icon orange">💰</div><div class="list-content"><div class="list-title">Пополнить баланс</div><div class="list-sub">Начислить алмазы</div></div><div class="list-chevron">' + I.search + '</div></li><li class="list-item" onclick="openAdminGiftSubscription()"><div class="list-icon purple">🎁</div><div class="list-content"><div class="list-title">Подарить подписку</div><div class="list-sub">Выдать Premium</div></div><div class="list-chevron">' + I.search + '</div></li><li class="list-item" onclick="openAdminGiftApi()"><div class="list-icon green">🔑</div><div class="list-content"><div class="list-title">Подарить API токен</div><div class="list-sub">Бесплатный токен</div></div><div class="list-chevron">' + I.search + '</div></li><li class="list-item" onclick="openAdminDeleteUser()"><div class="list-icon red">🗑️</div><div class="list-content"><div class="list-title" style="color:var(--red);">Удалить данные</div><div class="list-sub">Полное удаление</div></div><div class="list-chevron">' + I.search + '</div></li></ul><div class="section-title">💬 Коммуникации</div><ul class="list"><li class="list-item" onclick="openAdminAnswer()"><div class="list-icon">💬</div><div class="list-content"><div class="list-title">Ответить на вопросы</div></div><div class="list-chevron">' + I.search + '</div></li><li class="list-item" onclick="openAdminBroadcastUsers()"><div class="list-icon orange">📢</div><div class="list-content"><div class="list-title">Рассылка пользователям</div></div><div class="list-chevron">' + I.search + '</div></li><li class="list-item" onclick="openAdminBroadcastGroups()"><div class="list-icon orange">📢</div><div class="list-content"><div class="list-title">Рассылка группам</div></div><div class="list-chevron">' + I.search + '</div></li></ul><div class="section-title">📋 Данные</div><ul class="list"><li class="list-item" onclick="openAdminSearchHistory()"><div class="list-icon purple">📋</div><div class="list-content"><div class="list-title">История поисков</div></div><div class="list-chevron">' + I.search + '</div></li><li class="list-item" onclick="openAdminVerifiedUsers()"><div class="list-icon purple">🔐</div><div class="list-content"><div class="list-title">Верифицированные</div></div><div class="list-chevron">' + I.search + '</div></li><li class="list-item" onclick="openAdminApiTokens()"><div class="list-icon green">🔑</div><div class="list-content"><div class="list-title">API Токены</div></div><div class="list-chevron">' + I.search + '</div></li></ul><button class="btn secondary" onclick="renderScreen(\'home\')">← На главную</button>';
-  try {
-    const stats = await apiGetPublicStats();
-    $('adm-users').textContent = formatNumber(stats.users || 0);
-    $('adm-comments').textContent = formatNumber(stats.comments || 0);
-  } catch (e) {}
+  contentWrap.innerHTML = '<div style="padding-top:20px;text-align:center;"><div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#ff9500,#ff3b30);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:36px;">👑</div><div style="font-size:22px;font-weight:700;color:var(--text);">АДМИН ПАНЕЛЬ</div><div style="font-size:14px;color:var(--text-mute);margin-top:4px;">Управление ботом</div></div><div class="section-title">📊 Статистика</div><div class="stats-row"><div class="stat-card"><div class="stat-value" id="adm-users">—</div><div class="stat-label">Пользователей</div></div><div class="stat-card"><div class="stat-value" id="adm-comments">—</div><div class="stat-label">Сообщений</div></div></div><div class="section-title">🛠 Управление</div><ul class="list"><li class="list-item" onclick="openAdminAddBalance()"><div class="list-icon orange">💰</div><div class="list-content"><div class="list-title">Пополнить баланс</div></div><div class="list-chevron">' + I.search + '</div></li><li class="list-item" onclick="openAdminGiftSubscription()"><div class="list-icon purple">🎁</div><div class="list-content"><div class="list-title">Подарить подписку</div></div><div class="list-chevron">' + I.search + '</div></li><li class="list-item" onclick="openAdminGiftApi()"><div class="list-icon green">🔑</div><div class="list-content"><div class="list-title">Подарить API токен</div></div><div class="list-chevron">' + I.search + '</div></li><li class="list-item" onclick="openAdminDeleteUser()"><div class="list-icon red">🗑️</div><div class="list-content"><div class="list-title" style="color:var(--red);">Удалить данные</div></div><div class="list-chevron">' + I.search + '</div></li></ul><div class="section-title">💬 Коммуникации</div><ul class="list"><li class="list-item" onclick="openAdminAnswer()"><div class="list-icon">💬</div><div class="list-content"><div class="list-title">Ответить на вопросы</div></div><div class="list-chevron">' + I.search + '</div></li><li class="list-item" onclick="openAdminBroadcastUsers()"><div class="list-icon orange">📢</div><div class="list-content"><div class="list-title">Рассылка пользователям</div></div><div class="list-chevron">' + I.search + '</div></li><li class="list-item" onclick="openAdminBroadcastGroups()"><div class="list-icon orange">📢</div><div class="list-content"><div class="list-title">Рассылка группам</div></div><div class="list-chevron">' + I.search + '</div></li></ul><div class="section-title">📋 Данные</div><ul class="list"><li class="list-item" onclick="openAdminSearchHistory()"><div class="list-icon purple">📋</div><div class="list-content"><div class="list-title">История поисков</div></div><div class="list-chevron">' + I.search + '</div></li><li class="list-item" onclick="openAdminVerifiedUsers()"><div class="list-icon purple">🔐</div><div class="list-content"><div class="list-title">Верифицированные</div></div><div class="list-chevron">' + I.search + '</div></li><li class="list-item" onclick="openAdminApiTokens()"><div class="list-icon green">🔑</div><div class="list-content"><div class="list-title">API Токены</div></div><div class="list-chevron">' + I.search + '</div></li></ul><button class="btn secondary" onclick="renderScreen(\'home\')">← На главную</button>';
+  try { const stats = await apiGetPublicStats(); $('adm-users').textContent = formatNumber(stats.users || 0); $('adm-comments').textContent = formatNumber(stats.comments || 0); } catch (e) {}
 }
 
-function openAdminAddBalance() {
-  showModal('<div class="modal-title">💰 Пополнить баланс</div><div class="field"><label class="field-label">ID пользователя</label><input type="number" class="field-input" id="adm-bal-id" placeholder="123456789"></div><div class="field"><label class="field-label">Сумма (алмазов)</label><input type="number" class="field-input" id="adm-bal-sum" placeholder="50"></div><button class="btn" onclick="doAdminAddBalance()">Начислить</button><button class="btn secondary" onclick="closeModal()">Отмена</button>');
-}
+function openAdminAddBalance() { showModal('<div class="modal-title">💰 Пополнить баланс</div><div class="field"><label class="field-label">ID пользователя</label><input type="number" class="field-input" id="adm-bal-id" placeholder="123456789"></div><div class="field"><label class="field-label">Сумма</label><input type="number" class="field-input" id="adm-bal-sum" placeholder="50"></div><button class="btn" onclick="doAdminAddBalance()">Начислить</button><button class="btn secondary" onclick="closeModal()">Отмена</button>'); }
 function doAdminAddBalance() {
-  const id = $('adm-bal-id')?.value.trim();
-  const sum = $('adm-bal-sum')?.value.trim();
+  const id = $('adm-bal-id')?.value.trim(); const sum = $('adm-bal-sum')?.value.trim();
   if (!id || !/^\d+$/.test(id)) { toast('Введите ID', 'error'); return; }
   if (!sum || !/^\d+$/.test(sum)) { toast('Введите сумму', 'error'); return; }
   closeModal();
   showModal('<div class="modal-title">👑 Подтверждение</div><div class="modal-desc">Начислить <b>' + sum + '</b> алмазов пользователю <code>' + id + '</code>?</div><button class="btn" onclick="openBotWithCommand(\'/admin_add_balance ' + id + ' ' + sum + '\'); closeModal();">🤖 Выполнить в боте</button><button class="btn secondary" onclick="closeModal()">Отмена</button>');
 }
 
-function openAdminGiftSubscription() {
-  showModal('<div class="modal-title">🎁 Подарить подписку</div><div class="field"><label class="field-label">ID пользователя</label><input type="number" class="field-input" id="adm-sub-id" placeholder="123456789"></div><div class="field"><label class="field-label">Дней</label><input type="number" class="field-input" id="adm-sub-days" placeholder="30"></div><button class="btn" onclick="doAdminGiftSub()">Подарить</button><button class="btn secondary" onclick="closeModal()">Отмена</button>');
-}
+function openAdminGiftSubscription() { showModal('<div class="modal-title">🎁 Подарить подписку</div><div class="field"><label class="field-label">ID пользователя</label><input type="number" class="field-input" id="adm-sub-id" placeholder="123456789"></div><div class="field"><label class="field-label">Дней</label><input type="number" class="field-input" id="adm-sub-days" placeholder="30"></div><button class="btn" onclick="doAdminGiftSub()">Подарить</button><button class="btn secondary" onclick="closeModal()">Отмена</button>'); }
 function doAdminGiftSub() {
-  const id = $('adm-sub-id')?.value.trim();
-  const days = $('adm-sub-days')?.value.trim();
+  const id = $('adm-sub-id')?.value.trim(); const days = $('adm-sub-days')?.value.trim();
   if (!id || !/^\d+$/.test(id)) { toast('Введите ID', 'error'); return; }
   if (!days || !/^\d+$/.test(days)) { toast('Введите дни', 'error'); return; }
   closeModal();
   showModal('<div class="modal-title">🎁 Подтверждение</div><div class="modal-desc">Подарить <b>' + days + '</b> дней пользователю <code>' + id + '</code>?</div><button class="btn" onclick="openBotWithCommand(\'/admin_gift_sub ' + id + ' ' + days + '\'); closeModal();">🤖 Выполнить в боте</button><button class="btn secondary" onclick="closeModal()">Отмена</button>');
 }
 
-function openAdminGiftApi() {
-  showModal('<div class="modal-title">🔑 Подарить API токен</div><div class="field"><label class="field-label">ID пользователя</label><input type="number" class="field-input" id="adm-api-id" placeholder="123456789"></div><div class="field"><label class="field-label">План</label><select class="field-input" id="adm-api-plan"><option value="100">100 запросов</option><option value="500">500 запросов</option><option value="1000">1000 запросов</option><option value="5000">5000 запросов</option></select></div><button class="btn" onclick="doAdminGiftApi()">Подарить</button><button class="btn secondary" onclick="closeModal()">Отмена</button>');
-}
+function openAdminGiftApi() { showModal('<div class="modal-title">🔑 Подарить API токен</div><div class="field"><label class="field-label">ID пользователя</label><input type="number" class="field-input" id="adm-api-id" placeholder="123456789"></div><div class="field"><label class="field-label">План</label><select class="field-input" id="adm-api-plan"><option value="100">100 запросов</option><option value="500">500 запросов</option><option value="1000">1000 запросов</option><option value="5000">5000 запросов</option></select></div><button class="btn" onclick="doAdminGiftApi()">Подарить</button><button class="btn secondary" onclick="closeModal()">Отмена</button>'); }
 function doAdminGiftApi() {
-  const id = $('adm-api-id')?.value.trim();
-  const plan = $('adm-api-plan')?.value;
+  const id = $('adm-api-id')?.value.trim(); const plan = $('adm-api-plan')?.value;
   if (!id || !/^\d+$/.test(id)) { toast('Введите ID', 'error'); return; }
   closeModal();
   showModal('<div class="modal-title">🔑 Подтверждение</div><div class="modal-desc">Подарить API токен (<b>' + plan + '</b>) пользователю <code>' + id + '</code>?</div><button class="btn" onclick="openBotWithCommand(\'/admin_gift_api ' + id + ' ' + plan + '\'); closeModal();">🤖 Выполнить в боте</button><button class="btn secondary" onclick="closeModal()">Отмена</button>');
 }
 
-function openAdminDeleteUser() {
-  showModal('<div class="modal-title">🗑️ Удалить данные</div><div class="field"><label class="field-label">ID пользователя</label><input type="number" class="field-input" id="adm-del-id" placeholder="123456789"></div><button class="btn danger" onclick="doAdminDeleteUser()">🗑️ Удалить</button><button class="btn secondary" onclick="closeModal()">Отмена</button>');
-}
+function openAdminDeleteUser() { showModal('<div class="modal-title">🗑️ Удалить данные</div><div class="field"><label class="field-label">ID пользователя</label><input type="number" class="field-input" id="adm-del-id" placeholder="123456789"></div><button class="btn danger" onclick="doAdminDeleteUser()">🗑️ Удалить</button><button class="btn secondary" onclick="closeModal()">Отмена</button>'); }
 function doAdminDeleteUser() {
   const id = $('adm-del-id')?.value.trim();
   if (!id || !/^\d+$/.test(id)) { toast('Введите ID', 'error'); return; }
   if (parseInt(id) === CONFIG.ADMIN_ID) { toast('Нельзя удалить админа', 'error'); return; }
   closeModal();
-  showModal('<div class="modal-title">⚠️ Удалить?</div><div class="modal-desc">Полное удаление пользователя <code>' + id + '</code>?<br><br><b style="color:var(--red);">Необратимо.</b></div><button class="btn danger" onclick="openBotWithCommand(\'/admin_delete_user ' + id + '\'); closeModal();">🤖 Удалить в боте</button><button class="btn secondary" onclick="closeModal()">Отмена</button>');
+  showModal('<div class="modal-title">⚠️ Удалить?</div><div class="modal-desc">Полное удаление <code>' + id + '</code>?<br><br><b style="color:var(--red);">Необратимо.</b></div><button class="btn danger" onclick="openBotWithCommand(\'/admin_delete_user ' + id + '\'); closeModal();">🤖 Удалить в боте</button><button class="btn secondary" onclick="closeModal()">Отмена</button>');
 }
 
-function openAdminAnswer() {
-  showModal('<div class="modal-title">💬 Ответить</div><div class="field"><label class="field-label">ID пользователя</label><input type="number" class="field-input" id="adm-ans-id" placeholder="123456789"></div><div class="field"><label class="field-label">Сообщение</label><textarea class="field-input" id="adm-ans-text" rows="4" placeholder="Ваш ответ..." style="resize:vertical;font-family:inherit;"></textarea></div><button class="btn" onclick="doAdminAnswer()">📤 Отправить</button><button class="btn secondary" onclick="closeModal()">Отмена</button>');
-}
+function openAdminAnswer() { showModal('<div class="modal-title">💬 Ответить</div><div class="field"><label class="field-label">ID пользователя</label><input type="number" class="field-input" id="adm-ans-id" placeholder="123456789"></div><div class="field"><label class="field-label">Сообщение</label><textarea class="field-input" id="adm-ans-text" rows="4" placeholder="Ваш ответ..." style="resize:vertical;font-family:inherit;"></textarea></div><button class="btn" onclick="doAdminAnswer()">📤 Отправить</button><button class="btn secondary" onclick="closeModal()">Отмена</button>'); }
 function doAdminAnswer() {
-  const id = $('adm-ans-id')?.value.trim();
-  const text = $('adm-ans-text')?.value.trim();
+  const id = $('adm-ans-id')?.value.trim(); const text = $('adm-ans-text')?.value.trim();
   if (!id || !/^\d+$/.test(id)) { toast('Введите ID', 'error'); return; }
   if (!text) { toast('Введите текст', 'error'); return; }
   closeModal();
   showModal('<div class="modal-title">💬 Подтверждение</div><div class="modal-desc">Отправить пользователю <code>' + id + '</code>?<br><br><i>' + esc(text.slice(0, 200)) + '</i></div><button class="btn" onclick="openBotWithCommand(\'/admin_answer ' + id + '\'); closeModal();">📤 Отправить в боте</button><button class="btn secondary" onclick="closeModal()">Отмена</button>');
 }
 
-function openAdminBroadcastUsers() {
-  showModal('<div class="modal-title">📢 Рассылка пользователям</div><div class="modal-desc">Всем запустившим бота</div><div class="field"><textarea class="field-input" id="adm-bc-users" rows="5" placeholder="Текст рассылки..." style="resize:vertical;font-family:inherit;"></textarea></div><button class="btn" onclick="doAdminBroadcastUsers()">📢 Отправить</button><button class="btn secondary" onclick="closeModal()">Отмена</button>');
-}
+function openAdminBroadcastUsers() { showModal('<div class="modal-title">📢 Рассылка пользователям</div><div class="modal-desc">Всем запустившим бота</div><div class="field"><textarea class="field-input" id="adm-bc-users" rows="5" placeholder="Текст..." style="resize:vertical;font-family:inherit;"></textarea></div><button class="btn" onclick="doAdminBroadcastUsers()">📢 Отправить</button><button class="btn secondary" onclick="closeModal()">Отмена</button>'); }
 function doAdminBroadcastUsers() {
   const text = $('adm-bc-users')?.value.trim();
   if (!text) { toast('Введите сообщение', 'error'); return; }
@@ -1674,9 +1213,7 @@ function doAdminBroadcastUsers() {
   showModal('<div class="modal-title">📢 Подтверждение</div><div class="modal-desc">Отправить ВСЕМ?<br><br><i>' + esc(text.slice(0, 200)) + '</i></div><button class="btn" onclick="openBotWithCommand(\'/admin_broadcast_users\'); closeModal();">🤖 Выполнить в боте</button><button class="btn secondary" onclick="closeModal()">Отмена</button>');
 }
 
-function openAdminBroadcastGroups() {
-  showModal('<div class="modal-title">📢 Рассылка группам</div><div class="modal-desc">Во все группы админа</div><div class="field"><textarea class="field-input" id="adm-bc-groups" rows="5" placeholder="Текст рассылки..." style="resize:vertical;font-family:inherit;"></textarea></div><button class="btn" onclick="doAdminBroadcastGroups()">📢 Отправить</button><button class="btn secondary" onclick="closeModal()">Отмена</button>');
-}
+function openAdminBroadcastGroups() { showModal('<div class="modal-title">📢 Рассылка группам</div><div class="modal-desc">Во все группы админа</div><div class="field"><textarea class="field-input" id="adm-bc-groups" rows="5" placeholder="Текст..." style="resize:vertical;font-family:inherit;"></textarea></div><button class="btn" onclick="doAdminBroadcastGroups()">📢 Отправить</button><button class="btn secondary" onclick="closeModal()">Отмена</button>'); }
 function doAdminBroadcastGroups() {
   const text = $('adm-bc-groups')?.value.trim();
   if (!text) { toast('Введите сообщение', 'error'); return; }
@@ -1692,18 +1229,13 @@ async function openAdminSearchHistory() {
     if (!history || !history.length) html += '<div class="modal-desc">История пуста</div>';
     else {
       html += '<div class="modal-desc">Найдено: ' + history.length + '</div><div style="max-height:60vh;overflow-y:auto;">';
-      history.slice(0, 50).forEach((h, i) => {
-        html += '<div style="padding:10px 0;border-bottom:0.5px solid var(--border-soft);"><div style="font-size:12px;color:var(--text-mute);">#' + (i+1) + ' · ' + esc(h.search_date?.slice(0, 16) || '') + '</div><div style="font-size:14px;color:var(--text);margin-top:2px;">🎯 <code>' + esc(h.target_id || '—') + '</code></div><div style="font-size:12px;color:var(--text-mute);margin-top:2px;">Тип: ' + esc(h.search_type || '—') + '</div></div>';
-      });
+      history.slice(0, 50).forEach((h, i) => { html += '<div style="padding:10px 0;border-bottom:0.5px solid var(--border-soft);"><div style="font-size:12px;color:var(--text-mute);">#' + (i+1) + ' · ' + esc(h.search_date?.slice(0, 16) || '') + '</div><div style="font-size:14px;color:var(--text);">🎯 <code>' + esc(h.target_id || '—') + '</code></div></div>'; });
       html += '</div>';
     }
     html += '<button class="btn secondary" onclick="closeModal()">Закрыть</button>';
     closeModal();
     showModal(html);
-  } catch (e) {
-    closeModal();
-    showModal('<div class="modal-title">📋 История</div><div class="modal-desc">Ошибка: ' + esc(e.message) + '</div><button class="btn secondary" onclick="closeModal()">Закрыть</button>');
-  }
+  } catch (e) { closeModal(); showModal('<div class="modal-title">📋</div><div class="modal-desc">Ошибка: ' + esc(e.message) + '</div><button class="btn secondary" onclick="closeModal()">Закрыть</button>'); }
 }
 
 async function openAdminVerifiedUsers() {
@@ -1714,18 +1246,13 @@ async function openAdminVerifiedUsers() {
     if (!list || !list.length) html += '<div class="modal-desc">Нет данных</div>';
     else {
       html += '<div class="modal-desc">Всего: ' + list.length + '</div><div style="max-height:60vh;overflow-y:auto;">';
-      list.forEach(u => {
-        html += '<div style="padding:10px 0;border-bottom:0.5px solid var(--border-soft);"><div style="font-size:14px;color:var(--text);">👤 <code>' + esc(u.user_id) + '</code></div><div style="font-size:12px;color:var(--text-mute);margin-top:2px;">📱 ' + esc(u.phone_number || '—') + '</div></div>';
-      });
+      list.forEach(u => { html += '<div style="padding:10px 0;border-bottom:0.5px solid var(--border-soft);"><div style="font-size:14px;color:var(--text);">👤 <code>' + esc(u.user_id) + '</code></div><div style="font-size:12px;color:var(--text-mute);">📱 ' + esc(u.phone_number || '—') + '</div></div>'; });
       html += '</div>';
     }
     html += '<button class="btn secondary" onclick="closeModal()">Закрыть</button>';
     closeModal();
     showModal(html);
-  } catch (e) {
-    closeModal();
-    showModal('<div class="modal-title">🔐</div><div class="modal-desc">Ошибка: ' + esc(e.message) + '</div><button class="btn secondary" onclick="closeModal()">Закрыть</button>');
-  }
+  } catch (e) { closeModal(); showModal('<div class="modal-title">🔐</div><div class="modal-desc">Ошибка: ' + esc(e.message) + '</div><button class="btn secondary" onclick="closeModal()">Закрыть</button>'); }
 }
 
 async function openAdminApiTokens() {
@@ -1746,10 +1273,7 @@ async function openAdminApiTokens() {
     html += '<button class="btn secondary" onclick="closeModal()">Закрыть</button>';
     closeModal();
     showModal(html);
-  } catch (e) {
-    closeModal();
-    showModal('<div class="modal-title">🔑</div><div class="modal-desc">Ошибка: ' + esc(e.message) + '</div><button class="btn secondary" onclick="closeModal()">Закрыть</button>');
-  }
+  } catch (e) { closeModal(); showModal('<div class="modal-title">🔑</div><div class="modal-desc">Ошибка: ' + esc(e.message) + '</div><button class="btn secondary" onclick="closeModal()">Закрыть</button>'); }
 }
 
 function openBotWithCommand(cmd) {
@@ -1759,14 +1283,9 @@ function openBotWithCommand(cmd) {
     if (window.Telegram?.WebApp) window.Telegram.WebApp.openTelegramLink(url);
     else window.open(url, '_blank');
     toast('Команда отправлена в бот', 'ok');
-  } catch (e) {
-    window.open('https://t.me/' + CONFIG.BOT_USERNAME, '_blank');
-  }
+  } catch (e) { window.open('https://t.me/' + CONFIG.BOT_USERNAME, '_blank'); }
 }
 
-// ============================================================
-// MODALS & SETTINGS
-// ============================================================
 function showModal(html) {
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay';
@@ -1778,17 +1297,11 @@ function closeModal() { document.querySelectorAll('.modal-overlay').forEach(m =>
 
 function openSettings() {
   showModal('<div class="modal-title">⚙️ Настройки</div><div class="modal-desc">API Токен для доступа к боту</div><div class="field"><label class="field-label">API Токен</label><input type="password" class="field-input" id="modal-token" value="' + esc(APIFY_TOKEN) + '"></div><div style="display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-top:0.5px solid var(--border-soft);border-bottom:0.5px solid var(--border-soft);margin:12px 0;"><div><div style="font-size:16px;color:var(--text);font-weight:600;">Тёмная тема</div></div><label class="toggle"><input type="checkbox" id="modal-theme" ' + (currentTheme === 'dark' ? 'checked' : '') + '><span class="toggle-slider"></span></label></div><button class="btn" onclick="saveSettings()">Сохранить</button><button class="btn secondary" onclick="closeModal()">Отмена</button>');
-  setTimeout(() => {
-    const t = $('modal-theme');
-    if (t) t.addEventListener('change', e => applyTheme(e.target.checked ? 'dark' : 'light'));
-  }, 50);
+  setTimeout(() => { const t = $('modal-theme'); if (t) t.addEventListener('change', e => applyTheme(e.target.checked ? 'dark' : 'light')); }, 50);
 }
 function saveSettings() {
   const t = $('modal-token');
-  if (t) {
-    APIFY_TOKEN = t.value.trim() || APIFY_TOKEN;
-    localStorage.setItem('aa_token', APIFY_TOKEN);
-  }
+  if (t) { APIFY_TOKEN = t.value.trim() || APIFY_TOKEN; localStorage.setItem('aa_token', APIFY_TOKEN); }
   closeModal();
   toast('Сохранено', 'ok');
   renderScreen(currentScreen.name, currentScreen.data);
@@ -1796,74 +1309,53 @@ function saveSettings() {
 function openBot() {
   vibrate();
   const url = 'https://t.me/' + CONFIG.BOT_USERNAME;
-  try { window.Telegram?.WebApp?.openTelegramLink(url); }
-  catch (e) { window.open(url, '_blank'); }
+  try { window.Telegram?.WebApp?.openTelegramLink(url); } catch (e) { window.open(url, '_blank'); }
 }
 function openMyProfile() {
   const u = getTelegramUser();
   if (!u) { toast('Откройте через Telegram', 'error'); return; }
+  const limitCheck = checkAndUseRequest();
+  if (!limitCheck.ok) { showLimitModal(); return; }
   searchInput.value = String(u.id);
   handleSearch();
 }
 
-// ============================================================
-// SEARCH
-// ============================================================
 async function handleSearch() {
   const q = searchInput.value.trim();
   if (!q) return;
+  const limitCheck = checkAndUseRequest();
+  if (!limitCheck.ok) { showLimitModal(); return; }
   searchBtn.disabled = true;
   vibrate(10);
   try {
     const isId = /^\d{5,15}$/.test(q);
-    if (isId) {
-      const userId = parseInt(q);
-      try { await apiGetUser(userId); renderScreen('profile', userId); return; } catch (e) {}
-    }
+    if (isId) { const userId = parseInt(q); try { await apiGetUser(userId); renderScreen('profile', userId); return; } catch (e) {} }
     const users = await apiGetUsers();
     const query = q.toLowerCase().replace('@', '').replace(/[\s\-]/g, '');
-    const found = users.filter(u =>
-      String(u.user_id).includes(query) ||
-      (u.username || '').toLowerCase().includes(query) ||
-      ((u.first_name || '') + ' ' + (u.last_name || '')).toLowerCase().includes(query)
-    );
+    const found = users.filter(u => String(u.user_id).includes(query) || (u.username || '').toLowerCase().includes(query) || ((u.first_name || '') + ' ' + (u.last_name || '')).toLowerCase().includes(query));
     if (found.length === 0) { toast('Ничего не найдено', 'error'); return; }
     if (found.length === 1) { renderScreen('profile', found[0].user_id); return; }
     contentWrap.innerHTML = '<div class="section-title">Найдено: ' + found.length + '</div><ul class="list">' + found.slice(0, 50).map(u => '<li class="list-item" onclick="renderScreen(\'profile\', ' + u.user_id + ')"><div class="list-icon">' + I.user + '</div><div class="list-content"><div class="list-title">' + esc(((u.first_name || '') + ' ' + (u.last_name || '')).trim() || 'Без имени') + '</div><div class="list-sub">' + (u.username ? '@' + esc(u.username) : 'ID: ' + u.user_id) + '</div></div><div class="list-chevron">' + I.search + '</div></li>').join('') + '</ul>';
-  } catch (e) {
-    toast(e.message || 'Ошибка', 'error');
-  } finally {
-    searchBtn.disabled = false;
-  }
+  } catch (e) { toast(e.message || 'Ошибка', 'error'); }
+  finally { searchBtn.disabled = false; }
 }
 
-// ============================================================
-// EVENTS
-// ============================================================
 searchBtn.addEventListener('click', handleSearch);
-searchInput.addEventListener('keydown', e => {
-  if (e.key === 'Enter') { e.preventDefault(); handleSearch(); }
-});
-$('refresh-btn').addEventListener('click', () => {
-  vibrate();
-  renderScreen(currentScreen.name, currentScreen.data);
-  toast('Обновлено', 'ok');
-});
+searchInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); handleSearch(); } });
+$('refresh-btn').addEventListener('click', () => { vibrate(); renderScreen(currentScreen.name, currentScreen.data); toast('Обновлено', 'ok'); });
 $('settings-btn').addEventListener('click', openSettings);
 
-// ============================================================
-// START
-// ============================================================
 window.addEventListener('load', () => {
   setTimeout(() => {
     const el = document.getElementById('loading');
     if (el) el.classList.add('hidden');
     setTimeout(() => { const e = document.getElementById('loading'); if (e) e.remove(); }, 500);
+    getDailyUsage();
+    updateRequestsBadge();
     renderScreen('home');
   }, 800);
 });
 
-// Экспорт
 window.renderScreen = renderScreen;
 window.openMyProfile = openMyProfile;
 window.openBot = openBot;
@@ -1898,6 +1390,10 @@ window.openAdminSearchHistory = openAdminSearchHistory;
 window.openAdminVerifiedUsers = openAdminVerifiedUsers;
 window.openAdminApiTokens = openAdminApiTokens;
 window.openBotWithCommand = openBotWithCommand;
+window.getRequestsLeft = getRequestsLeft;
+window.checkAndUseRequest = checkAndUseRequest;
+window.showLimitModal = showLimitModal;
+window.updateRequestsBadge = updateRequestsBadge;
 window.searchInput = searchInput;
 window.$ = $;
 </script>

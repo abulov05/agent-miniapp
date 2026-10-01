@@ -7,6 +7,10 @@
 <title>AGENT ANALYTICS</title>
 
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -57,6 +61,11 @@ html, body {
 
 input, textarea { user-select: text; -webkit-user-select: text; }
 
+/* Скрываем скроллбары везде */
+::-webkit-scrollbar { width: 0; height: 0; background: transparent; display: none; }
+* { scrollbar-width: none; -ms-overflow-style: none; }
+.content-wrap::-webkit-scrollbar, .panel-body::-webkit-scrollbar { display: none; width: 0; }
+
 #app {
   position: fixed; inset: 0;
   display: flex; flex-direction: column;
@@ -71,16 +80,22 @@ input, textarea { user-select: text; -webkit-user-select: text; }
   border-bottom: 0.5px solid var(--border-soft);
   flex-shrink: 0; z-index: 100;
 }
+.logo {
+  width: 48px; height: 48px; flex-shrink: 0;
+  filter: drop-shadow(0 0 6px rgba(96,165,250,0.5));
+  animation: logoGlow 2.4s ease-in-out infinite;
+}
+.logo svg { width: 48px; height: 48px; overflow: visible; }
 
-.logo { width: 36px; height: 36px; flex-shrink: 0; }
-.logo svg { width: 36px; height: 36px; }
+@keyframes logoGlow {
+  0%, 100% { filter: drop-shadow(0 0 4px rgba(96,165,250,0.4)); }
+  50% { filter: drop-shadow(0 0 14px rgba(96,165,250,0.9)); }
+}
 
 .brand-text { display: flex; flex-direction: column; line-height: 1.1; }
 .brand-name { font-size: 15px; font-weight: 600; letter-spacing: 0.3px; color: var(--text); }
 .brand-sub { font-size: 11px; font-weight: 400; letter-spacing: 0.5px; color: var(--text-mute); margin-top: 1px; }
-
 .header-actions { margin-left: auto; display: flex; gap: 6px; }
-
 .icon-btn {
   width: 32px; height: 32px;
   display: flex; align-items: center; justify-content: center;
@@ -91,20 +106,16 @@ input, textarea { user-select: text; -webkit-user-select: text; }
 .icon-btn svg { width: 22px; height: 22px; stroke-width: 2; }
 
 /* SEARCH */
-.search-wrap {
-  padding: 8px 16px 12px;
-  background: var(--bg);
-  flex-shrink: 0; z-index: 90;
-}
-
+.search-wrap { padding: 8px 16px 12px; background: var(--bg); flex-shrink: 0; z-index: 90; }
 .search-bar {
-  display: flex; align-items: center; gap: 6px;
+  display: flex; align-items: center; gap: 8px;
   background: var(--bg-elev);
-  border: none; border-radius: 10px;
-  padding: 7px 8px 7px 10px;
+  border: none; border-radius: 12px;
+  padding: 6px 6px 6px 12px;
+  min-height: 44px;
 }
 .search-bar:focus-within { background: var(--bg-elev-2); }
-.search-bar svg { width: 16px; height: 16px; color: var(--text-mute); flex-shrink: 0; stroke-width: 2.5; }
+.search-bar > svg { width: 18px; height: 18px; color: var(--text-mute); flex-shrink: 0; stroke-width: 2.5; }
 .search-bar input {
   flex: 1; min-width: 0;
   background: transparent; border: none; outline: none;
@@ -112,16 +123,16 @@ input, textarea { user-select: text; -webkit-user-select: text; }
   padding: 0 2px;
 }
 .search-bar input::placeholder { color: var(--text-mute); }
-
 .search-submit {
-  width: 22px; height: 22px;
+  width: 32px; height: 32px;
   display: flex; align-items: center; justify-content: center;
   background: var(--accent); border: none; border-radius: 50%;
   color: white; cursor: pointer; flex-shrink: 0;
+  transition: transform 0.1s;
 }
-.search-submit:active { opacity: 0.7; }
+.search-submit:active { transform: scale(0.9); opacity: 0.8; }
 .search-submit:disabled { opacity: 0.3; }
-.search-submit svg { width: 12px; height: 12px; stroke-width: 3; }
+.search-submit svg { width: 18px; height: 18px; stroke-width: 3; }
 
 /* CONTENT */
 .content-wrap {
@@ -132,109 +143,7 @@ input, textarea { user-select: text; -webkit-user-select: text; }
   min-height: 0;
 }
 
-/* WELCOME */
-.welcome {
-  text-align: center;
-  padding: 40px 20px 30px;
-}
-.welcome-icon {
-  width: 96px; height: 96px;
-  margin: 0 auto 20px;
-  display: flex; align-items: center; justify-content: center;
-  background: linear-gradient(135deg, rgba(0,122,255,0.1), rgba(0,122,255,0.02));
-  border-radius: 28px;
-}
-.welcome-icon svg { width: 56px; height: 56px; }
-.welcome-title {
-  font-size: 24px; font-weight: 700;
-  color: var(--text); margin-bottom: 6px;
-  letter-spacing: -0.5px;
-}
-.welcome-sub {
-  font-size: 15px; color: var(--text-mute);
-  margin-bottom: 24px; line-height: 1.4;
-}
-
-.welcome-hint {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 8px 14px;
-  background: var(--bg-elev);
-  border-radius: 20px;
-  font-size: 13px; color: var(--text-mute);
-  margin-bottom: 12px;
-}
-.welcome-hint svg { width: 16px; height: 16px; stroke-width: 2; }
-
-/* QUICK GRID */
-.quick-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-  margin-bottom: 16px;
-}
-
-.quick-card {
-  background: var(--bg-elev);
-  border-radius: 14px;
-  padding: 16px 14px;
-  cursor: pointer;
-  display: flex; flex-direction: column; gap: 10px;
-  border: none; text-align: left;
-  font-family: inherit;
-  transition: transform 0.1s, background 0.15s;
-}
-.quick-card:active { transform: scale(0.97); background: var(--bg-elev-2); }
-
-.quick-card-icon {
-  width: 36px; height: 36px;
-  border-radius: 10px;
-  display: flex; align-items: center; justify-content: center;
-  background: rgba(0,122,255,0.12);
-  color: var(--accent);
-}
-.quick-card-icon.green { background: rgba(52,199,89,0.12); color: var(--green); }
-.quick-card-icon.orange { background: rgba(255,149,0,0.12); color: var(--orange); }
-.quick-card-icon.purple { background: rgba(175,82,222,0.12); color: var(--purple); }
-.quick-card-icon.pink { background: rgba(255,45,85,0.12); color: var(--pink); }
-.quick-card-icon.red { background: rgba(255,59,48,0.12); color: var(--red); }
-.quick-card-icon svg { width: 20px; height: 20px; stroke-width: 2; }
-
-.quick-card-title {
-  font-size: 15px; font-weight: 600;
-  color: var(--text);
-  margin-bottom: 2px;
-}
-.quick-card-sub {
-  font-size: 12px; color: var(--text-mute);
-  line-height: 1.3;
-}
-
-/* STATS */
-.stats-row {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-  margin-bottom: 16px;
-}
-
-.stat-card {
-  background: var(--bg-elev);
-  border-radius: 14px;
-  padding: 16px 14px;
-  text-align: center;
-}
-.stat-value {
-  font-size: 24px; font-weight: 700;
-  color: var(--text); letter-spacing: -0.5px;
-  margin-bottom: 4px;
-}
-.stat-label {
-  font-size: 11px; color: var(--text-mute);
-  text-transform: uppercase;
-  letter-spacing: 0.5px; font-weight: 500;
-}
-
-/* SECTION */
+/* SECTIONS */
 .section-title {
   font-size: 13px; font-weight: 600;
   color: var(--text-mute);
@@ -244,90 +153,107 @@ input, textarea { user-select: text; -webkit-user-select: text; }
   padding: 0 4px;
 }
 
+/* STATS */
+.stats-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px; }
+.stat-card {
+  background: var(--bg-elev);
+  border-radius: 14px;
+  padding: 16px 14px;
+  text-align: center;
+}
+.stat-value { font-size: 24px; font-weight: 700; color: var(--text); letter-spacing: -0.5px; margin-bottom: 4px; }
+.stat-label { font-size: 11px; color: var(--text-mute); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500; }
+
+/* QUICK GRID */
+.quick-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px; }
+.quick-card {
+  background: var(--bg-elev);
+  border-radius: 14px;
+  padding: 16px 14px;
+  cursor: pointer;
+  display: flex; flex-direction: column; gap: 10px;
+  border: none; text-align: left;
+  font-family: inherit; color: var(--text);
+  transition: transform 0.1s, background 0.15s;
+}
+.quick-card:active { transform: scale(0.97); background: var(--bg-elev-2); }
+.quick-card-icon {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,122,255,0.12); color: var(--accent);
+}
+.quick-card-icon.green { background: rgba(52,199,89,0.12); color: var(--green); }
+.quick-card-icon.orange { background: rgba(255,149,0,0.12); color: var(--orange); }
+.quick-card-icon.purple { background: rgba(175,82,222,0.12); color: var(--purple); }
+.quick-card-icon.pink { background: rgba(255,45,85,0.12); color: var(--pink); }
+.quick-card-icon.red { background: rgba(255,59,48,0.12); color: var(--red); }
+.quick-card-icon svg { width: 20px; height: 20px; stroke-width: 2; }
+.quick-card-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+.quick-card-sub { font-size: 12px; color: var(--text-mute); line-height: 1.3; }
+
+/* LIST */
+.list {
+  list-style: none;
+  background: var(--bg);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 0.5px solid var(--border-soft);
+  margin-bottom: 16px;
+}
+.list-item {
+  display: flex; align-items: center; gap: 14px;
+  padding: 11px 16px;
+  border-bottom: 0.5px solid var(--border-soft);
+  cursor: pointer;
+  -webkit-tap-highlight-color: rgba(0, 122, 255, 0.1);
+}
+.list-item:last-child { border-bottom: none; }
+.list-item:active { background: var(--bg-elev); }
+.list-icon {
+  width: 29px; height: 29px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--accent);
+  border-radius: 7px;
+  color: white; flex-shrink: 0;
+  font-size: 15px;
+}
+.list-icon svg { width: 18px; height: 18px; stroke-width: 2; }
+.list-content { flex: 1; min-width: 0; }
+.list-title { font-size: 16px; color: var(--text); margin-bottom: 1px; }
+.list-sub { font-size: 13px; color: var(--text-mute); }
+.list-chevron { color: var(--text-mute); flex-shrink: 0; opacity: 0.5; font-size: 13px; }
+.list-chevron svg { width: 16px; height: 16px; stroke-width: 2.5; }
+.list-icon.red { background: var(--red); }
+.list-icon.green { background: var(--green); }
+.list-icon.orange { background: var(--orange); }
+.list-icon.purple { background: var(--purple); }
+.list-icon.pink { background: var(--pink); }
+.list-icon.gray { background: var(--text-mute); }
+
 /* RESULT */
 .result-card {
   background: var(--bg);
   border-radius: 12px;
   overflow: hidden;
   border: 0.5px solid var(--border-soft);
+  margin-bottom: 12px;
 }
-
 .result-row {
   display: flex; align-items: flex-start; gap: 12px;
   padding: 12px 16px;
   border-bottom: 0.5px solid var(--border-soft);
 }
 .result-row:last-child { border-bottom: none; }
-
-.result-icon {
-  width: 22px; height: 22px;
-  flex-shrink: 0; color: var(--accent);
-  margin-top: 1px;
-}
+.result-icon { width: 22px; height: 22px; flex-shrink: 0; color: var(--accent); margin-top: 1px; }
 .result-icon svg { width: 22px; height: 22px; stroke-width: 2; }
 .result-content { flex: 1; min-width: 0; }
-
 .result-label { font-size: 13px; color: var(--text-mute); margin-bottom: 1px; }
-.result-value { font-size: 17px; color: var(--text); word-break: break-word; }
+.result-value { font-size: 16px; color: var(--text); word-break: break-word; }
 .result-value.mono { font-family: 'SF Mono', 'Menlo', monospace; font-size: 15px; }
 .result-value.accent { color: var(--accent); font-weight: 600; }
 
-/* PANELS */
-.panel {
-  position: absolute;
-  left: 0; right: 0; bottom: 0;
-  background: var(--bg);
-  border-top-left-radius: 14px;
-  border-top-right-radius: 14px;
-  box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.18);
-  transform: translateY(100%);
-  transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
-  max-height: 85%;
-  display: flex; flex-direction: column;
-  z-index: 200;
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-}
-.panel.open { transform: translateY(0); }
-
-.panel-handle {
-  width: 36px; height: 5px;
-  background: var(--border);
-  border-radius: 3px;
-  margin: 8px auto 4px;
-  flex-shrink: 0;
-}
-
-.panel-header {
-  display: flex; align-items: center; gap: 10px;
-  padding: 8px 16px 12px;
-  flex-shrink: 0;
-  border-bottom: 0.5px solid var(--border-soft);
-  position: relative;
-}
-
-.panel-title {
-  font-size: 18px; font-weight: 600;
-  color: var(--text); flex: 1; text-align: center;
-}
-
-.panel-close {
-  position: absolute; right: 16px; top: 50%;
-  transform: translateY(-50%);
-  width: 30px; height: 30px;
-  display: flex; align-items: center; justify-content: center;
-  background: var(--bg-elev);
-  border: none; border-radius: 50%;
-  color: var(--text-mute); cursor: pointer;
-}
-
-.panel-body {
-  padding: 16px;
-  overflow-y: auto;
-  flex: 1;
-  -webkit-overflow-scrolling: touch;
-}
-
-/* FORM */
+/* FORMS */
 .field { margin-bottom: 14px; }
 .field-label { display: block; font-size: 13px; color: var(--text-mute); margin-bottom: 6px; }
 .field-input {
@@ -346,85 +272,28 @@ input, textarea { user-select: text; -webkit-user-select: text; }
   background: var(--accent);
   border: none; border-radius: 12px;
   color: white; font-family: inherit;
-  font-size: 17px; font-weight: 600;
+  font-size: 16px; font-weight: 600;
   cursor: pointer;
+  margin-bottom: 8px;
 }
 .btn:active { background: var(--accent-dim); transform: scale(0.98); }
 .btn:disabled { opacity: 0.4; }
 .btn.secondary { background: var(--bg-elev); color: var(--accent); }
 .btn.danger { background: var(--red); }
 
-/* LIST */
-.list {
-  list-style: none;
-  background: var(--bg);
-  border-radius: 12px;
-  overflow: hidden;
-  border: 0.5px solid var(--border-soft);
-}
-
-.list-item {
-  display: flex; align-items: center; gap: 14px;
-  padding: 11px 16px;
-  border-bottom: 0.5px solid var(--border-soft);
-  cursor: pointer;
-  -webkit-tap-highlight-color: rgba(0, 122, 255, 0.1);
-}
-.list-item:last-child { border-bottom: none; }
-.list-item:active { background: var(--bg-elev); }
-
-.list-icon {
-  width: 29px; height: 29px;
-  display: flex; align-items: center; justify-content: center;
-  background: var(--accent);
-  border-radius: 7px;
-  color: white; flex-shrink: 0;
-}
-.list-icon svg { width: 18px; height: 18px; stroke-width: 2; }
-.list-content { flex: 1; min-width: 0; }
-.list-title { font-size: 17px; color: var(--text); margin-bottom: 1px; }
-.list-sub { font-size: 13px; color: var(--text-mute); }
-.list-chevron { color: var(--text-mute); flex-shrink: 0; opacity: 0.5; }
-.list-chevron svg { width: 16px; height: 16px; stroke-width: 2.5; }
-
-.list-icon.red { background: var(--red); }
-.list-icon.green { background: var(--green); }
-.list-icon.orange { background: var(--orange); }
-.list-icon.purple { background: var(--purple); }
-.list-icon.pink { background: var(--pink); }
-.list-icon.gray { background: var(--text-mute); }
-
-/* SETTINGS TOGGLE */
-.setting-row {
-  display: flex; align-items: center;
-  justify-content: space-between;
-  padding: 14px 0;
-  border-bottom: 0.5px solid var(--border-soft);
-}
-.setting-row:last-child { border-bottom: none; }
-.setting-label { font-size: 17px; color: var(--text); }
-.setting-desc { font-size: 12px; color: var(--text-mute); margin-top: 2px; }
-
-.toggle {
-  position: relative;
-  width: 51px; height: 31px;
-  flex-shrink: 0;
-}
+/* TOGGLE */
+.toggle { position: relative; width: 51px; height: 31px; flex-shrink: 0; }
 .toggle input { opacity: 0; width: 0; height: 0; }
 .toggle-slider {
   position: absolute; inset: 0;
   background: var(--bg-elev-2);
-  border-radius: 15.5px;
-  cursor: pointer;
+  border-radius: 15.5px; cursor: pointer;
   transition: 0.3s;
 }
 .toggle-slider::before {
-  content: '';
-  position: absolute;
-  width: 27px; height: 27px;
-  left: 2px; top: 2px;
-  background: white;
-  border-radius: 50%;
+  content: ''; position: absolute;
+  width: 27px; height: 27px; left: 2px; top: 2px;
+  background: white; border-radius: 50%;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
   transition: 0.3s;
 }
@@ -439,7 +308,6 @@ input, textarea { user-select: text; -webkit-user-select: text; }
   padding: 6px 0 calc(env(safe-area-inset-bottom, 0px) + 2px);
   flex-shrink: 0; z-index: 100;
 }
-
 .tab {
   flex: 1;
   display: flex; flex-direction: column; align-items: center;
@@ -456,16 +324,13 @@ input, textarea { user-select: text; -webkit-user-select: text; }
 
 /* TOAST */
 .toast-wrap {
-  position: fixed;
-  left: 50%; transform: translateX(-50%);
+  position: fixed; left: 50%; transform: translateX(-50%);
   bottom: calc(env(safe-area-inset-bottom, 0px) + 90px);
   z-index: 1000;
-  display: flex; flex-direction: column;
-  gap: 8px; pointer-events: none;
-  width: calc(100% - 32px);
-  max-width: 340px;
+  display: flex; flex-direction: column; gap: 8px;
+  pointer-events: none;
+  width: calc(100% - 32px); max-width: 340px;
 }
-
 .toast {
   padding: 12px 16px;
   background: rgba(0, 0, 0, 0.85);
@@ -489,8 +354,7 @@ input, textarea { user-select: text; -webkit-user-select: text; }
   background: var(--bg);
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  gap: 20px;
-  z-index: 9999;
+  gap: 20px; z-index: 9999;
   transition: opacity 0.4s;
 }
 .loading.hidden { opacity: 0; pointer-events: none; }
@@ -516,15 +380,33 @@ input, textarea { user-select: text; -webkit-user-select: text; }
   100% { transform: translateX(350%); }
 }
 
-.logo-rotator { transform-origin: 50px 50px; animation: logoSpin 4s linear infinite; }
-@keyframes logoSpin { from { transform: rotate(0); } to { transform: rotate(360deg); } }
-.logo-pulse { transform-origin: 50px 50px; animation: logoPulse 2s ease-in-out infinite; }
-@keyframes logoPulse { 0%, 100% { opacity: 0.9; } 50% { opacity: 0.5; } }
-.logo-triangle {
-  stroke-dasharray: 260; stroke-dashoffset: 260;
-  animation: logoDraw 1.5s cubic-bezier(0.6, 0.05, 0.3, 1) 0.2s forwards;
+/* LOGO ANIMATIONS */
+.logo-rotator {
+  transform-origin: 50px 50px;
+  animation: logoSpin 3s linear infinite;
 }
-@keyframes logoDraw { to { stroke-dashoffset: 0; } }
+@keyframes logoSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.logo-pulse {
+  transform-origin: 58px 58px;
+  animation: logoPulse 1.8s ease-in-out infinite;
+}
+@keyframes logoPulse {
+  0%, 100% { opacity: 1; transform: scale(1); stroke-width: 2.5; }
+  50% { opacity: 0.4; transform: scale(1.25); stroke-width: 1.5; }
+}
+.logo-triangle {
+  stroke-dasharray: 260;
+  stroke-dashoffset: 260;
+  animation: logoDraw 3s ease-in-out infinite;
+}
+@keyframes logoDraw {
+  0% { stroke-dashoffset: 260; opacity: 0.4; }
+  50% { stroke-dashoffset: 0; opacity: 1; }
+  100% { stroke-dashoffset: -260; opacity: 0.4; }
+}
 
 /* CHART */
 .chart-wrap {
@@ -535,12 +417,64 @@ input, textarea { user-select: text; -webkit-user-select: text; }
 }
 .chart-title {
   font-size: 14px; font-weight: 600;
-  color: var(--text);
-  margin-bottom: 12px;
+  color: var(--text); margin-bottom: 12px;
   display: flex; align-items: center; gap: 8px;
 }
-.chart-title svg { width: 18px; height: 18px; color: var(--accent); stroke-width: 2; }
 .chart-canvas-wrap { height: 180px; position: relative; }
+
+/* MODAL */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(10px);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 2000; padding: 20px;
+  animation: fadeIn 0.2s ease;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.modal {
+  background: var(--bg);
+  border-radius: 20px;
+  width: 100%; max-width: 400px;
+  max-height: 85vh; overflow-y: auto;
+  padding: 24px;
+  animation: modalIn 0.25s ease;
+}
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+.modal-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; color: var(--text); }
+.modal-desc { font-size: 14px; color: var(--text-mute); margin-bottom: 20px; line-height: 1.5; }
+
+/* PHONE MAP MODAL */
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+@keyframes pulsePin {
+  0% { transform: scale(0.7); opacity: 0.6; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+#phone-map .leaflet-control-zoom a {
+  background: var(--bg) !important;
+  color: var(--accent) !important;
+  border: none !important;
+  width: 36px !important;
+  height: 36px !important;
+  line-height: 34px !important;
+  font-size: 18px !important;
+}
+#phone-map .leaflet-control-zoom-in { border-radius: 10px 10px 0 0 !important; }
+#phone-map .leaflet-control-zoom-out { border-radius: 0 0 10px 10px !important; }
+#phone-map .leaflet-popup-content-wrapper {
+  background: var(--bg) !important;
+  color: var(--text) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15) !important;
+}
+#phone-map .leaflet-popup-tip { background: var(--bg) !important; }
+#phone-map .leaflet-control-attribution { display: none !important; }
 </style>
 </head>
 <body>
@@ -550,20 +484,20 @@ input, textarea { user-select: text; -webkit-user-select: text; }
   <div class="loading-logo">
     <svg viewBox="0 0 100 100">
       <defs>
-        <linearGradient id="lg" x1="0%" y1="0%" x2="100%" y2="100%">
+        <linearGradient id="lgL" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stop-color="#60a5fa"/>
           <stop offset="100%" stop-color="#007aff"/>
         </linearGradient>
       </defs>
-      <circle cx="50" cy="50" r="46" fill="none" stroke="url(#lg)" stroke-width="1" opacity="0.3"/>
+      <circle cx="50" cy="50" r="46" fill="none" stroke="url(#lgL)" stroke-width="1.5" opacity="0.3" stroke-dasharray="20 8" class="logo-rotator"/>
       <g class="logo-rotator">
-        <path d="M50 50 L50 4 A46 46 0 0 1 82 18 Z" fill="url(#lg)" opacity="0.15"/>
-        <line x1="50" y1="50" x2="50" y2="4" stroke="url(#lg)" stroke-width="1" opacity="0.6"/>
+        <path d="M50 50 L50 4 A46 46 0 0 1 82 18 Z" fill="url(#lgL)" opacity="0.25"/>
+        <line x1="50" y1="50" x2="50" y2="4" stroke="url(#lgL)" stroke-width="2" opacity="0.9"/>
       </g>
-      <polygon class="logo-triangle" points="50,18 82,78 18,78" fill="none" stroke="url(#lg)" stroke-width="2.5" stroke-linejoin="round" pathLength="260"/>
-      <circle class="logo-pulse" cx="58" cy="58" r="9" fill="none" stroke="url(#lg)" stroke-width="2"/>
-      <circle cx="58" cy="55" r="2.5" fill="url(#lg)"/>
-      <line x1="65" y1="65" x2="70" y2="70" stroke="url(#lg)" stroke-width="2.5" stroke-linecap="round"/>
+      <polygon class="logo-triangle" points="50,18 82,78 18,78" fill="none" stroke="url(#lgL)" stroke-width="3" stroke-linejoin="round" pathLength="260"/>
+      <circle class="logo-pulse" cx="58" cy="58" r="9" fill="none" stroke="url(#lgL)" stroke-width="2.5"/>
+      <circle cx="58" cy="55" r="2.5" fill="url(#lgL)"/>
+      <line x1="65" y1="65" x2="72" y2="72" stroke="url(#lgL)" stroke-width="3" stroke-linecap="round"/>
     </svg>
   </div>
   <div class="loading-bar"></div>
@@ -577,20 +511,20 @@ input, textarea { user-select: text; -webkit-user-select: text; }
     <div class="logo">
       <svg viewBox="0 0 100 100">
         <defs>
-          <linearGradient id="lg2" x1="0%" y1="0%" x2="100%" y2="100%">
+          <linearGradient id="lgH" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stop-color="#60a5fa"/>
             <stop offset="100%" stop-color="#007aff"/>
           </linearGradient>
         </defs>
-        <circle cx="50" cy="50" r="46" fill="none" stroke="url(#lg2)" stroke-width="1" opacity="0.25"/>
+        <circle cx="50" cy="50" r="46" fill="none" stroke="url(#lgH)" stroke-width="1.5" opacity="0.3" stroke-dasharray="20 8" class="logo-rotator"/>
         <g class="logo-rotator">
-          <path d="M50 50 L50 4 A46 46 0 0 1 82 18 Z" fill="url(#lg2)" opacity="0.12"/>
-          <line x1="50" y1="50" x2="50" y2="4" stroke="url(#lg2)" stroke-width="1" opacity="0.5"/>
+          <path d="M50 50 L50 4 A46 46 0 0 1 82 18 Z" fill="url(#lgH)" opacity="0.25"/>
+          <line x1="50" y1="50" x2="50" y2="4" stroke="url(#lgH)" stroke-width="2" opacity="0.9"/>
         </g>
-        <polygon points="50,18 82,78 18,78" fill="none" stroke="url(#lg2)" stroke-width="2.5" stroke-linejoin="round"/>
-        <circle cx="58" cy="58" r="9" fill="none" stroke="url(#lg2)" stroke-width="2"/>
-        <circle cx="58" cy="55" r="2.5" fill="url(#lg2)"/>
-        <line x1="65" y1="65" x2="70" y2="70" stroke="url(#lg2)" stroke-width="2.5" stroke-linecap="round"/>
+        <polygon points="50,18 82,78 18,78" fill="none" stroke="url(#lgH)" stroke-width="3" stroke-linejoin="round"/>
+        <circle class="logo-pulse" cx="58" cy="58" r="9" fill="none" stroke="url(#lgH)" stroke-width="2.5"/>
+        <circle cx="58" cy="55" r="2.5" fill="url(#lgH)"/>
+        <line x1="65" y1="65" x2="72" y2="72" stroke="url(#lgH)" stroke-width="3" stroke-linecap="round"/>
       </svg>
     </div>
     <div class="brand-text">
@@ -632,9 +566,7 @@ input, textarea { user-select: text; -webkit-user-select: text; }
   </div>
 
   <!-- CONTENT -->
-  <div class="content-wrap" id="content-wrap">
-    <!-- dynamic -->
-  </div>
+  <div class="content-wrap" id="content-wrap"></div>
 
   <!-- TABS -->
   <nav class="tabs">
@@ -667,72 +599,20 @@ input, textarea { user-select: text; -webkit-user-select: text; }
       <span>Профиль</span>
     </button>
   </nav>
-
-  <!-- PANEL: RESULT -->
-  <div class="panel" id="panel-result">
-    <div class="panel-handle"></div>
-    <div class="panel-header">
-      <div class="panel-title" id="result-title">Результат</div>
-      <button class="panel-close" data-close="panel-result">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-        </svg>
-      </button>
-    </div>
-    <div class="panel-body" id="result-body"></div>
-  </div>
-
-  <!-- PANEL: SETTINGS -->
-  <div class="panel" id="panel-settings">
-    <div class="panel-handle"></div>
-    <div class="panel-header">
-      <div class="panel-title">Настройки</div>
-      <button class="panel-close" data-close="panel-settings">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-        </svg>
-      </button>
-    </div>
-    <div class="panel-body">
-      <div class="setting-row">
-        <div>
-          <div class="setting-label">Тёмная тема</div>
-          <div class="setting-desc">Переключить светлую / тёмную</div>
-        </div>
-        <label class="toggle">
-          <input type="checkbox" id="theme-toggle">
-          <span class="toggle-slider"></span>
-        </label>
-      </div>
-
-      <div class="field" style="margin-top: 20px;">
-        <label class="field-label">API Токен</label>
-        <input type="password" class="field-input" id="set-token" placeholder="Ваш токен из бота">
-        <div class="field-hint">Получить можно в боте: меню 🔌 API ТОКЕН</div>
-      </div>
-      <button class="btn" id="set-save">Сохранить</button>
-      <button class="btn secondary" id="set-clear" style="margin-top: 8px;">Сбросить токен</button>
-    </div>
-  </div>
-
 </div>
 
 <div class="toast-wrap" id="toasts"></div>
 
 <script>
 // ============================================================
-// CONFIG — ЗАПОЛНИ
+// CONFIG
 // ============================================================
 const CONFIG = {
   API_BASE: "https://precise-subject-makeshift.ngrok-free.dev",
   API_KEY: "SC3xksKXvYEKx_2oRjgLVDl6OOsNUpVI",
-  BOT_USERNAME: "dev1_robot",
-  APP_NAME: "AGENT ANALYTICS"
+  BOT_USERNAME: "dev1_robot"
 };
 
-// ============================================================
-// TELEGRAM
-// ============================================================
 try {
   const tg = window.Telegram?.WebApp;
   if (tg) { tg.ready(); tg.expand(); tg.disableVerticalSwipes?.(); }
@@ -741,8 +621,7 @@ try {
 // ============================================================
 // THEME
 // ============================================================
-let currentTheme = localStorage.getItem('aa_theme') || 'light';
-
+let currentTheme = localStorage.getItem('aa_theme') || 'dark';
 function applyTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
   currentTheme = theme;
@@ -756,14 +635,12 @@ function applyTheme(theme) {
   } catch (e) {}
   const toggle = document.getElementById('theme-toggle');
   if (toggle) toggle.checked = (theme === 'dark');
-  // Перерисовать график
   if (window._currentChart && document.getElementById('activityChart')) {
     window._currentChart.destroy?.();
     window._currentChart = null;
-    setTimeout(renderChart, 50);
+    setTimeout(() => { if (currentTab === 'stats') renderScreen('stats'); }, 50);
   }
 }
-
 document.documentElement.setAttribute('data-theme', currentTheme);
 
 // ============================================================
@@ -778,7 +655,7 @@ const contentWrap = $('content-wrap');
 let APIFY_TOKEN = localStorage.getItem('aa_token') || CONFIG.API_KEY;
 let currentTab = 'home';
 let currentUser = null;
-const STORAGE_KEY = 'aa_api_key';
+let currentScreen = { name: 'home', data: null };
 
 // ============================================================
 // HELPERS
@@ -786,38 +663,41 @@ const STORAGE_KEY = 'aa_api_key';
 function esc(s) {
   return String(s == null ? '' : s).replace(/[&<>"']/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
 }
-
 function toast(msg, type = '') {
   const el = document.createElement('div');
   el.className = 'toast ' + type;
   el.textContent = msg;
   toasts.appendChild(el);
   requestAnimationFrame(() => el.classList.add('show'));
-  setTimeout(() => {
-    el.classList.remove('show');
-    setTimeout(() => el.remove(), 300);
-  }, 3000);
+  setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 300); }, 3000);
 }
-
 function vibrate(ms = 10) {
   if (navigator.vibrate) try { navigator.vibrate(ms); } catch (e) {}
 }
-
 function formatNumber(n) {
   if (n == null) return '0';
   return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 }
-
 function getTelegramUser() {
   try {
     const u = window.Telegram?.WebApp?.initDataUnsafe?.user;
-    if (u) {
-      localStorage.setItem('aa_tg_user', JSON.stringify(u));
-      return u;
-    }
-    const saved = localStorage.getItem('aa_tg_user');
-    return saved ? JSON.parse(saved) : null;
+    if (u) { localStorage.setItem('aa_tg_user', JSON.stringify(u)); return u; }
+    const s = localStorage.getItem('aa_tg_user');
+    return s ? JSON.parse(s) : null;
   } catch (e) { return null; }
+}
+function copyToClipboard(text) {
+  try {
+    navigator.clipboard.writeText(text).then(() => {
+      toast('✅ Скопировано', 'ok');
+      vibrate();
+    }).catch(() => {
+      const ta = document.createElement('textarea');
+      ta.value = text; document.body.appendChild(ta);
+      ta.select(); document.execCommand('copy'); ta.remove();
+      toast('✅ Скопировано', 'ok');
+    });
+  } catch (e) { toast('Не удалось скопировать', 'error'); }
 }
 
 // ============================================================
@@ -833,26 +713,25 @@ async function apiRequest(path, opts = {}) {
   const r = await fetch(CONFIG.API_BASE + path, { ...opts, headers });
   if (r.status === 401) throw new Error('Неверный API-токен');
   if (r.status === 403) {
-    let d = '';
-    try { d = (await r.json()).error || ''; } catch (e) {}
+    let d = ''; try { d = (await r.json()).error || ''; } catch (e) {}
     throw new Error(d || 'Доступ запрещён');
   }
   if (!r.ok) throw new Error('HTTP ' + r.status);
   return r.json();
 }
-
-async function apiGetUsers()          { return apiRequest('/api/users'); }
-async function apiGetChats()          { return apiRequest('/api/chats'); }
-async function apiGetActivity()       { return apiRequest('/api/activity'); }
-async function apiGetWords()          { return apiRequest('/api/words'); }
-async function apiGetTopInterlocutors() { return apiRequest('/api/top_interlocutors'); }
-async function apiGetUser(id, inc='all', lim=20) { return apiRequest(`/api/v1/users/${id}?include=${inc}&limit=${lim}`); }
+const apiGetUsers = () => apiRequest('/api/users');
+const apiGetChats = () => apiRequest('/api/chats');
+const apiGetActivity = () => apiRequest('/api/activity');
+const apiGetWords = () => apiRequest('/api/words');
+const apiGetTopInterlocutors = () => apiRequest('/api/top_interlocutors');
+const apiGetPhoneLookups = () => apiRequest('/api/phone_lookups');
+const apiGetUser = (id, inc='all', lim=20) => apiRequest(`/api/v1/users/${id}?include=${inc}&limit=${lim}`);
 
 async function apiGetPublicStats() {
   const r = await fetch(CONFIG.API_BASE + '/api/public/stats', {
     headers: { 'ngrok-skip-browser-warning': 'true' }
   });
-  if (!r.ok) throw new Error('Не удалось получить статистику');
+  if (!r.ok) throw new Error('Не удалось');
   return r.json();
 }
 
@@ -875,82 +754,65 @@ const I = {
   bot:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4M8 16h.01M16 16h.01"/></svg>',
   eye:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
   trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>',
-  share: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>',
-  copy:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>',
-  send:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>',
   clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
-  monitor:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>',
-  shield:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>'
+  shield:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
+  check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>',
+  globe:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>',
+  signal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 4v16"/></svg>',
+  map:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>'
 };
 
 // ============================================================
-// TABS
+// NAVIGATION
 // ============================================================
+function renderScreen(name, data) {
+  currentScreen = { name, data };
+  contentWrap.scrollTop = 0;
+  switch (name) {
+    case 'home':          return renderHome();
+    case 'search':        return renderSearchTab();
+    case 'stats':         return renderStats();
+    case 'me':            return renderMe();
+    case 'profile':       return renderProfile(data);
+    case 'phone-check':   return renderPhoneCheck();
+    case 'subscription':  return renderSubscription();
+    case 'api-tokens':    return renderApiTokens();
+    case 'tracking':      return renderTracking();
+    case 'delete-data':   return renderDeleteData();
+    case 'about':         return renderAbout();
+    default:              return renderHome();
+  }
+}
+
+// TABS
 document.querySelectorAll('.tab').forEach(tab => {
   tab.addEventListener('click', () => {
     const t = tab.dataset.tab;
     document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x === tab));
     vibrate(8);
     currentTab = t;
-    if (t === 'home')  renderHome();
-    else if (t === 'search') renderSearchTab();
-    else if (t === 'stats') renderStats();
-    else if (t === 'me')    renderMe();
+    if (t === 'home')        renderScreen('home');
+    else if (t === 'search') renderScreen('search');
+    else if (t === 'stats')  renderScreen('stats');
+    else if (t === 'me')     renderScreen('me');
   });
 });
 
 // ============================================================
-// PANELS
-// ============================================================
-function openPanel(id) {
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('open'));
-  const p = $(id); if (p) p.classList.add('open');
-}
-function closePanel(id) { const p = $(id); if (p) p.classList.remove('open'); }
-function closeAllPanels() { document.querySelectorAll('.panel').forEach(p => p.classList.remove('open')); }
-
-document.querySelectorAll('[data-close]').forEach(btn => {
-  btn.addEventListener('click', () => closePanel(btn.dataset.close));
-});
-
-// ============================================================
-// RENDER: HOME
+// RENDER: HOME — статистика САМОГО пользователя
 // ============================================================
 async function renderHome() {
-  contentWrap.innerHTML = `
-    <div class="welcome">
-      <div class="welcome-icon">
-        <svg viewBox="0 0 100 100">
-          <defs>
-            <linearGradient id="lgH" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#60a5fa"/>
-              <stop offset="100%" stop-color="#007aff"/>
-            </linearGradient>
-          </defs>
-          <circle cx="50" cy="50" r="46" fill="none" stroke="url(#lgH)" stroke-width="2" opacity="0.3"/>
-          <polygon points="50,18 82,78 18,78" fill="none" stroke="url(#lgH)" stroke-width="4" stroke-linejoin="round"/>
-          <circle cx="58" cy="58" r="9" fill="none" stroke="url(#lgH)" stroke-width="4"/>
-          <circle cx="58" cy="55" r="3" fill="url(#lgH)"/>
-          <line x1="65" y1="65" x2="72" y2="72" stroke="url(#lgH)" stroke-width="4" stroke-linecap="round"/>
-        </svg>
-      </div>
-      <div class="welcome-title">AGENT ANALYTICS</div>
-      <div class="welcome-sub">Аналитика Telegram-активности</div>
-      <div class="welcome-hint">
-        ${I.search}
-        <span>Введи ID, @username или номер</span>
-      </div>
-    </div>
+  const tgUser = getTelegramUser();
 
-    <div class="section-title">Статистика</div>
-    <div class="stats-row" id="stats-row">
-      <div class="stat-card"><div class="stat-value" id="st-users">—</div><div class="stat-label">Пользователей</div></div>
-      <div class="stat-card"><div class="stat-value" id="st-comments">—</div><div class="stat-label">Сообщений</div></div>
+  contentWrap.innerHTML = `
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-value" id="my-comments">—</div><div class="stat-label">Моих сообщений</div></div>
+      <div class="stat-card"><div class="stat-value" id="my-chats">—</div><div class="stat-label">Моих чатов</div></div>
     </div>
 
     <div class="section-title">Быстрые действия</div>
     <div class="quick-grid">
-      <button class="quick-card" onclick="goSearch()">
+      <button class="quick-card" onclick="renderScreen('search')">
         <div class="quick-card-icon">${I.search}</div>
         <div>
           <div class="quick-card-title">Поиск</div>
@@ -971,108 +833,139 @@ async function renderHome() {
           <div class="quick-card-sub">@${CONFIG.BOT_USERNAME}</div>
         </div>
       </button>
-      <button class="quick-card" onclick="openDashboard()">
-        <div class="quick-card-icon orange">${I.monitor}</div>
+      <button class="quick-card" onclick="renderScreen('phone-check')">
+        <div class="quick-card-icon green">${I.phone}</div>
         <div>
-          <div class="quick-card-title">Веб-панель</div>
-          <div class="quick-card-sub">Дашборд</div>
+          <div class="quick-card-title">Проверка номеров</div>
+          <div class="quick-card-sub">Карта и страна</div>
         </div>
       </button>
     </div>
 
     <div class="section-title">Инструменты</div>
     <ul class="list">
-      <li class="list-item" onclick="openPhoneCheck()">
+      <li class="list-item" onclick="renderScreen('phone-check')">
         <div class="list-icon">${I.phone}</div>
-        <div class="list-content">
-          <div class="list-title">Проверить номер</div>
-          <div class="list-sub">Страна, оператор, Telegram</div>
-        </div>
+        <div class="list-content"><div class="list-title">Проверить номер</div><div class="list-sub">Страна, оператор, карта</div></div>
         <div class="list-chevron">${I.search}</div>
       </li>
-      <li class="list-item" onclick="openSubscription()">
+      <li class="list-item" onclick="renderScreen('subscription')">
         <div class="list-icon orange">${I.star}</div>
-        <div class="list-content">
-          <div class="list-title">Подписка</div>
-          <div class="list-sub">Безлимитный доступ</div>
-        </div>
+        <div class="list-content"><div class="list-title">Подписка</div><div class="list-sub">Безлимитный доступ</div></div>
         <div class="list-chevron">${I.search}</div>
       </li>
-      <li class="list-item" onclick="openApiTokens()">
+      <li class="list-item" onclick="renderScreen('api-tokens')">
         <div class="list-icon green">${I.key}</div>
-        <div class="list-content">
-          <div class="list-title">API Токены</div>
-          <div class="list-sub">Для разработчиков</div>
-        </div>
+        <div class="list-content"><div class="list-title">API Токены</div><div class="list-sub">Для разработчиков</div></div>
         <div class="list-chevron">${I.search}</div>
       </li>
-      <li class="list-item" onclick="openTracking()">
+      <li class="list-item" onclick="renderScreen('tracking')">
         <div class="list-icon purple">${I.eye}</div>
-        <div class="list-content">
-          <div class="list-title">Отслеживание</div>
-          <div class="list-sub">20 алмазов / 7 дней</div>
-        </div>
+        <div class="list-content"><div class="list-title">Отслеживание</div><div class="list-sub">20 алмазов / 7 дней</div></div>
         <div class="list-chevron">${I.search}</div>
       </li>
-      <li class="list-item" onclick="openAbout()">
+      <li class="list-item" onclick="renderScreen('delete-data')">
+        <div class="list-icon red">${I.trash}</div>
+        <div class="list-content"><div class="list-title" style="color:var(--red);">Удалить данные</div><div class="list-sub">200 алмазов</div></div>
+        <div class="list-chevron">${I.search}</div>
+      </li>
+      <li class="list-item" onclick="renderScreen('about')">
         <div class="list-icon gray">${I.info}</div>
-        <div class="list-content">
-          <div class="list-title">О боте</div>
-          <div class="list-sub">Возможности и правила</div>
-        </div>
+        <div class="list-content"><div class="list-title">О боте</div><div class="list-sub">Возможности и правила</div></div>
         <div class="list-chevron">${I.search}</div>
       </li>
     </ul>
   `;
 
-  // загружаем статистику
-  try {
-    const stats = await apiGetPublicStats();
-    $('st-users').textContent = formatNumber(stats.users || 0);
-    $('st-comments').textContent = formatNumber(stats.comments || 0);
-  } catch (e) {
-    console.warn(e);
-    $('st-users').textContent = '—';
-    $('st-comments').textContent = '—';
+  if (tgUser) {
+    try {
+      const u = await apiGetUser(tgUser.id, 'all', 100).catch(() => null);
+      if (u && !u.error) {
+        $('my-comments').textContent = formatNumber((u.comments || []).length);
+        $('my-chats').textContent = formatNumber((u.chats || []).length);
+      } else {
+        $('my-comments').textContent = '0';
+        $('my-chats').textContent = '0';
+      }
+    } catch (e) {
+      $('my-comments').textContent = '—';
+      $('my-chats').textContent = '—';
+    }
+  } else {
+    $('my-comments').textContent = '—';
+    $('my-chats').textContent = '—';
   }
 }
 
 // ============================================================
-// RENDER: SEARCH TAB
+// RENDER: SEARCH
 // ============================================================
 function renderSearchTab() {
   contentWrap.innerHTML = `
-    <div class="welcome" style="padding: 20px 0 10px;">
-      <div class="welcome-title" style="font-size: 20px;">Поиск</div>
-      <div class="welcome-sub" style="margin-bottom: 0;">Введите ID, @username или телефон</div>
-    </div>
+    <div class="section-title">Поиск</div>
+    <ul class="list">
+      <li class="list-item" onclick="searchInput.focus()">
+        <div class="list-icon">${I.search}</div>
+        <div class="list-content">
+          <div class="list-title">Введите запрос в поле выше</div>
+          <div class="list-sub">ID, @username или телефон</div>
+        </div>
+      </li>
+      <li class="list-item" onclick="openMyProfile()">
+        <div class="list-icon green">${I.user}</div>
+        <div class="list-content">
+          <div class="list-title">Мой профиль</div>
+          <div class="list-sub">Найти себя</div>
+        </div>
+        <div class="list-chevron">${I.search}</div>
+      </li>
+    </ul>
     <div id="search-results"></div>
   `;
-  searchInput.focus();
+  setTimeout(() => searchInput.focus(), 100);
 }
 
 // ============================================================
-// RENDER: STATS
+// RENDER: STATS — статистика БОТА
 // ============================================================
 async function renderStats() {
   contentWrap.innerHTML = `
-    <div class="section-title">Аналитика</div>
+    <div class="section-title">📊 Статистика бота</div>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-value" id="bs-users">—</div><div class="stat-label">Пользователей</div></div>
+      <div class="stat-card"><div class="stat-value" id="bs-comments">—</div><div class="stat-label">Сообщений</div></div>
+      <div class="stat-card"><div class="stat-value" id="bs-chats">—</div><div class="stat-label">Чатов</div></div>
+      <div class="stat-card"><div class="stat-value" id="bs-active">—</div><div class="stat-label">Активных</div></div>
+    </div>
+
+    <div class="section-title">📈 Активность (30 дней)</div>
     <div class="chart-wrap">
-      <div class="chart-title">${I.chart} Активность (30 дней)</div>
       <div class="chart-canvas-wrap"><canvas id="activityChart"></canvas></div>
     </div>
-    <div class="section-title">Топ чатов</div>
+
+    <div class="section-title">💬 Топ чатов</div>
     <ul class="list" id="top-chats"><li class="list-item"><div class="list-content"><div class="list-sub">Загрузка...</div></div></li></ul>
-    <div class="section-title">Популярные слова</div>
+
+    <div class="section-title">🔤 Популярные слова</div>
     <ul class="list" id="top-words"><li class="list-item"><div class="list-content"><div class="list-sub">Загрузка...</div></div></li></ul>
+
+    <div class="section-title">📱 Проверки номеров</div>
+    <ul class="list" id="phone-lookups"><li class="list-item"><div class="list-content"><div class="list-sub">Загрузка...</div></div></li></ul>
   `;
 
   try {
-    const [activity, chats, words] = await Promise.all([
+    const [stats, activity, chats, words, phones] = await Promise.all([
+      apiGetPublicStats().catch(() => ({})),
       apiGetActivity().catch(() => []),
       apiGetTopInterlocutors().catch(() => []),
-      apiGetWords().catch(() => [])
+      apiGetWords().catch(() => []),
+      apiGetPhoneLookups().catch(() => [])
     ]);
+
+    $('bs-users').textContent = formatNumber(stats.users || 0);
+    $('bs-comments').textContent = formatNumber(stats.comments || 0);
+    $('bs-chats').textContent = formatNumber(stats.chats || 0);
+    $('bs-active').textContent = formatNumber(stats.started_bot || 0);
 
     $('top-chats').innerHTML = chats.length
       ? chats.slice(0, 10).map(c => `
@@ -1094,6 +987,17 @@ async function renderStats() {
           </li>`).join('')
       : '<li class="list-item"><div class="list-content"><div class="list-sub">Нет данных</div></div></li>';
 
+    $('phone-lookups').innerHTML = phones.length
+      ? phones.slice(0, 10).map(p => `
+          <li class="list-item">
+            <div class="list-icon">${I.phone}</div>
+            <div class="list-content">
+              <div class="list-title">${esc(p.phone)}</div>
+              <div class="list-sub">${esc(p.carrier || '—')} · ${esc(p.region || '—')}</div>
+            </div>
+          </li>`).join('')
+      : '<li class="list-item"><div class="list-content"><div class="list-sub">Нет данных</div></div></li>';
+
     renderChart(activity);
   } catch (e) {
     toast(e.message, 'error');
@@ -1102,14 +1006,10 @@ async function renderStats() {
 
 function renderChart(activity) {
   const canvas = $('activityChart');
-  if (!canvas || !activity || !activity.length) return;
+  if (!canvas || !activity || !activity.length || typeof Chart === 'undefined') return;
   if (window._currentChart) { window._currentChart.destroy(); window._currentChart = null; }
-  if (typeof Chart === 'undefined') return;
-
   const isDark = currentTheme === 'dark';
   const gridColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
-  const textColor = isDark ? '#8e8e93' : '#8e8e93';
-
   window._currentChart = new Chart(canvas, {
     type: 'bar',
     data: {
@@ -1118,18 +1018,15 @@ function renderChart(activity) {
         data: activity.map(x => x.count),
         backgroundColor: isDark ? 'rgba(10,132,255,0.6)' : 'rgba(0,122,255,0.6)',
         borderColor: isDark ? '#0a84ff' : '#007aff',
-        borderWidth: 0,
-        borderRadius: 4,
-        barThickness: 8
+        borderWidth: 0, borderRadius: 4, barThickness: 8
       }]
     },
     options: {
-      responsive: true,
-      maintainAspectRatio: false,
+      responsive: true, maintainAspectRatio: false,
       plugins: { legend: { display: false } },
       scales: {
-        y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor, font: { size: 10 }, maxTicksLimit: 5 } },
-        x: { grid: { display: false }, ticks: { color: textColor, font: { size: 9 }, maxTicksLimit: 8 } }
+        y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: '#8e8e93', font: { size: 10 }, maxTicksLimit: 5 } },
+        x: { grid: { display: false }, ticks: { color: '#8e8e93', font: { size: 9 }, maxTicksLimit: 8 } }
       }
     }
   });
@@ -1142,28 +1039,11 @@ function renderMe() {
   const u = getTelegramUser();
   contentWrap.innerHTML = `
     ${u ? `
-    <div class="result-card" style="margin-top: 20px;">
-      <div class="result-row">
-        <div class="result-icon">${I.user}</div>
-        <div class="result-content">
-          <div class="result-label">Имя</div>
-          <div class="result-value">${esc(u.first_name || '')} ${esc(u.last_name || '')}</div>
-        </div>
-      </div>
-      <div class="result-row">
-        <div class="result-icon">${I.user}</div>
-        <div class="result-content">
-          <div class="result-label">Username</div>
-          <div class="result-value">${u.username ? '@' + esc(u.username) : '—'}</div>
-        </div>
-      </div>
-      <div class="result-row">
-        <div class="result-icon">${I.info}</div>
-        <div class="result-content">
-          <div class="result-label">ID</div>
-          <div class="result-value mono">${u.id}</div>
-        </div>
-      </div>
+    <div class="section-title">Мой Telegram</div>
+    <div class="result-card">
+      <div class="result-row"><div class="result-icon">${I.user}</div><div class="result-content"><div class="result-label">Имя</div><div class="result-value">${esc(u.first_name || '')} ${esc(u.last_name || '')}</div></div></div>
+      <div class="result-row"><div class="result-icon">${I.user}</div><div class="result-content"><div class="result-label">Username</div><div class="result-value">${u.username ? '@' + esc(u.username) : '—'}</div></div></div>
+      <div class="result-row"><div class="result-icon">${I.info}</div><div class="result-content"><div class="result-label">ID</div><div class="result-value mono">${u.id}</div></div></div>
     </div>` : ''}
 
     <div class="section-title">Действия</div>
@@ -1178,9 +1058,9 @@ function renderMe() {
         <div class="list-content"><div class="list-title">Открыть бота</div></div>
         <div class="list-chevron">${I.search}</div>
       </li>
-      <li class="list-item" onclick="openDashboard()">
-        <div class="list-icon orange">${I.monitor}</div>
-        <div class="list-content"><div class="list-title">Веб-панель</div></div>
+      <li class="list-item" onclick="renderScreen('phone-check')">
+        <div class="list-icon green">${I.phone}</div>
+        <div class="list-content"><div class="list-title">Проверка номеров</div></div>
         <div class="list-chevron">${I.search}</div>
       </li>
       <li class="list-item" onclick="openSettings()">
@@ -1193,105 +1073,713 @@ function renderMe() {
 }
 
 // ============================================================
+// RENDER: PROFILE (красивый iOS-стиль)
+// ============================================================
+async function renderProfile(userId) {
+  contentWrap.innerHTML = `
+    <div style="padding-top:40px;text-align:center;">
+      <div class="loading-bar" style="margin:0 auto;"></div>
+      <div style="margin-top:16px;color:var(--text-mute);font-size:13px;">Загрузка профиля...</div>
+    </div>`;
+
+  try {
+    const u = await apiGetUser(userId, 'all', 50);
+    if (u.error) throw new Error(u.error);
+
+    const name = ((u.first_name || '') + ' ' + (u.last_name || '')).trim() || 'Без имени';
+    const initial = (name[0] || '?').toUpperCase();
+    const username = u.username ? '@' + u.username : null;
+    const tier = u.started_bot ? 'PREMIUM' : 'USER';
+    const tierColor = u.started_bot ? 'var(--orange)' : 'var(--accent)';
+
+    const chatsCount = (u.chats || []).length;
+    const commentsCount = (u.comments || []).length;
+    const wordsCount = (u.words || []).length;
+
+    // Активность по чатам
+    const chatActivity = {};
+    (u.comments || []).forEach(c => {
+      const t = (c.chat || 'Неизвестно').slice(0, 20);
+      chatActivity[t] = (chatActivity[t] || 0) + 1;
+    });
+    const topChats = Object.entries(chatActivity).sort((a,b) => b[1] - a[1]).slice(0, 5);
+    const maxChatCount = topChats[0] ? topChats[0][1] : 1;
+
+    // Ежедневная активность (14 дней)
+    const dailyMap = {};
+    (u.comments || []).forEach(c => {
+      const d = (c.date || '').slice(0, 10);
+      if (d) dailyMap[d] = (dailyMap[d] || 0) + 1;
+    });
+    const last14Days = [];
+    for (let i = 13; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const key = d.toISOString().slice(0, 10);
+      last14Days.push({ date: key, count: dailyMap[key] || 0 });
+    }
+    const maxDaily = Math.max(...last14Days.map(d => d.count), 1);
+
+    // Облако слов
+    const topWords = (u.words || []).slice(0, 12);
+    const maxWord = topWords[0] ? topWords[0].count : 1;
+
+    contentWrap.innerHTML = `
+      <div style="position:relative;margin:-16px -16px 0;padding:32px 24px 24px;background:linear-gradient(180deg,${u.started_bot ? 'rgba(255,149,0,0.15)' : 'rgba(0,122,255,0.12)'} 0%,transparent 100%);text-align:center;">
+        <button class="icon-btn" onclick="renderScreen('home')" style="position:absolute;left:8px;top:8px;color:var(--text);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <button class="icon-btn" onclick="copyToClipboard('${u.user_id}')" style="position:absolute;right:8px;top:8px;color:var(--text);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        </button>
+
+        <div style="position:relative;width:96px;height:96px;margin:0 auto 16px;">
+          <div style="width:100%;height:100%;border-radius:50%;background:linear-gradient(135deg,#0a84ff,#bf5af2);color:white;display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:700;box-shadow:0 8px 24px rgba(0,122,255,0.3);border:3px solid var(--bg);">${esc(initial)}</div>
+          ${u.started_bot ? `<div style="position:absolute;bottom:2px;right:2px;width:26px;height:26px;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;border:3px solid var(--bg);">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>` : ''}
+        </div>
+
+        <div style="font-size:24px;font-weight:700;color:var(--text);letter-spacing:-0.5px;">${esc(name)}</div>
+        ${username ? `<div style="font-size:15px;color:var(--accent);margin-top:4px;">${esc(username)}</div>` : ''}
+        <div style="display:inline-block;margin-top:10px;padding:4px 14px;background:${tierColor}20;color:${tierColor};border-radius:20px;font-size:11px;font-weight:700;letter-spacing:1px;">⚡ ${tier}</div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:20px 0;">
+        <div style="background:var(--bg-elev);border-radius:14px;padding:16px 8px;text-align:center;">
+          <div style="font-size:22px;font-weight:700;color:var(--text);">${formatNumber(commentsCount)}</div>
+          <div style="font-size:10px;color:var(--text-mute);text-transform:uppercase;letter-spacing:0.5px;margin-top:2px;font-weight:600;">Сообщений</div>
+        </div>
+        <div style="background:var(--bg-elev);border-radius:14px;padding:16px 8px;text-align:center;">
+          <div style="font-size:22px;font-weight:700;color:var(--text);">${formatNumber(chatsCount)}</div>
+          <div style="font-size:10px;color:var(--text-mute);text-transform:uppercase;letter-spacing:0.5px;margin-top:2px;font-weight:600;">Чатов</div>
+        </div>
+        <div style="background:var(--bg-elev);border-radius:14px;padding:16px 8px;text-align:center;">
+          <div style="font-size:22px;font-weight:700;color:var(--text);">${formatNumber(wordsCount)}</div>
+          <div style="font-size:10px;color:var(--text-mute);text-transform:uppercase;letter-spacing:0.5px;margin-top:2px;font-weight:600;">Слов</div>
+        </div>
+      </div>
+
+      <div class="section-title">📋 Основное</div>
+      <div style="background:var(--bg-elev);border-radius:14px;padding:4px 0;margin-bottom:16px;">
+        <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:0.5px solid var(--border-soft);">
+          <div style="width:36px;height:36px;background:rgba(0,122,255,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--accent);flex-shrink:0;">${I.user}</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:11px;color:var(--text-mute);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">ID</div>
+            <div style="font-size:15px;color:var(--text);font-family:'SF Mono',monospace;margin-top:2px;">${u.user_id}</div>
+          </div>
+        </div>
+        ${u.phone ? `
+        <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:0.5px solid var(--border-soft);">
+          <div style="width:36px;height:36px;background:rgba(52,199,89,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--green);flex-shrink:0;">${I.phone}</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:11px;color:var(--text-mute);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Телефон</div>
+            <div style="font-size:15px;color:var(--text);font-family:'SF Mono',monospace;margin-top:2px;">${esc(u.phone)}</div>
+          </div>
+        </div>` : ''}
+        <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:0.5px solid var(--border-soft);">
+          <div style="width:36px;height:36px;background:rgba(175,82,222,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--purple);flex-shrink:0;">${I.clock}</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:11px;color:var(--text-mute);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Регистрация</div>
+            <div style="font-size:15px;color:var(--text);margin-top:2px;">${esc(u.estimated_reg || '—')}</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;">
+          <div style="width:36px;height:36px;background:rgba(255,45,85,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--pink);flex-shrink:0;">${I.bot}</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:11px;color:var(--text-mute);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Бот запущен</div>
+            <div style="font-size:15px;color:${u.started_bot ? 'var(--green)' : 'var(--red)'};margin-top:2px;font-weight:600;">${u.started_bot ? '✅ Да' : '❌ Нет'}</div>
+          </div>
+        </div>
+      </div>
+
+      ${last14Days.some(d => d.count > 0) ? `
+      <div class="section-title">📈 Активность (14 дней)</div>
+      <div style="background:var(--bg-elev);border-radius:14px;padding:16px;margin-bottom:16px;">
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:4px;height:80px;">
+          ${last14Days.map(d => {
+            const h = Math.max(4, (d.count / maxDaily) * 70);
+            return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;">
+              <div style="width:100%;height:${h}px;background:linear-gradient(180deg,var(--accent),var(--accent-dim));border-radius:4px;min-height:4px;"></div>
+              <div style="font-size:8px;color:var(--text-mute);">${d.date.slice(8)}</div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>` : ''}
+
+      ${topChats.length ? `
+      <div class="section-title">💬 Активность в чатах</div>
+      <div style="background:var(--bg-elev);border-radius:14px;padding:16px;margin-bottom:16px;">
+        ${topChats.map(([chat, count]) => `
+          <div style="margin-bottom:12px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+              <div style="font-size:13px;color:var(--text);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;margin-right:12px;">${esc(chat)}</div>
+              <div style="font-size:12px;color:var(--accent);font-weight:600;">${formatNumber(count)}</div>
+            </div>
+            <div style="height:6px;background:var(--bg-elev-2);border-radius:3px;overflow:hidden;">
+              <div style="height:100%;width:${(count/maxChatCount)*100}%;background:linear-gradient(90deg,var(--accent),var(--purple));border-radius:3px;"></div>
+            </div>
+          </div>
+        `).join('')}
+      </div>` : ''}
+
+      ${topWords.length ? `
+      <div class="section-title">🔤 Частые слова</div>
+      <div style="background:var(--bg-elev);border-radius:14px;padding:16px;margin-bottom:16px;">
+        <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;">
+          ${topWords.map(w => {
+            const size = 12 + (w.count / maxWord) * 14;
+            const opacity = 0.5 + (w.count / maxWord) * 0.5;
+            return `<span style="font-size:${size}px;color:var(--accent);font-weight:600;opacity:${opacity};">${esc(w.word)}</span>`;
+          }).join('')}
+        </div>
+      </div>` : ''}
+
+      ${u.chats && u.chats.length ? `
+      <div class="section-title">👥 Чаты (${u.chats.length})</div>
+      <ul class="list">
+        ${u.chats.slice(0, 10).map(c => `
+          <li class="list-item">
+            <div class="list-icon ${c.type === 'channel' ? 'green' : ''}">${c.type === 'channel' ? '📢' : '💬'}</div>
+            <div class="list-content">
+              <div class="list-title">${esc((c.title || '').slice(0, 28))}</div>
+              <div class="list-sub">${esc((c.last_date || '').slice(0, 10))}</div>
+            </div>
+          </li>`).join('')}
+      </ul>` : ''}
+
+      ${u.comments && u.comments.length ? `
+      <div class="section-title">📝 Последние сообщения</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        ${u.comments.slice(0, 10).map(c => `
+          <div style="background:var(--bg-elev);border-radius:12px;padding:12px 14px;border-left:3px solid var(--accent);">
+            <div style="font-size:11px;color:var(--text-mute);margin-bottom:4px;display:flex;justify-content:space-between;gap:8px;">
+              <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">📌 ${esc((c.chat || '').slice(0, 24))}</span>
+              <span style="flex-shrink:0;">${esc((c.date || '').slice(0, 10))}</span>
+            </div>
+            <div style="font-size:14px;color:var(--text);line-height:1.5;">${esc((c.text || '').slice(0, 250))}</div>
+            ${c.link ? `<div style="margin-top:6px;"><a href="${esc(c.link)}" target="_blank" style="font-size:12px;color:var(--accent);text-decoration:none;">🔗 Открыть в Telegram</a></div>` : ''}
+          </div>
+        `).join('')}
+      </div>` : ''}
+
+      <div style="margin-top:20px;">
+        <button class="btn" onclick="openBot()" style="margin-bottom:8px;">📊 Полный отчёт в боте</button>
+        <button class="btn secondary" onclick="copyToClipboard('${u.user_id}')" style="margin-bottom:8px;">📋 Скопировать ID</button>
+        <button class="btn secondary" onclick="renderScreen('home')">← На главную</button>
+      </div>
+    `;
+  } catch (e) {
+    contentWrap.innerHTML = `
+      <div style="padding-top:40px;text-align:center;">
+        <div style="width:80px;height:80px;margin:0 auto 16px;border-radius:50%;background:rgba(255,59,48,0.1);display:flex;align-items:center;justify-content:center;font-size:36px;">⚠️</div>
+        <div style="font-size:18px;font-weight:600;color:var(--text);margin-bottom:6px;">Не найдено</div>
+        <div style="font-size:14px;color:var(--text-mute);margin-bottom:24px;">${esc(e.message)}</div>
+        <button class="btn secondary" onclick="renderScreen('home')">← На главную</button>
+      </div>
+    `;
+  }
+}
+
+// ============================================================
+// RENDER: PHONE CHECK с КАРТОЙ
+// ============================================================
+function renderPhoneCheck() {
+  contentWrap.innerHTML = `
+    <div class="section-title">📱 Проверка номера</div>
+    <div class="chart-wrap">
+      <div class="field">
+        <label class="field-label">Номер телефона</label>
+        <input type="tel" class="field-input" id="pc-phone" placeholder="+992901234567" autocomplete="off">
+        <div class="field-hint">Покажет страну на карте и оператора</div>
+      </div>
+      <button class="btn" id="pc-check">📱 Проверить</button>
+    </div>
+    <div id="pc-result"></div>
+    <button class="btn secondary" onclick="renderScreen('home')">← Назад</button>
+  `;
+
+  $('pc-check').addEventListener('click', async () => {
+    const phone = $('pc-phone').value.trim();
+    if (!phone) { toast('Введите номер', 'error'); return; }
+
+    const btn = $('pc-check');
+    btn.disabled = true;
+    btn.textContent = '⏳ Проверка...';
+
+    try {
+      const lookups = await apiGetPhoneLookups().catch(() => []);
+      const clean = phone.replace(/[\s\-\(\)]/g, '');
+      const found = lookups.find(l => {
+        const lclean = (l.phone || '').replace(/[\s\-\(\)]/g, '');
+        return lclean === clean || lclean.includes(clean) || clean.includes(lclean);
+      });
+
+      let info = null;
+      if (found) {
+        info = {
+          phone: found.phone,
+          country: '',
+          operator: found.carrier || '',
+          region: found.region || '',
+          telegram: found.telegram,
+          telegram_username: found.telegram_username,
+          whatsapp: found.whatsapp,
+          source: 'database'
+        };
+      }
+
+      if (!info) {
+        info = await lookupPhoneOnline(phone);
+      }
+
+      if (info && info.lat && info.lon) {
+        showPhoneMap(info);
+      } else if (info) {
+        $('pc-result').innerHTML = `
+          <div class="result-card">
+            <div class="result-row"><div class="result-icon">${I.phone}</div><div class="result-content"><div class="result-label">Номер</div><div class="result-value mono accent">${esc(info.phone)}</div></div></div>
+            ${info.country ? `<div class="result-row"><div class="result-icon">${I.globe}</div><div class="result-content"><div class="result-label">Страна</div><div class="result-value">${esc(info.country)}</div></div></div>` : ''}
+            ${info.operator ? `<div class="result-row"><div class="result-icon">${I.signal}</div><div class="result-content"><div class="result-label">Оператор</div><div class="result-value">${esc(info.operator)}</div></div></div>` : ''}
+          </div>
+        `;
+      } else {
+        $('pc-result').innerHTML = `
+          <div class="result-card">
+            <div class="result-row"><div class="result-icon">${I.info}</div><div class="result-content"><div class="result-label">Результат</div><div class="result-value">Номер не найден. Проверьте его в боте.</div></div></div>
+          </div>
+          <button class="btn" onclick="openBot()">🤖 Проверить в боте</button>`;
+      }
+    } catch (e) {
+      toast(e.message, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '📱 Проверить';
+    }
+  });
+}
+
+async function lookupPhoneOnline(phone) {
+  const clean = phone.replace(/[\s\-\(\)]/g, '').replace(/^\+/, '');
+
+  const countryByCode = {
+    '992': { country: 'Таджикистан', lat: 38.8610, lon: 71.2761, flag: '🇹🇯' },
+    '998': { country: 'Узбекистан', lat: 41.3775, lon: 64.5853, flag: '🇺🇿' },
+    '996': { country: 'Кыргызстан', lat: 41.2044, lon: 74.7661, flag: '🇰🇬' },
+    '993': { country: 'Туркменистан', lat: 38.9697, lon: 59.5563, flag: '🇹🇲' },
+    '79':  { country: 'Россия', lat: 55.7558, lon: 37.6173, flag: '🇷🇺' },
+    '78':  { country: 'Россия', lat: 55.7558, lon: 37.6173, flag: '🇷🇺' },
+    '77':  { country: 'Казахстан', lat: 51.1694, lon: 71.4491, flag: '🇰🇿' },
+    '7':   { country: 'Россия', lat: 55.7558, lon: 37.6173, flag: '🇷🇺' },
+    '1':   { country: 'США', lat: 38.9072, lon: -77.0369, flag: '🇺🇸' },
+    '44':  { country: 'Великобритания', lat: 51.5074, lon: -0.1278, flag: '🇬🇧' },
+    '49':  { country: 'Германия', lat: 52.5200, lon: 13.4050, flag: '🇩🇪' },
+    '33':  { country: 'Франция', lat: 48.8566, lon: 2.3522, flag: '🇫🇷' },
+    '39':  { country: 'Италия', lat: 41.9028, lon: 12.4964, flag: '🇮🇹' },
+    '34':  { country: 'Испания', lat: 40.4168, lon: -3.7038, flag: '🇪🇸' },
+    '90':  { country: 'Турция', lat: 41.0082, lon: 28.9784, flag: '🇹🇷' },
+    '86':  { country: 'Китай', lat: 39.9042, lon: 116.4074, flag: '🇨🇳' },
+    '81':  { country: 'Япония', lat: 35.6762, lon: 139.6503, flag: '🇯🇵' },
+    '82':  { country: 'Южная Корея', lat: 37.5665, lon: 126.9780, flag: '🇰🇷' },
+    '91':  { country: 'Индия', lat: 28.6139, lon: 77.2090, flag: '🇮🇳' },
+    '971': { country: 'ОАЭ', lat: 25.2048, lon: 55.2708, flag: '🇦🇪' },
+    '972': { country: 'Израиль', lat: 31.7683, lon: 35.2137, flag: '🇮🇱' },
+    '966': { country: 'Саудовская Аравия', lat: 24.7136, lon: 46.6753, flag: '🇸🇦' },
+    '20':  { country: 'Египет', lat: 30.0444, lon: 31.2357, flag: '🇪🇬' },
+    '380': { country: 'Украина', lat: 50.4501, lon: 30.5234, flag: '🇺🇦' },
+    '375': { country: 'Беларусь', lat: 53.9045, lon: 27.5615, flag: '🇧🇾' },
+    '373': { country: 'Молдова', lat: 47.0105, lon: 28.8638, flag: '🇲🇩' },
+    '995': { country: 'Грузия', lat: 41.7151, lon: 44.8271, flag: '🇬🇪' },
+    '374': { country: 'Армения', lat: 40.1792, lon: 44.4991, flag: '🇦🇲' },
+    '994': { country: 'Азербайджан', lat: 40.4093, lon: 49.8671, flag: '🇦🇿' },
+    '48':  { country: 'Польша', lat: 52.2297, lon: 21.0122, flag: '🇵🇱' },
+    '420': { country: 'Чехия', lat: 50.0755, lon: 14.4378, flag: '🇨🇿' },
+    '30':  { country: 'Греция', lat: 37.9838, lon: 23.7275, flag: '🇬🇷' },
+    '31':  { country: 'Нидерланды', lat: 52.3676, lon: 4.9041, flag: '🇳🇱' },
+    '32':  { country: 'Бельгия', lat: 50.8503, lon: 4.3517, flag: '🇧🇪' },
+    '41':  { country: 'Швейцария', lat: 46.9480, lon: 7.4474, flag: '🇨🇭' },
+    '43':  { country: 'Австрия', lat: 48.2082, lon: 16.3738, flag: '🇦🇹' },
+    '46':  { country: 'Швеция', lat: 59.3293, lon: 18.0686, flag: '🇸🇪' },
+    '47':  { country: 'Норвегия', lat: 59.9139, lon: 10.7522, flag: '🇳🇴' },
+    '45':  { country: 'Дания', lat: 55.6761, lon: 12.5683, flag: '🇩🇰' },
+    '358': { country: 'Финляндия', lat: 60.1699, lon: 24.9384, flag: '🇫🇮' },
+    '351': { country: 'Португалия', lat: 38.7223, lon: -9.1393, flag: '🇵🇹' },
+    '353': { country: 'Ирландия', lat: 53.3498, lon: -6.2603, flag: '🇮🇪' }
+  };
+
+  let countryInfo = null;
+  for (let len = 3; len >= 1; len--) {
+    const prefix = clean.slice(0, len);
+    if (countryByCode[prefix]) {
+      countryInfo = countryByCode[prefix];
+      break;
+    }
+  }
+
+  if (countryInfo) {
+    return {
+      phone: phone,
+      country: countryInfo.country,
+      flag: countryInfo.flag,
+      lat: countryInfo.lat,
+      lon: countryInfo.lon,
+      operator: '—',
+      region: '—'
+    };
+  }
+  return null;
+}
+
+function showPhoneMap(info) {
+  document.querySelectorAll('.modal-overlay').forEach(m => m.remove());
+
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'phone-map-modal';
+  overlay.style.padding = '0';
+  overlay.style.alignItems = 'flex-end';
+
+  overlay.innerHTML = `
+    <div style="background:var(--bg);width:100%;max-width:600px;border-radius:20px 20px 0 0;overflow:hidden;animation:slideUp 0.3s ease;max-height:95vh;display:flex;flex-direction:column;">
+      <div style="padding:16px 20px;border-bottom:0.5px solid var(--border-soft);display:flex;align-items:center;gap:12px;">
+        <div style="flex:1;">
+          <div style="font-size:17px;font-weight:700;color:var(--text);">${esc(info.flag || '')} ${esc(info.phone || '')}</div>
+          <div style="font-size:13px;color:var(--text-mute);margin-top:2px;">${esc(info.country || '')} · ${esc(info.operator || '')}</div>
+        </div>
+        <button onclick="closePhoneMap()" style="width:32px;height:32px;border-radius:50%;background:var(--bg-elev);border:none;color:var(--text-mute);cursor:pointer;display:flex;align-items:center;justify-content:center;">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div id="phone-map" style="height:340px;width:100%;background:var(--bg-elev);"></div>
+      <div style="padding:16px 20px;overflow-y:auto;">
+        <div class="result-card" style="margin:0;">
+          <div class="result-row"><div class="result-icon">${I.globe}</div><div class="result-content"><div class="result-label">Страна</div><div class="result-value">${esc(info.flag || '')} ${esc(info.country || '—')}</div></div></div>
+          <div class="result-row"><div class="result-icon">${I.signal}</div><div class="result-content"><div class="result-label">Оператор</div><div class="result-value">${esc(info.operator || '—')}</div></div></div>
+          <div class="result-row"><div class="result-icon">${I.map}</div><div class="result-content"><div class="result-label">Координаты</div><div class="result-value mono">${info.lat.toFixed(4)}, ${info.lon.toFixed(4)}</div></div></div>
+        </div>
+        <button class="btn" onclick="openBot()" style="margin-top:12px;">🤖 Полная проверка в боте</button>
+        <button class="btn secondary" onclick="closePhoneMap()">Закрыть</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+  setTimeout(() => initPhoneMap(info.lat, info.lon, info), 100);
+}
+
+function closePhoneMap() {
+  const m = document.getElementById('phone-map-modal');
+  if (m) m.remove();
+  if (window._phoneMap) { window._phoneMap.remove(); window._phoneMap = null; }
+}
+
+function initPhoneMap(lat, lon, info) {
+  if (typeof L === 'undefined') { toast('Карта не загрузилась', 'error'); return; }
+  const isDark = currentTheme === 'dark';
+  const mapEl = document.getElementById('phone-map');
+  if (!mapEl) return;
+
+  const map = L.map('phone-map', {
+    zoomControl: false, attributionControl: false,
+    center: [lat, lon], zoom: 6, minZoom: 2, maxZoom: 18
+  });
+
+  const tileUrl = isDark
+    ? 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}'
+    : 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+
+  L.tileLayer(tileUrl, { maxZoom: 19, subdomains: 'abcd' }).addTo(map);
+  L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+  const icon = L.divIcon({
+    className: '',
+    html: `<div style="position:relative;width:24px;height:24px;">
+      <div style="position:absolute;inset:0;border-radius:50%;background:#007aff;border:3px solid white;box-shadow:0 3px 12px rgba(0,122,255,0.5);"></div>
+      <div style="position:absolute;inset:-10px;border-radius:50%;border:2px solid #007aff;opacity:0.4;animation:pulsePin 2s ease-out infinite;"></div>
+    </div>`,
+    iconSize: [24, 24], iconAnchor: [12, 12]
+  });
+
+  L.marker([lat, lon], { icon }).addTo(map)
+    .bindPopup(`<div style="font-family:-apple-system,sans-serif;padding:4px;">
+      <b style="font-size:14px;">${esc(info.flag || '')} ${esc(info.country || '')}</b><br>
+      <span style="font-size:12px;color:#8e8e93;">${esc(info.operator || '')}</span>
+    </div>`).openPopup();
+
+  window._phoneMap = map;
+  setTimeout(() => map.invalidateSize(), 200);
+}
+
+// ============================================================
+// RENDER: SUBSCRIPTION
+// ============================================================
+function renderSubscription() {
+  contentWrap.innerHTML = `
+    <div class="section-title">Подписка</div>
+    <div class="result-card">
+      <div class="result-row"><div class="result-icon">${I.check}</div><div class="result-content"><div class="result-label">Лимит запросов</div><div class="result-value accent">Безлимит</div></div></div>
+      <div class="result-row"><div class="result-icon">${I.chart}</div><div class="result-content"><div class="result-label">HTML отчёты</div><div class="result-value">✅ Да</div></div></div>
+      <div class="result-row"><div class="result-icon">${I.search}</div><div class="result-content"><div class="result-label">Поиск</div><div class="result-value">✅ Да</div></div></div>
+      <div class="result-row"><div class="result-icon">${I.phone}</div><div class="result-content"><div class="result-label">Проверка номеров</div><div class="result-value">✅ Да</div></div></div>
+    </div>
+
+    <div class="section-title">Планы</div>
+    <ul class="list">
+      <li class="list-item" onclick="buyPlan('1_month','1 месяц','5 USD')">
+        <div class="list-icon orange">${I.star}</div>
+        <div class="list-content"><div class="list-title">1 месяц</div><div class="list-sub">5 USD</div></div>
+        <div class="list-chevron">${I.search}</div>
+      </li>
+      <li class="list-item" onclick="buyPlan('6_months','6 месяцев','20 USD')">
+        <div class="list-icon orange">${I.star}</div>
+        <div class="list-content"><div class="list-title">6 месяцев</div><div class="list-sub">20 USD · Выгода 33%</div></div>
+        <div class="list-chevron">${I.search}</div>
+      </li>
+      <li class="list-item" onclick="buyPlan('1_year','1 год','45 USD')">
+        <div class="list-icon orange">${I.star}</div>
+        <div class="list-content"><div class="list-title">1 год</div><div class="list-sub">45 USD · Выгода 40%</div></div>
+        <div class="list-chevron">${I.search}</div>
+      </li>
+    </ul>
+
+    <button class="btn secondary" onclick="renderScreen('home')">← Назад</button>
+  `;
+}
+function buyPlan(id, name, price) {
+  vibrate();
+  showModal(`
+    <div class="modal-title">⭐ ${name}</div>
+    <div class="modal-desc">К оплате: ${price}<br><br>Оплата в Telegram-боте. Нажмите кнопку, чтобы перейти к оплате.</div>
+    <button class="btn" onclick="openBot(); closeModal();">🤖 Перейти в бота</button>
+    <button class="btn secondary" onclick="closeModal()">Отмена</button>
+  `);
+}
+
+// ============================================================
+// RENDER: API TOKENS
+// ============================================================
+function renderApiTokens() {
+  contentWrap.innerHTML = `
+    <div class="section-title">API Токены</div>
+    <div class="result-card">
+      <div class="result-row"><div class="result-icon">${I.chart}</div><div class="result-content"><div class="result-label">Возможности</div><div class="result-value">Список юзеров, поиск, статистика</div></div></div>
+      <div class="result-row"><div class="result-icon">${I.clock}</div><div class="result-content"><div class="result-label">Срок</div><div class="result-value">30 дней</div></div></div>
+    </div>
+
+    <div class="section-title">Пакеты</div>
+    <ul class="list">
+      <li class="list-item" onclick="buyApi('100 запросов','1 USD')">
+        <div class="list-icon green">${I.key}</div>
+        <div class="list-content"><div class="list-title">100 запросов</div><div class="list-sub">1 USD</div></div>
+        <div class="list-chevron">${I.search}</div>
+      </li>
+      <li class="list-item" onclick="buyApi('500 запросов','4 USD')">
+        <div class="list-icon green">${I.key}</div>
+        <div class="list-content"><div class="list-title">500 запросов</div><div class="list-sub">4 USD</div></div>
+        <div class="list-chevron">${I.search}</div>
+      </li>
+      <li class="list-item" onclick="buyApi('1000 запросов','7 USD')">
+        <div class="list-icon green">${I.key}</div>
+        <div class="list-content"><div class="list-title">1000 запросов</div><div class="list-sub">7 USD</div></div>
+        <div class="list-chevron">${I.search}</div>
+      </li>
+      <li class="list-item" onclick="buyApi('5000 запросов','30 USD')">
+        <div class="list-icon green">${I.key}</div>
+        <div class="list-content"><div class="list-title">5000 запросов</div><div class="list-sub">30 USD</div></div>
+        <div class="list-chevron">${I.search}</div>
+      </li>
+    </ul>
+
+    <div class="section-title">Мой токен</div>
+    <div class="result-card">
+      <div class="result-row"><div class="result-icon">${I.key}</div><div class="result-content"><div class="result-label">Текущий</div><div class="result-value mono" style="font-size:12px;word-break:break-all;">${esc(APIFY_TOKEN.slice(0, 32))}...</div></div></div>
+    </div>
+    <button class="btn secondary" onclick="openSettings()">⚙️ Изменить токен</button>
+    <button class="btn secondary" onclick="renderScreen('home')">← Назад</button>
+  `;
+}
+function buyApi(name, price) {
+  vibrate();
+  showModal(`
+    <div class="modal-title">🔌 ${name}</div>
+    <div class="modal-desc">К оплате: ${price}<br><br>Оплата в Telegram-боте через OxaPay.</div>
+    <button class="btn" onclick="openBot(); closeModal();">🤖 Купить</button>
+    <button class="btn secondary" onclick="closeModal()">Отмена</button>
+  `);
+}
+
+// ============================================================
+// RENDER: TRACKING
+// ============================================================
+function renderTracking() {
+  contentWrap.innerHTML = `
+    <div class="section-title">Отслеживание</div>
+    <div class="result-card">
+      <div class="result-row"><div class="result-icon">${I.bell}</div><div class="result-content"><div class="result-label">Уведомления</div><div class="result-value">О новых сообщениях</div></div></div>
+      <div class="result-row"><div class="result-icon">${I.gem}</div><div class="result-content"><div class="result-label">Стоимость</div><div class="result-value accent">20 алмазов</div></div></div>
+      <div class="result-row"><div class="result-icon">${I.clock}</div><div class="result-content"><div class="result-label">Период</div><div class="result-value">7 дней</div></div></div>
+    </div>
+    <div class="chart-wrap">
+      <div class="field">
+        <label class="field-label">ID пользователя</label>
+        <input type="number" class="field-input" id="tr-id" placeholder="123456789">
+      </div>
+      <button class="btn" onclick="activateTracking()">👀 Активировать</button>
+    </div>
+    <button class="btn secondary" onclick="renderScreen('home')">← Назад</button>
+  `;
+}
+function activateTracking() {
+  const id = $('tr-id').value.trim();
+  if (!id || !/^\d+$/.test(id)) { toast('Введите ID', 'error'); return; }
+  vibrate();
+  showModal(`
+    <div class="modal-title">👀 Отслеживание</div>
+    <div class="modal-desc">Активируется в Telegram-боте.</div>
+    <button class="btn" onclick="openBot(); closeModal();">🤖 Открыть бота</button>
+    <button class="btn secondary" onclick="closeModal()">Отмена</button>
+  `);
+}
+
+// ============================================================
+// RENDER: DELETE DATA
+// ============================================================
+function renderDeleteData() {
+  contentWrap.innerHTML = `
+    <div class="section-title">Удаление данных</div>
+    <div class="result-card">
+      <div class="result-row"><div class="result-icon">${I.gem}</div><div class="result-content"><div class="result-label">Стоимость</div><div class="result-value accent">200 алмазов</div></div></div>
+    </div>
+    <div class="chart-wrap" style="background:rgba(255,59,48,0.08);border:1px solid rgba(255,59,48,0.2);">
+      <div style="color:var(--red);font-weight:600;margin-bottom:12px;">⚠️ ВНИМАНИЕ</div>
+      <div style="color:var(--text-dim);font-size:14px;line-height:1.6;">
+        • Удаляет ВСЕ ваши данные<br>
+        • Очищает историю имён<br>
+        • Удаляет список чатов<br>
+        • Удаляет все сообщения<br><br>
+        Данные будут собраны заново при следующей активности.
+      </div>
+    </div>
+    <button class="btn danger" onclick="confirmDelete()">🗑️ Удалить данные</button>
+    <button class="btn secondary" onclick="renderScreen('home')">← Назад</button>
+  `;
+}
+function confirmDelete() {
+  vibrate();
+  showModal(`
+    <div class="modal-title">⚠️ Удалить данные?</div>
+    <div class="modal-desc">Действие необратимо. Удаление доступно в Telegram-боте.</div>
+    <button class="btn" onclick="openBot(); closeModal();">🤖 Перейти в бота</button>
+    <button class="btn secondary" onclick="closeModal()">Отмена</button>
+  `);
+}
+
+// ============================================================
+// RENDER: ABOUT
+// ============================================================
+function renderAbout() {
+  contentWrap.innerHTML = `
+    <div style="padding-top:20px;text-align:center;">
+      <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#60a5fa,#007aff);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;color:white;">
+        <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4M8 16h.01M16 16h.01"/></svg>
+      </div>
+      <div style="font-size:22px;font-weight:700;color:var(--text);">AGENT ANALYTICS</div>
+      <div style="font-size:14px;color:var(--text-mute);margin-top:4px;">Версия 2.0</div>
+    </div>
+
+    <div class="section-title">📊 О проекте</div>
+    <div class="chart-wrap">
+      <div style="color:var(--text-dim);font-size:14px;line-height:1.6;">
+        Многофункциональный бот для анализа Telegram-активности. Работает в личных чатах и группах.
+      </div>
+    </div>
+
+    <div class="section-title">🛡️ Для пользователей</div>
+    <ul class="list">
+      <li class="list-item"><div class="list-icon">${I.search}</div><div class="list-content"><div class="list-title">Поиск людей</div><div class="list-sub">По ID, @username, телефону</div></div></li>
+      <li class="list-item"><div class="list-icon">${I.chart}</div><div class="list-content"><div class="list-title">HTML-отчёты</div><div class="list-sub">С диаграммами и историей</div></div></li>
+      <li class="list-item"><div class="list-icon">${I.phone}</div><div class="list-content"><div class="list-title">Проверка номеров</div><div class="list-sub">Страна, оператор, карта</div></div></li>
+      <li class="list-item"><div class="list-icon purple">${I.bot}</div><div class="list-content"><div class="list-title">AI Помощник «Маям»</div><div class="list-sub">Отвечает на вопросы</div></div></li>
+      <li class="list-item"><div class="list-icon orange">${I.star}</div><div class="list-content"><div class="list-title">Бонусы и рефералы</div><div class="list-sub">+10 алмазов в день</div></div></li>
+    </ul>
+
+    <div class="section-title">🛡️ Для групп</div>
+    <ul class="list">
+      <li class="list-item"><div class="list-icon red">${I.shield}</div><div class="list-content"><div class="list-title">Анти-спам</div><div class="list-sub">Блокировка рекламы</div></div></li>
+      <li class="list-item"><div class="list-icon red">${I.shield}</div><div class="list-content"><div class="list-title">Анти-оскорбления</div><div class="list-sub">Фильтр мата</div></div></li>
+      <li class="list-item"><div class="list-icon green">${I.users}</div><div class="list-content"><div class="list-title">Приветствие новичков</div><div class="list-sub">Автоматически</div></div></li>
+    </ul>
+
+    <button class="btn" onclick="openBot()">🤖 Открыть бота в Telegram</button>
+    <button class="btn secondary" onclick="renderScreen('home')">← Назад</button>
+  `;
+}
+
+// ============================================================
+// MODAL
+// ============================================================
+function showModal(html) {
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `<div class="modal">${html}</div>`;
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
+}
+function closeModal() {
+  document.querySelectorAll('.modal-overlay').forEach(m => m.remove());
+}
+
+// ============================================================
 // ACTIONS
 // ============================================================
-function goSearch() {
-  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === 'search'));
-  renderSearchTab();
-}
-
 function openSettings() {
-  $('set-token').value = APIFY_TOKEN;
-  $('theme-toggle').checked = (currentTheme === 'dark');
-  closeAllPanels();
-  openPanel('panel-settings');
+  showModal(`
+    <div class="modal-title">⚙️ Настройки</div>
+    <div class="modal-desc">API Токен для доступа к боту</div>
+    <div class="field">
+      <label class="field-label">API Токен</label>
+      <input type="password" class="field-input" id="modal-token" value="${esc(APIFY_TOKEN)}">
+      <div class="field-hint">Получить в боте: 🔌 API ТОКЕН</div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-top:0.5px solid var(--border-soft);border-bottom:0.5px solid var(--border-soft);margin:12px 0;">
+      <div>
+        <div style="font-size:16px;color:var(--text);font-weight:600;">Тёмная тема</div>
+        <div style="font-size:12px;color:var(--text-mute);">Переключить</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="modal-theme" ${currentTheme === 'dark' ? 'checked' : ''}>
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+    <button class="btn" onclick="saveSettings()">Сохранить</button>
+    <button class="btn secondary" onclick="closeModal()">Отмена</button>
+  `);
+  setTimeout(() => {
+    const t = $('modal-theme');
+    if (t) t.addEventListener('change', e => applyTheme(e.target.checked ? 'dark' : 'light'));
+  }, 50);
 }
-
+function saveSettings() {
+  const t = $('modal-token');
+  if (t) {
+    APIFY_TOKEN = t.value.trim() || APIFY_TOKEN;
+    localStorage.setItem('aa_token', APIFY_TOKEN);
+  }
+  closeModal();
+  toast('Сохранено', 'ok');
+  renderScreen(currentScreen.name, currentScreen.data);
+}
 function openBot() {
   vibrate();
   const url = 'https://t.me/' + CONFIG.BOT_USERNAME;
   try { window.Telegram?.WebApp?.openTelegramLink(url); }
   catch (e) { window.open(url, '_blank'); }
 }
-
-function openDashboard() {
-  vibrate();
-  const url = CONFIG.API_BASE + '/dashboard';
-  try { window.Telegram?.WebApp?.openLink(url); }
-  catch (e) { window.open(url, '_blank'); }
-}
-
-function openPhoneCheck() {
-  vibrate();
-  showResult('📱 Проверка номера', [
-    { icon: I.phone, label: 'Где', value: 'В боте @' + CONFIG.BOT_USERNAME }
-  ], [
-    { icon: I.bot, label: 'Открыть', onClick: openBot }
-  ]);
-}
-
-function openSubscription() {
-  vibrate();
-  showResult('⭐ Подписка', [
-    { icon: I.star, label: '1 месяц', value: '5 USD' },
-    { icon: I.star, label: '6 месяцев', value: '20 USD' },
-    { icon: I.star, label: '1 год', value: '45 USD' }
-  ], [{ icon: I.bot, label: 'В боте', onClick: openBot }]);
-}
-
-function openApiTokens() {
-  vibrate();
-  showResult('🔌 API Токены', [
-    { icon: I.key, label: '100 запросов', value: '1 USD' },
-    { icon: I.key, label: '500 запросов', value: '4 USD' },
-    { icon: I.key, label: '1000 запросов', value: '7 USD' },
-    { icon: I.key, label: '5000 запросов', value: '30 USD' }
-  ], [{ icon: I.bot, label: 'Купить', onClick: openBot }]);
-}
-
-function openTracking() {
-  vibrate();
-  showResult('👀 Отслеживание', [
-    { icon: I.eye, label: 'Стоимость', value: '20 алмазов' },
-    { icon: I.clock, label: 'Период', value: '7 дней' }
-  ], [{ icon: I.bot, label: 'В боте', onClick: openBot }]);
-}
-
-function openAbout() {
-  vibrate();
-  showResult('ℹ️ О боте', [
-    { icon: I.bot, label: 'Название', value: 'AGENT ANALYTICS' },
-    { icon: I.star, label: 'Версия', value: '2.0' },
-    { icon: I.shield, label: 'Возможности', value: 'Поиск, отчёты, AI, модерация' },
-    { icon: I.user, label: 'Админ', value: '@sherlok032' }
-  ], [
-    { icon: I.bot, label: 'Открыть бота', onClick: openBot },
-    { icon: I.monitor, label: 'Дашборд', onClick: openDashboard }
-  ]);
-}
-
-// ============================================================
-// RESULT PANEL
-// ============================================================
-function showResult(title, rows, actions = []) {
-  $('result-title').textContent = title;
-
-  let html = '<div class="result-card">';
-  rows.forEach(r => {
-    html += `
-      <div class="result-row">
-        <div class="result-icon">${r.icon || ''}</div>
-        <div class="result-content">
-          <div class="result-label">${esc(r.label)}</div>
-          <div class="result-value ${r.mono ? 'mono' : ''} ${r.accent ? 'accent' : ''}">${r.value}</div>
-        </div>
-      </div>
-    `;
-  });
-  html += '</div>';
-
-  $('result-body').innerHTML = html;
-  openPanel('panel-result');
+function openMyProfile() {
+  const u = getTelegramUser();
+  if (!u) { toast('Откройте через Telegram', 'error'); return; }
+  searchInput.value = String(u.id);
+  handleSearch();
 }
 
 // ============================================================
@@ -1305,69 +1793,41 @@ async function handleSearch() {
 
   try {
     const isId = /^\d{5,15}$/.test(q);
-    const isUsername = q.startsWith('@') && q.length > 1;
-    const isPhone = /^\+?\d{10,15}$/.test(q.replace(/[\s\-]/g, ''));
-
-    let targetId = null;
-    let user = null;
-
-    if (isId) targetId = parseInt(q);
-    else if (isPhone) targetId = null; // ищем в боте
-
-    if (targetId) {
-      try { user = await apiGetUser(targetId); }
-      catch (e) { /* not found */ }
+    if (isId) {
+      const userId = parseInt(q);
+      try { await apiGetUser(userId); renderScreen('profile', userId); return; } catch (e) {}
     }
 
-    if (!user) {
-      // ищем среди users
-      const users = await apiGetUsers();
-      const query = q.toLowerCase().replace('@', '').replace(/[\s\-]/g, '');
-      const found = users.filter(u =>
-        String(u.user_id).includes(query) ||
-        (u.username || '').toLowerCase().includes(query) ||
-        ((u.first_name || '') + ' ' + (u.last_name || '')).toLowerCase().includes(query)
-      );
+    const users = await apiGetUsers();
+    const query = q.toLowerCase().replace('@', '').replace(/[\s\-]/g, '');
+    const found = users.filter(u =>
+      String(u.user_id).includes(query) ||
+      (u.username || '').toLowerCase().includes(query) ||
+      ((u.first_name || '') + ' ' + (u.last_name || '')).toLowerCase().includes(query)
+    );
 
-      if (found.length === 0) {
-        toast('Ничего не найдено', 'error');
-        return;
-      }
-      if (found.length === 1) user = await apiGetUser(found[0].user_id);
-      else {
-        // показать список
-        showResult(`Найдено: ${found.length}`, found.slice(0, 30).map(u => ({
-          icon: I.user,
-          label: (u.first_name || '') + ' ' + (u.last_name || '') || 'Без имени',
-          value: u.username ? '@' + esc(u.username) : 'ID: ' + u.user_id
-        })));
-        return;
-      }
-    }
+    if (found.length === 0) { toast('Ничего не найдено', 'error'); return; }
+    if (found.length === 1) { renderScreen('profile', found[0].user_id); return; }
 
-    if (user && !user.error) {
-      showResult(`👤 ${user.first_name || ''} ${user.last_name || ''}`.trim(), [
-        { icon: I.user,  label: 'ID',         value: user.user_id, mono: true, accent: true },
-        { icon: I.user,  label: 'Username',   value: user.username ? '@' + esc(user.username) : '—' },
-        { icon: I.info,  label: 'Телефон',    value: user.phone || '—' },
-        { icon: I.clock, label: 'Регистрация', value: user.estimated_reg || '—' },
-        { icon: I.msg,   label: 'Сообщений',  value: formatNumber((user.comments || []).length) },
-        { icon: I.users, label: 'Чатов',      value: formatNumber((user.chats || []).length) },
-        { icon: I.bot,   label: 'Бот запущен', value: user.started_bot ? '✅ Да' : '❌ Нет' }
-      ]);
-    }
+    contentWrap.innerHTML = `
+      <div class="section-title">Найдено: ${found.length}</div>
+      <ul class="list">
+        ${found.slice(0, 50).map(u => `
+          <li class="list-item" onclick="renderScreen('profile', ${u.user_id})">
+            <div class="list-icon">${I.user}</div>
+            <div class="list-content">
+              <div class="list-title">${esc(((u.first_name || '') + ' ' + (u.last_name || '')).trim() || 'Без имени')}</div>
+              <div class="list-sub">${u.username ? '@' + esc(u.username) : 'ID: ' + u.user_id}</div>
+            </div>
+            <div class="list-chevron">${I.search}</div>
+          </li>`).join('')}
+      </ul>
+    `;
   } catch (e) {
     toast(e.message || 'Ошибка', 'error');
   } finally {
     searchBtn.disabled = false;
   }
-}
-
-function openMyProfile() {
-  const u = getTelegramUser();
-  if (!u) { toast('Откройте через Telegram', 'error'); return; }
-  searchInput.value = String(u.id);
-  handleSearch();
 }
 
 // ============================================================
@@ -1377,56 +1837,41 @@ searchBtn.addEventListener('click', handleSearch);
 searchInput.addEventListener('keydown', e => {
   if (e.key === 'Enter') { e.preventDefault(); handleSearch(); }
 });
-
 $('refresh-btn').addEventListener('click', () => {
   vibrate();
-  if (currentTab === 'home')  renderHome();
-  else if (currentTab === 'stats') renderStats();
-  else if (currentTab === 'me')    renderMe();
-  else toast('Обновлено', 'ok');
+  renderScreen(currentScreen.name, currentScreen.data);
+  toast('Обновлено', 'ok');
 });
-
 $('settings-btn').addEventListener('click', openSettings);
-
-$('theme-toggle').addEventListener('change', (e) => {
-  applyTheme(e.target.checked ? 'dark' : 'light');
-  vibrate(10);
-});
-
-$('set-save').addEventListener('click', () => {
-  APIFY_TOKEN = $('set-token').value.trim() || APIFY_TOKEN;
-  localStorage.setItem('aa_token', APIFY_TOKEN);
-  closePanel('panel-settings');
-  toast('Сохранено', 'ok');
-});
-
-$('set-clear').addEventListener('click', () => {
-  APIFY_TOKEN = CONFIG.API_KEY;
-  $('set-token').value = APIFY_TOKEN;
-  localStorage.setItem('aa_token', APIFY_TOKEN);
-  toast('Токен сброшен', 'ok');
-});
 
 // ============================================================
 // START
 // ============================================================
-setTimeout(() => {
-  const el = document.getElementById('loading');
-  if (el && !el.classList.contains('hidden')) {
-    el.classList.add('hidden');
-    setTimeout(() => el.remove(), 400);
-  }
-}, 1500);
-
 window.addEventListener('load', () => {
   setTimeout(() => {
     const el = document.getElementById('loading');
     if (el) el.classList.add('hidden');
     setTimeout(() => { const e = document.getElementById('loading'); if (e) e.remove(); }, 500);
-    renderHome();
-  }, 500);
+    renderScreen('home');
+  }, 800);
 });
+
+// Экспорт для inline-обработчиков
+window.renderScreen = renderScreen;
+window.openMyProfile = openMyProfile;
+window.openBot = openBot;
+window.openSettings = openSettings;
+window.handleSearch = handleSearch;
+window.buyPlan = buyPlan;
+window.buyApi = buyApi;
+window.activateTracking = activateTracking;
+window.confirmDelete = confirmDelete;
+window.closeModal = closeModal;
+window.saveSettings = saveSettings;
+window.copyToClipboard = copyToClipboard;
+window.closePhoneMap = closePhoneMap;
+window.searchInput = searchInput;
+window.$ = $;
 </script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </body>
 </html>

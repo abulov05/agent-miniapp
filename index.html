@@ -123,7 +123,6 @@ body {
     overflow: hidden;
 }
 
-/* Иконка со "стеклянным" эффектом, как в iOS */
 .app-icon::before {
     content: '';
     position: absolute;
@@ -151,7 +150,6 @@ body {
     max-width: 72px;
 }
 
-/* ===== PROFILE CARD ===== */
 .profile-card {
     display: flex; align-items: center; gap: 14px;
     background: var(--ios-bg-2);
@@ -209,7 +207,6 @@ body {
     letter-spacing: 0.3px; font-weight: 500;
 }
 
-/* ===== MENU LIST ===== */
 .menu-list {
     background: var(--ios-bg-2);
     border-radius: var(--r-md);
@@ -235,7 +232,6 @@ body {
 .menu-text { flex: 1; font-size: 16px; }
 .menu-chevron { color: var(--ios-text-3); font-size: 18px; font-weight: 300; }
 
-/* ===== DETAIL CARD ===== */
 .detail-card {
     background: var(--ios-bg-2);
     border-radius: var(--r-md);
@@ -268,7 +264,6 @@ body {
 .comment-meta { font-size: 12px; color: var(--ios-text-2); }
 .comment-text { font-size: 14px; color: var(--ios-text); }
 
-/* ===== CHART ===== */
 .chart-card {
     background: var(--ios-bg-2);
     border-radius: var(--r-md);
@@ -284,7 +279,6 @@ body {
 .chart-period { font-size: 13px; color: var(--ios-blue); font-weight: 500; }
 .chart-container { height: 180px; position: relative; }
 
-/* ===== SEARCH ===== */
 .search-bar {
     display: flex; align-items: center; gap: 8px;
     background: var(--ios-bg-3);
@@ -301,7 +295,6 @@ body {
 .search-bar input::placeholder { color: var(--ios-text-2); }
 .search-icon { color: var(--ios-text-2); font-size: 16px; }
 
-/* ===== USER CARD ===== */
 .user-card {
     display: flex; align-items: center; gap: 12px;
     background: var(--ios-bg-2);
@@ -332,7 +325,6 @@ body {
     font-family: 'SF Mono', monospace;
 }
 
-/* ===== BUTTONS ===== */
 .btn-primary {
     display: flex; align-items: center; justify-content: center; gap: 8px;
     padding: 14px; border-radius: var(--r-md);
@@ -357,7 +349,6 @@ body {
 
 .full-width { width: 100%; margin-top: 12px; }
 
-/* ===== LOADING ===== */
 .loading {
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
@@ -375,12 +366,10 @@ body {
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ===== EMPTY ===== */
 .empty-state { text-align: center; padding: 40px 20px; color: var(--ios-text-2); }
 .empty-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.5; }
 .empty-text { font-size: 15px; }
 
-/* ===== TAB BAR ===== */
 .ios-tabbar {
     position: fixed; bottom: 0; left: 0; right: 0;
     background: rgba(28,28,30,0.85);
@@ -404,7 +393,6 @@ body {
 .tab-icon { font-size: 22px; line-height: 1; }
 .tab-label { font-size: 10px; font-weight: 500; letter-spacing: 0.2px; }
 
-/* ===== TOAST ===== */
 .toast {
     position: fixed;
     bottom: calc(100px + var(--safe-bottom));
@@ -422,7 +410,6 @@ body {
 
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-/* ===== MODAL ===== */
 .modal-overlay {
     position: fixed; inset: 0;
     background: rgba(0,0,0,0.7);
@@ -646,6 +633,14 @@ class AgentAPI {
     getUser(id, inc = 'all', lim = 20) {
         return this.request(`/api/v1/users/${id}?include=${inc}&limit=${lim}`);
     }
+    async getPublicStats() {
+        // Публичный эндпоинт — реальная статистика
+        const res = await fetch(this.baseUrl + '/api/public/stats', {
+            headers: { 'ngrok-skip-browser-warning': 'true' }
+        });
+        if (!res.ok) throw new Error('Не удалось получить статистику');
+        return res.json();
+    }
     async getStats() {
         const res = await fetch(this.baseUrl + '/api/stats');
         return res.json();
@@ -684,6 +679,11 @@ function escapeHtml(s) {
     return String(s).replace(/[&<>"']/g, c => ({
         '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
     }[c]));
+}
+
+function formatNumber(n) {
+    if (n == null) return '0';
+    return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 }
 
 function showToast(msg, duration = 2500) {
@@ -869,16 +869,21 @@ function switchTab(tab) {
 }
 
 /* ============================================================
-   🏠 HOME — с iOS-иконками
+   🏠 HOME — с iOS-иконками + реальная статистика
    ============================================================ */
 async function loadHome() {
     setTitle(CONFIG.APP_NAME, 'Мини-приложение');
     loading();
 
     try {
-        const users = await api.getUsers();
-        const total = users.length;
-        const active = users.filter(u => u.started_bot).length;
+        // Загружаем юзеров и статистику параллельно
+        const [users, stats] = await Promise.all([
+            api.getUsers().catch(() => []),
+            api.getPublicStats().catch(() => ({}))
+        ]);
+
+        const total = stats.users || users.length;
+        const active = stats.started_bot || users.filter(u => u.started_bot).length;
         const me = getCurrentUser();
 
         setContent(`
@@ -900,23 +905,23 @@ async function loadHome() {
                     <div class="stats-grid">
                         <div class="stat-card">
                             <div class="stat-icon blue">👥</div>
-                            <div class="stat-value">${total}</div>
+                            <div class="stat-value">${formatNumber(total)}</div>
                             <div class="stat-label">Пользователей</div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-icon green">🟢</div>
-                            <div class="stat-value">${active}</div>
+                            <div class="stat-value">${formatNumber(active)}</div>
                             <div class="stat-label">Активных</div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-icon purple">📡</div>
-                            <div class="stat-value">${api.requestsUsed}</div>
+                            <div class="stat-value">${formatNumber(api.requestsUsed)}</div>
                             <div class="stat-label">Запросов</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-icon orange">🔑</div>
-                            <div class="stat-value">OK</div>
-                            <div class="stat-label">Токен</div>
+                            <div class="stat-icon orange">💬</div>
+                            <div class="stat-value">${formatNumber(stats.comments || 0)}</div>
+                            <div class="stat-label">Сообщений</div>
                         </div>
                     </div>
                 </section>
@@ -1086,19 +1091,17 @@ async function openMyProfile() {
 }
 
 /* ============================================================
-   💰 ПОПОЛНИТЬ
+   Остальные экраны — коротко
    ============================================================ */
 function openTopup() {
     haptic();
     pushNav(loadHome);
     setTitle('Пополнить баланс', 'Выберите способ');
-
     const methods = [
         { name: 'CryptoCloud', desc: 'Криптовалюта', icon: '🏦' },
         { name: 'CryptoBot', desc: 'USDT, BTC, TON', icon: '🤖' },
         { name: 'OxaPay', desc: 'Карты и крипта', icon: '💎' }
     ];
-
     setContent(`
         <div class="page">
             <section class="section">
@@ -1115,7 +1118,6 @@ function openTopup() {
                     `).join('')}
                 </div>
             </section>
-
             <section class="section">
                 <div class="detail-card">
                     <div class="detail-row">
@@ -1124,81 +1126,45 @@ function openTopup() {
                     </div>
                 </div>
             </section>
-
-            <button class="btn-primary full-width" onclick="openBot()">
-                🤖 Открыть бота для оплаты
-            </button>
+            <button class="btn-primary full-width" onclick="openBot()">🤖 Открыть бота для оплаты</button>
         </div>
     `);
 }
 
-/* ============================================================
-   🎁 БОНУС
-   ============================================================ */
 function openBonus() {
     haptic();
     pushNav(loadHome);
     setTitle('Ежедневный бонус', '+10 алмазов');
-
     setContent(`
         <div class="page">
             <section class="section">
                 <div class="detail-card">
-                    <div class="detail-row">
-                        <span class="detail-label">💰 Бонус</span>
-                        <span class="detail-value green">+10 алмазов</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">⏰ Период</span>
-                        <span class="detail-value">1 раз в 24 часа</span>
-                    </div>
+                    <div class="detail-row"><span class="detail-label">💰 Бонус</span><span class="detail-value green">+10 алмазов</span></div>
+                    <div class="detail-row"><span class="detail-label">⏰ Период</span><span class="detail-value">1 раз в 24 часа</span></div>
                 </div>
             </section>
-
-            <div class="empty-state" style="padding:30px 20px;">
-                <div class="empty-icon">🎁</div>
-                <div class="empty-text">Нажмите кнопку, чтобы получить бонус</div>
-            </div>
-
-            <button class="btn-primary full-width" onclick="openBot()">
-                🎁 Получить в боте
-            </button>
+            <button class="btn-primary full-width" onclick="openBot()">🎁 Получить в боте</button>
         </div>
     `);
 }
 
-/* ============================================================
-   🤝 РЕФЕРАЛ
-   ============================================================ */
 function openReferral() {
     haptic();
     pushNav(loadHome);
     setTitle('Реферальная программа', 'Приглашайте друзей');
-
     const me = getCurrentUser();
     const refLink = me
         ? `https://t.me/${CONFIG.BOT_USERNAME}?start=ref_REF${me.id}`
         : `https://t.me/${CONFIG.BOT_USERNAME}`;
-
     setContent(`
         <div class="page">
             <section class="section">
                 <div class="detail-card">
-                    <div class="detail-row">
-                        <span class="detail-label">🎁 1-е приглашение</span>
-                        <span class="detail-value green">+50 алмазов</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">🎁 2-е и далее</span>
-                        <span class="detail-value green">+20 алмазов</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">👥 Новый юзер</span>
-                        <span class="detail-value blue">+20 алмазов</span>
-                    </div>
+                    <div class="detail-row"><span class="detail-label">🎁 1-е приглашение</span><span class="detail-value green">+50 алмазов</span></div>
+                    <div class="detail-row"><span class="detail-label">🎁 2-е и далее</span><span class="detail-value green">+20 алмазов</span></div>
+                    <div class="detail-row"><span class="detail-label">👥 Новый юзер</span><span class="detail-value blue">+20 алмазов</span></div>
                 </div>
             </section>
-
             <section class="section">
                 <div class="section-header">🔗 Ваша ссылка</div>
                 <div class="detail-card">
@@ -1209,44 +1175,29 @@ function openReferral() {
                     </div>
                 </div>
             </section>
-
-            <button class="btn-primary full-width" onclick="copyText('${escapeHtml(refLink)}')">
-                📋 Скопировать ссылку
-            </button>
-            <button class="btn-secondary full-width" onclick="shareRefLink('${escapeHtml(refLink)}')">
-                📤 Поделиться
-            </button>
+            <button class="btn-primary full-width" onclick="copyText('${escapeHtml(refLink)}')">📋 Скопировать</button>
+            <button class="btn-secondary full-width" onclick="shareRefLink('${escapeHtml(refLink)}')">📤 Поделиться</button>
         </div>
     `);
 }
 
 function copyText(text) {
     haptic('success');
-    navigator.clipboard.writeText(text).then(() => {
-        showToast('✅ Скопировано');
-    }).catch(() => {
-        showToast('Не удалось скопировать');
-    });
+    navigator.clipboard.writeText(text).then(() => showToast('✅ Скопировано'))
+        .catch(() => showToast('Не удалось скопировать'));
 }
 
 function shareRefLink(link) {
     haptic();
     const text = encodeURIComponent('Попробуй этого бота! ' + link);
-    if (tg) {
-        tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${text}`);
-    } else {
-        window.open(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${text}`, '_blank');
-    }
+    if (tg) tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${text}`);
+    else window.open(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${text}`, '_blank');
 }
 
-/* ============================================================
-   🕵️ AI
-   ============================================================ */
 function openAiAssistant() {
     haptic();
     pushNav(loadHome);
     setTitle('Маям Помощник', 'AI ассистент');
-
     setContent(`
         <div class="page">
             <section class="section">
@@ -1259,41 +1210,26 @@ function openAiAssistant() {
                     </div>
                 </div>
             </section>
-
             <div class="empty-state" style="padding:20px;">
                 <div class="empty-icon">💬</div>
-                <div class="empty-text">
-                    AI-помощник работает в Telegram-боте.<br>
-                    Напишите «Маям» для активации
-                </div>
+                <div class="empty-text">AI-помощник работает в Telegram-боте.<br>Напишите «Маям» для активации</div>
             </div>
-
-            <button class="btn-primary full-width" onclick="openBot()">
-                💬 Открыть в боте
-            </button>
+            <button class="btn-primary full-width" onclick="openBot()">💬 Открыть в боте</button>
         </div>
     `);
 }
 
-/* ============================================================
-   📱 ПРОВЕРИТЬ НОМЕР
-   ============================================================ */
 function openPhoneCheck() {
     haptic();
     pushNav(loadHome);
     setTitle('Проверить номер', 'Страна, оператор, регион');
-
     setContent(`
         <div class="page">
             <div class="search-bar">
                 <span class="search-icon">📱</span>
                 <input type="tel" id="phoneInput" placeholder="+992901234567" autocomplete="off">
             </div>
-            <button class="btn-primary full-width" onclick="doPhoneCheck()">
-                📱 Проверить номер
-            </button>
-            <div id="phoneResult" style="margin-top:20px;"></div>
-
+            <button class="btn-primary full-width" onclick="doPhoneCheck()">📱 Проверить номер</button>
             <div class="empty-state" style="padding:20px;">
                 <div class="empty-text" style="font-size:13px;">
                     Проверка показывает:<br>
@@ -1307,7 +1243,6 @@ function openPhoneCheck() {
             </div>
         </div>
     `);
-
     setTimeout(() => document.getElementById('phoneInput')?.focus(), 200);
 }
 
@@ -1319,14 +1254,10 @@ function doPhoneCheck() {
     setTimeout(() => openBot(), 500);
 }
 
-/* ============================================================
-   🔍 СТИКЕР
-   ============================================================ */
 function openStickerCheck() {
     haptic();
     pushNav(loadHome);
     setTitle('Проверить стикер', 'Информация о паке');
-
     setContent(`
         <div class="page">
             <div class="empty-state" style="padding:40px 20px;">
@@ -1341,52 +1272,30 @@ function openStickerCheck() {
                     👤 Создатель
                 </div>
             </div>
-
-            <button class="btn-primary full-width" onclick="openBot()">
-                🔍 Открыть бота
-            </button>
+            <button class="btn-primary full-width" onclick="openBot()">🔍 Открыть бота</button>
         </div>
     `);
 }
 
-/* ============================================================
-   ⭐ ПОДПИСКА
-   ============================================================ */
 function openSubscription() {
     haptic();
     pushNav(loadHome);
     setTitle('Подписка', 'Безлимитный доступ');
-
     const plans = [
         { name: '1 месяц', price: '5 USD' },
         { name: '6 месяцев', price: '20 USD', save: 'Выгода 33%' },
         { name: '1 год', price: '45 USD', save: 'Выгода 40%' }
     ];
-
     setContent(`
         <div class="page">
             <section class="section">
-                <div class="section-header">Что даёт подписка</div>
                 <div class="detail-card">
-                    <div class="detail-row">
-                        <span class="detail-label">⭐ Лимит запросов</span>
-                        <span class="detail-value green">Безлимит</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">📊 HTML отчёты</span>
-                        <span class="detail-value green">✅</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">🔍 Поиск</span>
-                        <span class="detail-value green">✅</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">📱 Проверка номеров</span>
-                        <span class="detail-value green">✅</span>
-                    </div>
+                    <div class="detail-row"><span class="detail-label">⭐ Лимит запросов</span><span class="detail-value green">Безлимит</span></div>
+                    <div class="detail-row"><span class="detail-label">📊 HTML отчёты</span><span class="detail-value green">✅</span></div>
+                    <div class="detail-row"><span class="detail-label">🔍 Поиск</span><span class="detail-value green">✅</span></div>
+                    <div class="detail-row"><span class="detail-label">📱 Проверка номеров</span><span class="detail-value green">✅</span></div>
                 </div>
             </section>
-
             <section class="section">
                 <div class="section-header">💳 Планы</div>
                 <div class="menu-list">
@@ -1395,61 +1304,38 @@ function openSubscription() {
                             <div class="menu-icon" style="background:rgba(255,159,10,0.15);">⭐</div>
                             <div class="menu-text">
                                 <div>${p.name}</div>
-                                <div style="font-size:12px;color:var(--ios-text-2);margin-top:2px;">
-                                    ${p.price} ${p.save ? '• ' + p.save : ''}
-                                </div>
+                                <div style="font-size:12px;color:var(--ios-text-2);margin-top:2px;">${p.price} ${p.save ? '• ' + p.save : ''}</div>
                             </div>
                             <div class="menu-chevron">›</div>
                         </div>
                     `).join('')}
                 </div>
             </section>
-
-            <button class="btn-primary full-width" onclick="openBot()">
-                ⭐ Купить в боте
-            </button>
+            <button class="btn-primary full-width" onclick="openBot()">⭐ Купить в боте</button>
         </div>
     `);
 }
 
-/* ============================================================
-   🔌 API
-   ============================================================ */
 function openApiTokens() {
     haptic();
     pushNav(loadHome);
     setTitle('API Токены', 'Для разработчиков');
-
     const plans = [
         { name: '100 запросов', price: '1 USD' },
         { name: '500 запросов', price: '4 USD' },
         { name: '1000 запросов', price: '7 USD' },
         { name: '5000 запросов', price: '30 USD' }
     ];
-
     setContent(`
         <div class="page">
             <section class="section">
                 <div class="detail-card">
-                    <div class="detail-row">
-                        <span class="detail-label">👥 Список юзеров</span>
-                        <span class="detail-value green">✅</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">🔍 Поиск по ID</span>
-                        <span class="detail-value green">✅</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">📊 Статистика</span>
-                        <span class="detail-value green">✅</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">⏰ Срок</span>
-                        <span class="detail-value">30 дней</span>
-                    </div>
+                    <div class="detail-row"><span class="detail-label">👥 Список юзеров</span><span class="detail-value green">✅</span></div>
+                    <div class="detail-row"><span class="detail-label">🔍 Поиск по ID</span><span class="detail-value green">✅</span></div>
+                    <div class="detail-row"><span class="detail-label">📊 Статистика</span><span class="detail-value green">✅</span></div>
+                    <div class="detail-row"><span class="detail-label">⏰ Срок</span><span class="detail-value">30 дней</span></div>
                 </div>
             </section>
-
             <section class="section">
                 <div class="section-header">📦 Пакеты</div>
                 <div class="menu-list">
@@ -1465,63 +1351,37 @@ function openApiTokens() {
                     `).join('')}
                 </div>
             </section>
-
-            <button class="btn-primary full-width" onclick="openBot()">
-                🔌 Купить в боте
-            </button>
+            <button class="btn-primary full-width" onclick="openBot()">🔌 Купить в боте</button>
         </div>
     `);
 }
 
-/* ============================================================
-   🔔 УВЕДОМЛЕНИЯ
-   ============================================================ */
 function openNotifications() {
     haptic();
     pushNav(loadHome);
     setTitle('Уведомления', '');
-    setContent(`
-        <div class="page">
-            ${emptyState('🔔', 'Нет новых уведомлений')}
-        </div>
-    `);
+    setContent(`<div class="page">${emptyState('🔔', 'Нет новых уведомлений')}</div>`);
 }
 
-/* ============================================================
-   👀 ОТСЛЕЖИВАНИЕ
-   ============================================================ */
 function openTracking() {
     haptic();
     pushNav(loadHome);
     setTitle('Отслеживание', '20 алмазов / 7 дней');
-
     setContent(`
         <div class="page">
             <section class="section">
                 <div class="detail-card">
-                    <div class="detail-row">
-                        <span class="detail-label">🔔 Уведомления</span>
-                        <span class="detail-value">О новых сообщениях</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">💰 Стоимость</span>
-                        <span class="detail-value orange">20 алмазов</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">⏰ Период</span>
-                        <span class="detail-value">7 дней</span>
-                    </div>
+                    <div class="detail-row"><span class="detail-label">🔔 Уведомления</span><span class="detail-value">О новых сообщениях</span></div>
+                    <div class="detail-row"><span class="detail-label">💰 Стоимость</span><span class="detail-value orange">20 алмазов</span></div>
+                    <div class="detail-row"><span class="detail-label">⏰ Период</span><span class="detail-value">7 дней</span></div>
                 </div>
             </section>
-
             <section class="section">
                 <div class="input-group">
                     <label class="input-label">ID пользователя</label>
                     <input type="number" id="trackInput" class="input-field" placeholder="123456789">
                 </div>
-                <button class="btn-primary full-width" onclick="doTrack()">
-                    👀 Активировать
-                </button>
+                <button class="btn-primary full-width" onclick="doTrack()">👀 Активировать</button>
             </section>
         </div>
     `);
@@ -1533,25 +1393,17 @@ function doTrack() {
     setTimeout(() => openBot(), 500);
 }
 
-/* ============================================================
-   🗑️ УДАЛИТЬ ДАННЫЕ
-   ============================================================ */
 function openDeleteData() {
     haptic();
     pushNav(loadHome);
     setTitle('Удалить данные', '⚠️ Опасно');
-
     setContent(`
         <div class="page">
             <section class="section">
                 <div class="detail-card">
-                    <div class="detail-row">
-                        <span class="detail-label">💰 Стоимость</span>
-                        <span class="detail-value orange">200 алмазов</span>
-                    </div>
+                    <div class="detail-row"><span class="detail-label">💰 Стоимость</span><span class="detail-value orange">200 алмазов</span></div>
                 </div>
             </section>
-
             <section class="section">
                 <div class="detail-card">
                     <div class="detail-row stacked">
@@ -1566,54 +1418,40 @@ function openDeleteData() {
                     </div>
                 </div>
             </section>
-
-            <button class="btn-primary full-width" onclick="openBot()">
-                🗑️ Удалить в боте
-            </button>
+            <button class="btn-primary full-width" onclick="openBot()">🗑️ Удалить в боте</button>
         </div>
     `);
 }
 
-/* ============================================================
-   📊 СТАТИСТИКА БОТА
-   ============================================================ */
 async function openBotStats() {
     haptic();
     pushNav(loadHome);
     setTitle('Статистика бота', '');
     loading();
-
     try {
-        const [users, chats] = await Promise.all([
-            api.getUsers(),
-            api.getChats()
-        ]);
-
-        const totalUsers = users.length;
-        const active = users.filter(u => u.started_bot).length;
-
+        const stats = await api.getPublicStats();
         setContent(`
             <div class="page">
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-icon blue">👥</div>
-                        <div class="stat-value">${totalUsers}</div>
+                        <div class="stat-value">${formatNumber(stats.users || 0)}</div>
                         <div class="stat-label">Всего юзеров</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-icon green">🟢</div>
-                        <div class="stat-value">${active}</div>
+                        <div class="stat-value">${formatNumber(stats.started_bot || 0)}</div>
                         <div class="stat-label">Запускали</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-icon purple">📢</div>
-                        <div class="stat-value">${chats.length}</div>
+                        <div class="stat-value">${formatNumber(stats.chats || 0)}</div>
                         <div class="stat-label">Чатов</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-icon orange">📡</div>
-                        <div class="stat-value">${api.requestsUsed}</div>
-                        <div class="stat-label">Запросов</div>
+                        <div class="stat-icon orange">💬</div>
+                        <div class="stat-value">${formatNumber(stats.comments || 0)}</div>
+                        <div class="stat-label">Сообщений</div>
                     </div>
                 </div>
             </div>
@@ -1623,9 +1461,6 @@ async function openBotStats() {
     }
 }
 
-/* ============================================================
-   🖥️ ВЕБ-ПАНЕЛЬ
-   ============================================================ */
 function openDashboard() {
     haptic();
     const url = CONFIG.API_BASE + '/dashboard';
@@ -1633,48 +1468,30 @@ function openDashboard() {
     else window.open(url, '_blank');
 }
 
-/* ============================================================
-   💬 СВЯЗЬ С АДМИНОМ
-   ============================================================ */
 function openContactAdmin() {
     haptic();
     pushNav(loadHome);
     setTitle('Связь с админом', '');
-
     setContent(`
         <div class="page">
             <section class="section">
                 <div class="detail-card">
-                    <div class="detail-row">
-                        <span class="detail-label">👑 Админ</span>
-                        <span class="detail-value blue">@sherlok032</span>
-                    </div>
+                    <div class="detail-row"><span class="detail-label">👑 Админ</span><span class="detail-value blue">@sherlok032</span></div>
                 </div>
             </section>
-
             <div class="empty-state" style="padding:20px;">
                 <div class="empty-icon">💬</div>
-                <div class="empty-text">
-                    Напишите сообщение в боте<br>
-                    и админ ответит вам
-                </div>
+                <div class="empty-text">Напишите сообщение в боте<br>и админ ответит вам</div>
             </div>
-
-            <button class="btn-primary full-width" onclick="openBot()">
-                💬 Открыть бота
-            </button>
+            <button class="btn-primary full-width" onclick="openBot()">💬 Открыть бота</button>
         </div>
     `);
 }
 
-/* ============================================================
-   ℹ️ О БОТЕ
-   ============================================================ */
 function openAbout() {
     haptic();
     pushNav(loadHome);
     setTitle('О боте', 'AGENT ANALYTICS');
-
     setContent(`
         <div class="page">
             <section class="section">
@@ -1687,7 +1504,6 @@ function openAbout() {
                     </div>
                 </div>
             </section>
-
             <section class="section">
                 <div class="section-header">📊 О проекте</div>
                 <div class="detail-card">
@@ -1698,7 +1514,6 @@ function openAbout() {
                     </div>
                 </div>
             </section>
-
             <section class="section">
                 <div class="section-header">🛡️ Для пользователей</div>
                 <div class="detail-card">
@@ -1710,7 +1525,6 @@ function openAbout() {
                     <div class="detail-row"><span class="detail-label">🎁 Бонусы и рефералы</span></div>
                 </div>
             </section>
-
             <section class="section">
                 <div class="section-header">🛡️ Для групп</div>
                 <div class="detail-card">
@@ -1730,7 +1544,6 @@ function openAbout() {
 function loadSearch() {
     setTitle('Поиск', 'Найти пользователя');
     resetNav();
-
     setContent(`
         <div class="page">
             <div class="search-bar">
@@ -1751,16 +1564,13 @@ async function doSearch() {
     const q = document.getElementById('searchInput').value.trim();
     if (!q) { showToast('Введите запрос'); return; }
     haptic();
-
     const results = document.getElementById('searchResults');
     results.innerHTML = `<div class="loading"><div class="spinner"></div><div>Поиск...</div></div>`;
-
     try {
         let user = null;
         if (/^\d{5,15}$/.test(q)) {
             try { user = await api.getUser(q); } catch (e) {}
         }
-
         if (!user) {
             const users = await api.getUsers();
             const query = q.toLowerCase().replace('@', '');
@@ -1798,23 +1608,17 @@ function renderUserCard(u) {
     `;
 }
 
-/* ============================================================
-   USER DETAIL
-   ============================================================ */
 async function openUser(userId) {
     haptic();
     pushNav(() => switchTab('search'));
     setTitle('Профиль', 'ID: ' + userId);
     loading('Загрузка профиля...');
-
     try {
         const u = await api.getUser(userId, 'all', 20);
         if (u.error) throw new Error(u.error);
-
         const name = ((u.first_name || '') + ' ' + (u.last_name || '')).trim() || 'Без имени';
         const initial = (name[0] || '?').toUpperCase();
         const tier = u.started_bot ? '⚡ PREMIUM' : '👤 USER';
-
         let chatsHtml = '';
         if (u.chats && u.chats.length) {
             chatsHtml = `
@@ -1830,7 +1634,6 @@ async function openUser(userId) {
                     </div>
                 </section>`;
         }
-
         let commentsHtml = '';
         if (u.comments && u.comments.length) {
             commentsHtml = `
@@ -1846,23 +1649,6 @@ async function openUser(userId) {
                     </div>
                 </section>`;
         }
-
-        let wordsHtml = '';
-        if (u.words && u.words.length) {
-            wordsHtml = `
-                <section class="section">
-                    <div class="section-header">Топ слов</div>
-                    <div class="detail-card">
-                        ${u.words.slice(0, 10).map(w => `
-                            <div class="detail-row">
-                                <span class="detail-label">${escapeHtml(w.word)}</span>
-                                <span class="detail-value blue">${w.count}</span>
-                            </div>
-                        `).join('')}
-                    </div>
-                </section>`;
-        }
-
         setContent(`
             <div class="page">
                 <div class="profile-card">
@@ -1873,50 +1659,19 @@ async function openUser(userId) {
                         <span class="profile-badge">${tier}</span>
                     </div>
                 </div>
-
                 <section class="section">
                     <div class="section-header">Основное</div>
                     <div class="detail-card">
-                        <div class="detail-row">
-                            <span class="detail-label">ID</span>
-                            <span class="detail-value blue">${u.user_id}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-label">Регистрация</span>
-                            <span class="detail-value">${escapeHtml(u.estimated_reg || '—')}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-label">Телефон</span>
-                            <span class="detail-value">${escapeHtml(u.phone || '—')}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-label">Платформа</span>
-                            <span class="detail-value">${escapeHtml(u.last_platform || '—')}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-label">Бот запущен</span>
-                            <span class="detail-value ${u.started_bot ? 'green' : 'red'}">${u.started_bot ? '✅ Да' : '❌ Нет'}</span>
-                        </div>
+                        <div class="detail-row"><span class="detail-label">ID</span><span class="detail-value blue">${u.user_id}</span></div>
+                        <div class="detail-row"><span class="detail-label">Регистрация</span><span class="detail-value">${escapeHtml(u.estimated_reg || '—')}</span></div>
+                        <div class="detail-row"><span class="detail-label">Телефон</span><span class="detail-value">${escapeHtml(u.phone || '—')}</span></div>
+                        <div class="detail-row"><span class="detail-label">Платформа</span><span class="detail-value">${escapeHtml(u.last_platform || '—')}</span></div>
+                        <div class="detail-row"><span class="detail-label">Бот запущен</span><span class="detail-value ${u.started_bot ? 'green' : 'red'}">${u.started_bot ? '✅ Да' : '❌ Нет'}</span></div>
                     </div>
                 </section>
-
-                ${u.bio ? `
-                <section class="section">
-                    <div class="section-header">Описание</div>
-                    <div class="detail-card">
-                        <div class="detail-row">
-                            <span class="detail-value" style="text-align:left;max-width:100%;">${escapeHtml(u.bio)}</span>
-                        </div>
-                    </div>
-                </section>` : ''}
-
                 ${chatsHtml}
                 ${commentsHtml}
-                ${wordsHtml}
-
-                <button class="btn-primary full-width" onclick="openBotReport(${u.user_id})">
-                    📊 Полный отчёт в боте
-                </button>
+                <button class="btn-primary full-width" onclick="openBotReport(${u.user_id})">📊 Полный отчёт в боте</button>
             </div>
         `);
     } catch (e) {
@@ -1931,7 +1686,6 @@ async function loadStats() {
     setTitle('Аналитика', 'Статистика');
     resetNav();
     loading();
-
     try {
         const [activity, chats, words, phones] = await Promise.all([
             api.getActivity().catch(() => []),
@@ -1939,7 +1693,6 @@ async function loadStats() {
             api.getWords().catch(() => []),
             api.getPhoneLookups().catch(() => [])
         ]);
-
         setContent(`
             <div class="page">
                 <section class="section">
@@ -1948,12 +1701,9 @@ async function loadStats() {
                             <div class="chart-title">📈 Активность</div>
                             <div class="chart-period">30 дней</div>
                         </div>
-                        <div class="chart-container">
-                            <canvas id="activityChart"></canvas>
-                        </div>
+                        <div class="chart-container"><canvas id="activityChart"></canvas></div>
                     </div>
                 </section>
-
                 <section class="section">
                     <div class="section-header">💬 Топ чатов</div>
                     <div class="detail-card">
@@ -1961,13 +1711,12 @@ async function loadStats() {
                             ? chats.slice(0, 10).map(c => `
                                 <div class="detail-row">
                                     <span class="detail-label">${escapeHtml((c.chat || '').slice(0, 28))}</span>
-                                    <span class="detail-value blue">${c.messages}</span>
+                                    <span class="detail-value blue">${formatNumber(c.messages)}</span>
                                 </div>
                             `).join('')
                             : '<div style="padding:20px;text-align:center;color:var(--ios-text-2);">Нет данных</div>'}
                     </div>
                 </section>
-
                 <section class="section">
                     <div class="section-header">🔤 Популярные слова</div>
                     <div class="detail-card">
@@ -1981,29 +1730,12 @@ async function loadStats() {
                             : '<div style="padding:20px;text-align:center;color:var(--ios-text-2);">Нет данных</div>'}
                     </div>
                 </section>
-
-                ${phones.length ? `
-                <section class="section">
-                    <div class="section-header">📱 Проверки номеров</div>
-                    <div class="detail-card">
-                        ${phones.slice(0, 10).map(p => `
-                            <div class="detail-row">
-                                <span class="detail-label">${escapeHtml(p.phone)}</span>
-                                <span class="detail-value" style="font-size:12px;">
-                                    ${p.telegram ? '✅ TG' : ''} ${p.whatsapp ? '✅ WA' : ''}
-                                </span>
-                            </div>
-                        `).join('')}
-                    </div>
-                </section>` : ''}
             </div>
         `);
-
         setTimeout(() => {
             const ctx = document.getElementById('activityChart');
             if (!ctx || !activity.length) return;
             if (currentChart) currentChart.destroy();
-
             currentChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
@@ -2022,15 +1754,8 @@ async function loadStats() {
                     maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
                     scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: { color: 'rgba(255,255,255,0.05)' },
-                            ticks: { color: '#8e8e93', font: { size: 10 }, maxTicksLimit: 5 }
-                        },
-                        x: {
-                            grid: { display: false },
-                            ticks: { color: '#8e8e93', font: { size: 9 }, maxTicksLimit: 8 }
-                        }
+                        y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#8e8e93', font: { size: 10 }, maxTicksLimit: 5 } },
+                        x: { grid: { display: false }, ticks: { color: '#8e8e93', font: { size: 9 }, maxTicksLimit: 8 } }
                     }
                 }
             });
@@ -2047,7 +1772,6 @@ function loadMe() {
     setTitle('Профиль', 'Управление');
     resetNav();
     const user = getCurrentUser();
-
     setContent(`
         <div class="page">
             ${user ? `
@@ -2061,7 +1785,6 @@ function loadMe() {
                     </div>
                 </div>
             </section>` : ''}
-
             <section class="section">
                 <div class="section-header">🔑 API</div>
                 <div class="menu-list">
@@ -2077,7 +1800,6 @@ function loadMe() {
                     </div>
                 </div>
             </section>
-
             <section class="section">
                 <div class="section-header">🎯 Действия</div>
                 <div class="menu-list">
@@ -2098,25 +1820,14 @@ function loadMe() {
                     </div>
                 </div>
             </section>
-
             <section class="section">
                 <div class="section-header">ℹ️ О приложении</div>
                 <div class="detail-card">
-                    <div class="detail-row">
-                        <span class="detail-label">Версия</span>
-                        <span class="detail-value">2.0</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">API URL</span>
-                        <span class="detail-value" style="font-size:11px;">${escapeHtml(CONFIG.API_BASE)}</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Telegram</span>
-                        <span class="detail-value">${tg ? '✅ WebApp' : '❌ Browser'}</span>
-                    </div>
+                    <div class="detail-row"><span class="detail-label">Версия</span><span class="detail-value">2.0</span></div>
+                    <div class="detail-row"><span class="detail-label">API URL</span><span class="detail-value" style="font-size:11px;">${escapeHtml(CONFIG.API_BASE)}</span></div>
+                    <div class="detail-row"><span class="detail-label">Telegram</span><span class="detail-value">${tg ? '✅ WebApp' : '❌ Browser'}</span></div>
                 </div>
             </section>
-
             ${tg ? `<button class="btn-secondary full-width" onclick="tg.close()">Закрыть приложение</button>` : ''}
         </div>
     `);

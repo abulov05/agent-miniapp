@@ -162,9 +162,6 @@ input, textarea { user-select: text; -webkit-user-select: text; }
 .vk-similarity { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; background: rgba(52,199,89,0.15); color: var(--green); margin-bottom: 6px; }
 .vk-link { display: inline-block; font-size: 12px; color: var(--accent); text-decoration: none; background: rgba(0,122,255,0.1); padding: 5px 12px; border-radius: 8px; font-weight: 600; }
 .vk-link:active { background: rgba(0,122,255,0.25); }
-.fallback-card { background: linear-gradient(135deg, rgba(175,82,222,0.12), rgba(0,122,255,0.08)); border: 1px solid rgba(175,82,222,0.25); border-radius: 16px; padding: 16px; margin-bottom: 12px; }
-.fallback-title { font-size: 15px; font-weight: 700; color: var(--purple); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
-.fallback-desc { font-size: 13px; color: var(--text-dim); line-height: 1.5; margin-bottom: 12px; }
 </style>
 </head>
 <body>
@@ -645,7 +642,8 @@ function renderPhotoSearch() {
       <div class="field">
         <label class="field-label">Загрузите фото</label>
         <input type="file" id="ps-file" accept="image/*" style="display:none;">
-        <button class="btn secondary" id="ps-choose" style="margin-bottom:12px;">📁 Выбрать фото из галереи</button>
+        <button class="btn secondary" id="ps-choose" style="margin-bottom:8px;">📁 Выбрать фото из галереи</button>
+        <div id="ps-size-info" style="font-size:11px;color:var(--text-mute);margin-bottom:8px;text-align:center;"></div>
         <div id="ps-preview" style="text-align:center;margin-top:12px;"></div>
       </div>
       <button class="btn" id="ps-btn" disabled style="background:linear-gradient(135deg,#0077FF,#0060CC);">🔍 Найти ВКонтакте</button>
@@ -662,20 +660,6 @@ function renderPhotoSearch() {
 
     <div id="ps-results"></div>
 
-    <div class="fallback-card">
-      <div class="fallback-title">🤖 Альтернативные боты для VK</div>
-      <div class="fallback-desc">Если основной поиск не дал результатов — попробуйте эти боты, они ищут по лицу в ВКонтакте:</div>
-      <button class="btn" onclick="window.open('https://t.me/FindClone_TG_bot','_blank')" style="background:#0077FF;margin-bottom:8px;">
-        ✈️ @FindClone_TG_bot
-      </button>
-      <button class="btn" onclick="window.open('https://t.me/photo_face_found_bot','_blank')" style="background:#8B5CF6;margin-bottom:8px;">
-        ✈️ @photo_face_found_bot
-      </button>
-      <button class="btn" onclick="window.open('https://vk.watch','_blank')" style="background:var(--bg-elev);color:var(--accent);">
-        🌐 vk.watch (сайт)
-      </button>
-    </div>
-
     <button class="btn secondary" onclick="renderScreen('home')">← На главную</button>
   `;
 
@@ -686,18 +670,47 @@ function renderPhotoSearch() {
   $('ps-file').addEventListener('change', e => {
     const file = e.target.files[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) { toast('Фото слишком большое (макс 5 МБ)', 'error'); return; }
+    if (!file.type.startsWith('image/')) { toast('Выберите изображение', 'error'); return; }
+
     const reader = new FileReader();
     reader.onload = ev => {
-      imageData = ev.target.result;
-      $('ps-preview').innerHTML = `<img src="${imageData}" style="max-width:200px;max-height:200px;border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,0.4);border:2px solid #0077FF;">`;
-      $('ps-btn').disabled = false;
+      const img = new Image();
+      img.onload = () => {
+        // Сжимаем фото до 600px, качество 0.6 → ~50-100 КБ
+        const MAX_SIZE = 600;
+        let w = img.width, h = img.height;
+        if (w > h && w > MAX_SIZE) { h = Math.round(h * MAX_SIZE / w); w = MAX_SIZE; }
+        else if (h > MAX_SIZE) { w = Math.round(w * MAX_SIZE / h); h = MAX_SIZE; }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+
+        imageData = canvas.toDataURL('image/jpeg', 0.6);
+        const sizeKb = Math.round((imageData.length * 3 / 4) / 1024);
+
+        $('ps-preview').innerHTML = `<img src="${imageData}" style="max-width:200px;max-height:200px;border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,0.4);border:2px solid #0077FF;">`;
+        $('ps-size-info').textContent = `Сжато: ${w}×${h}px · ${sizeKb} КБ`;
+        $('ps-btn').disabled = false;
+        console.log('[PHOTO] сжато до', w, 'x', h, 'размер:', sizeKb, 'КБ');
+      };
+      img.onerror = () => toast('Не удалось загрузить фото', 'error');
+      img.src = ev.target.result;
     };
     reader.readAsDataURL(file);
   });
 
   $('ps-btn').addEventListener('click', async () => {
     if (!imageData) { toast('Выберите фото', 'error'); return; }
+
+    const sizeBytes = imageData.length * 3 / 4;
+    if (sizeBytes > 800 * 1024) {
+      toast('Фото слишком большое: ' + Math.round(sizeBytes / 1024) + ' КБ (макс 800 КБ)', 'error');
+      return;
+    }
+
     const btn = $('ps-btn');
     btn.disabled = true;
     btn.textContent = '⏳ Поиск ВКонтакте...';
@@ -728,7 +741,7 @@ function renderPhotoSearch() {
           <div class="chart-wrap" style="text-align:center;">
             <div style="font-size:40px;margin-bottom:8px;">🔍</div>
             <div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px;">Ничего не найдено</div>
-            <div style="font-size:13px;color:var(--text-mute);">Попробуйте другое фото или используйте боты ниже</div>
+            <div style="font-size:13px;color:var(--text-mute);">Попробуйте другое фото</div>
           </div>
         `;
         return;
@@ -1012,16 +1025,13 @@ async function maryamSend(text) {
 function maryamQuick(text) { const textarea = $('maryam-text'); if (textarea) textarea.value = text; maryamSend(text); }
 
 // ============================================================
-// SEARCH TAB
+// SEARCH TAB / STATS / HISTORY / API TOKENS / ME / PROFILE / PHONE / SUBSCRIPTION / TRACKING / DELETE / ABOUT / ADMIN
 // ============================================================
 function renderSearchTab() {
   contentWrap.innerHTML = `<div class="section-title">Поиск</div><ul class="list"><li class="list-item" onclick="searchInput.focus()"><div class="list-icon">${I.search}</div><div class="list-content"><div class="list-title">Введите запрос в поле выше</div><div class="list-sub">ID, @username или телефон</div></div></li><li class="list-item" onclick="openMyProfile()"><div class="list-icon green">${I.user}</div><div class="list-content"><div class="list-title">Мой профиль</div><div class="list-sub">Найти себя</div></div><div class="list-chevron">${I.search}</div></li></ul><div id="search-results"></div>`;
   setTimeout(() => searchInput.focus(), 100);
 }
 
-// ============================================================
-// STATS
-// ============================================================
 async function renderStats() {
   contentWrap.innerHTML = `<div class="section-title">📊 Статистика</div><div class="stats-row"><div class="stat-card"><div class="stat-value" id="bs-users">—</div><div class="stat-label">Пользователей</div></div><div class="stat-card"><div class="stat-value" id="bs-comments">—</div><div class="stat-label">Сообщений</div></div><div class="stat-card"><div class="stat-value" id="bs-chats">—</div><div class="stat-label">Чатов</div></div><div class="stat-card"><div class="stat-value" id="bs-active">—</div><div class="stat-label">Активных</div></div></div><div class="section-title">📈 Активность (30 дней)</div><div class="chart-wrap"><div class="chart-canvas-wrap"><canvas id="activityChart"></canvas></div></div><div class="section-title">💬 Топ чатов</div><ul class="list" id="top-chats"><li class="list-item"><div class="list-content"><div class="list-sub">Загрузка...</div></div></li></ul><div class="section-title">🔤 Популярные слова</div><ul class="list" id="top-words"><li class="list-item"><div class="list-content"><div class="list-sub">Загрузка...</div></div></li></ul>`;
   try {
@@ -1044,9 +1054,6 @@ function renderChart(activity) {
   window._currentChart = new Chart(canvas, { type: 'bar', data: { labels: activity.map(x => (x.date || '').slice(5)), datasets: [{ data: activity.map(x => x.count), backgroundColor: isDark ? 'rgba(10,132,255,0.6)' : 'rgba(0,122,255,0.6)', borderColor: isDark ? '#0a84ff' : '#007aff', borderWidth: 0, borderRadius: 4, barThickness: 8 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: '#8e8e93', font: { size: 10 }, maxTicksLimit: 5 } }, x: { grid: { display: false }, ticks: { color: '#8e8e93', font: { size: 9 }, maxTicksLimit: 8 } } } } });
 }
 
-// ============================================================
-// SEARCH HISTORY / API TOKENS / ME / PROFILE / PHONE / SUBSCRIPTION / TRACKING / DELETE / ABOUT / ADMIN
-// ============================================================
 async function renderSearchHistory() {
   contentWrap.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-mute);">Загрузка...</div>';
   let history = [];
@@ -1116,14 +1123,11 @@ function renderPhoneCheck() {
     const limitCheck = await checkAndUseRequest();
     if (!limitCheck.ok) { showLimitModal(); return; }
     const btn = $('pc-check'); btn.disabled = true; btn.textContent = '⏳...';
-    try {
-      const info = analyzePhoneNumber(phone);
-      renderPhoneInfo(info);
-    } catch (e) { toast(e.message, 'error'); }
+    try { const info = analyzePhoneNumber(phone); renderPhoneInfo(info); }
+    catch (e) { toast(e.message, 'error'); }
     finally { btn.disabled = false; btn.textContent = '📱 Проверить'; }
   });
 }
-
 function analyzePhoneNumber(phone) {
   let clean = phone.replace(/[\s\-\(\)\.]/g, '');
   if (clean.startsWith('+')) clean = clean.slice(1);
@@ -1152,7 +1156,6 @@ function analyzePhoneNumber(phone) {
   if (countryInfo.operators) { const afterCode = clean.slice(countryCodeLen); for (let opLen = 3; opLen >= 2; opLen--) { const opPrefix = afterCode.slice(0, opLen); if (countryInfo.operators[opPrefix]) { operator = countryInfo.operators[opPrefix]; break; } } }
   return { phone, country: countryInfo.country, flag: countryInfo.flag, region: countryInfo.region, operator, tz: countryInfo.tz, type: countryInfo.type, lat: countryInfo.lat, lon: countryInfo.lon };
 }
-
 function renderPhoneInfo(info) {
   const phone = info.phone || '';
   const clean = phone.replace(/\D/g, '');
@@ -1209,7 +1212,7 @@ async function buyPlan(planKey, planLabel, priceUsd) {
   const u = getTelegramUser();
   if (!u) { toast('Откройте через Telegram', 'error'); return; }
   vibrate();
-  showModal(`<div class="modal-title">⭐ ${esc(planLabel)}</div><div class="modal-desc">К оплате: <b>${priceUsd} USD</b><br><br>Создаём счёт...</div><div style="text-align:center;padding:20px 0;"><div class="loading-bar" style="margin:0 auto;"></div></div>`);
+  showModal(`<div class="modal-title">⭐ ${esc(planLabel)}</div><div class="modal-desc">К оплате: <b>${priceUsd} USD</b></div><div style="text-align:center;padding:20px 0;"><div class="loading-bar" style="margin:0 auto;"></div></div>`);
   try {
     const data = await pubPost('/api/subscription/create', { user_id: u.id, plan_key: planKey });
     if (!data.success) { closeModal(); showModal(`<div class="modal-title">❌ Ошибка</div><div class="modal-desc">${esc(data.error || 'Ошибка')}</div><button class="btn secondary" onclick="closeModal()">Закрыть</button>`); return; }
@@ -1325,9 +1328,6 @@ function openAdminGiftApi() {
   }), 50);
 }
 
-// ============================================================
-// MODALS / SETTINGS
-// ============================================================
 function showModal(html) {
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay';

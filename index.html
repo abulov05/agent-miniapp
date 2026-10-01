@@ -636,25 +636,25 @@ async function renderHome() {
 // ============================================================
 function renderPhotoSearch() {
   contentWrap.innerHTML = `
-    <div class="section-title">📸 Поиск профиля ВКонтакте по фото</div>
+    <div class="section-title">📸 Поиск по фото (Google Lens)</div>
 
     <div class="chart-wrap">
       <div class="field">
         <label class="field-label">Загрузите фото</label>
         <input type="file" id="ps-file" accept="image/*" style="display:none;">
-        <button class="btn secondary" id="ps-choose" style="margin-bottom:8px;">📁 Выбрать фото из галереи</button>
+        <button class="btn secondary" id="ps-choose" style="margin-bottom:8px;">📁 Выбрать фото</button>
         <div id="ps-size-info" style="font-size:11px;color:var(--text-mute);margin-bottom:8px;text-align:center;"></div>
         <div id="ps-preview" style="text-align:center;margin-top:12px;"></div>
       </div>
-      <button class="btn" id="ps-btn" disabled style="background:linear-gradient(135deg,#0077FF,#0060CC);">🔍 Найти ВКонтакте</button>
+      <button class="btn" id="ps-btn" disabled style="background:linear-gradient(135deg,#4285F4,#EA4335);">🔍 Искать через Google Lens</button>
     </div>
 
-    <div class="chart-wrap" style="background:rgba(0,119,255,0.08);border:1px solid rgba(0,119,255,0.2);">
-      <div style="color:#0077FF;font-weight:600;margin-bottom:8px;">ℹ️ Как это работает</div>
+    <div class="chart-wrap" style="background:rgba(66,133,244,0.08);border:1px solid rgba(66,133,244,0.2);">
+      <div style="color:#4285F4;font-weight:600;margin-bottom:8px;">ℹ️ Как это работает</div>
       <div style="font-size:13px;color:var(--text-dim);line-height:1.6;">
-        Бот отправляет фото в <b>Search4Faces</b> — сервис поиска лиц в ВКонтакте. Он сравнивает фото с миллионами аватарок VK и показывает похожие профили.
+        Бот отправляет фото в <b>Google Lens</b> через Apify. Находит похожие изображения, профили соцсетей (включая ВКонтакте), товары и страницы, где встречается это фото.
         <br><br>
-        ⚠️ <b>Совет:</b> используйте фото с чётким лицом (анфас, хорошее освещение).
+        ⚠️ <b>Совет:</b> чёткое лицо анфас даёт лучшие результаты.
       </div>
     </div>
 
@@ -676,8 +676,8 @@ function renderPhotoSearch() {
     reader.onload = ev => {
       const img = new Image();
       img.onload = () => {
-        // Сжимаем фото до 600px, качество 0.6 → ~50-100 КБ
-        const MAX_SIZE = 600;
+        // Сжимаем до 800px, качество 0.75 (~100-200 КБ)
+        const MAX_SIZE = 800;
         let w = img.width, h = img.height;
         if (w > h && w > MAX_SIZE) { h = Math.round(h * MAX_SIZE / w); w = MAX_SIZE; }
         else if (h > MAX_SIZE) { w = Math.round(w * MAX_SIZE / h); h = MAX_SIZE; }
@@ -688,13 +688,12 @@ function renderPhotoSearch() {
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, w, h);
 
-        imageData = canvas.toDataURL('image/jpeg', 0.6);
+        imageData = canvas.toDataURL('image/jpeg', 0.75);
         const sizeKb = Math.round((imageData.length * 3 / 4) / 1024);
 
-        $('ps-preview').innerHTML = `<img src="${imageData}" style="max-width:200px;max-height:200px;border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,0.4);border:2px solid #0077FF;">`;
+        $('ps-preview').innerHTML = `<img src="${imageData}" style="max-width:200px;max-height:200px;border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,0.4);border:2px solid #4285F4;">`;
         $('ps-size-info').textContent = `Сжато: ${w}×${h}px · ${sizeKb} КБ`;
         $('ps-btn').disabled = false;
-        console.log('[PHOTO] сжато до', w, 'x', h, 'размер:', sizeKb, 'КБ');
       };
       img.onerror = () => toast('Не удалось загрузить фото', 'error');
       img.src = ev.target.result;
@@ -706,24 +705,24 @@ function renderPhotoSearch() {
     if (!imageData) { toast('Выберите фото', 'error'); return; }
 
     const sizeBytes = imageData.length * 3 / 4;
-    if (sizeBytes > 800 * 1024) {
-      toast('Фото слишком большое: ' + Math.round(sizeBytes / 1024) + ' КБ (макс 800 КБ)', 'error');
+    if (sizeBytes > 1500 * 1024) {
+      toast('Фото слишком большое: ' + Math.round(sizeBytes / 1024) + ' КБ', 'error');
       return;
     }
 
     const btn = $('ps-btn');
     btn.disabled = true;
-    btn.textContent = '⏳ Поиск ВКонтакте...';
+    btn.textContent = '⏳ Поиск через Google Lens...';
 
     $('ps-results').innerHTML = `
       <div class="chart-wrap" style="text-align:center;">
         <div class="loading-bar" style="margin:0 auto 12px;"></div>
-        <div style="font-size:13px;color:var(--text-mute);">Отправляем фото в Search4Faces...</div>
+        <div style="font-size:13px;color:var(--text-mute);">Отправляем фото в Google Lens...<br>Это может занять 15-40 секунд</div>
       </div>
     `;
 
     try {
-      const data = await pubPost('/api/vk_photo_search', { image: imageData });
+      const data = await pubPost('/api/google_lens_search', { image: imageData });
 
       if (!data.success) {
         $('ps-results').innerHTML = `
@@ -741,22 +740,30 @@ function renderPhotoSearch() {
           <div class="chart-wrap" style="text-align:center;">
             <div style="font-size:40px;margin-bottom:8px;">🔍</div>
             <div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px;">Ничего не найдено</div>
-            <div style="font-size:13px;color:var(--text-mute);">Попробуйте другое фото</div>
+            <div style="font-size:13px;color:var(--text-mute);">Попробуйте другое фото или более чёткое лицо</div>
           </div>
         `;
         return;
       }
 
+      // Группируем по источнику
+      const bySource = {};
+      results.forEach(r => {
+        const src = r.source || 'web';
+        if (!bySource[src]) bySource[src] = [];
+        bySource[src].push(r);
+      });
+
       $('ps-results').innerHTML = `
-        <div class="section-title">👥 Найдено профилей: ${results.length}</div>
+        <div class="section-title">🎯 Найдено: ${results.length}</div>
         ${results.map(r => `
           <div class="vk-card">
-            ${r.photo ? `<img class="vk-avatar" src="${esc(r.photo)}" onerror="this.outerHTML='<div class=\\'vk-avatar\\'>${esc((r.name||'?')[0].toUpperCase())}</div>';">` : `<div class="vk-avatar">${esc((r.name||'?')[0].toUpperCase())}</div>`}
+            ${r.thumbnail ? `<img class="vk-avatar" src="${esc(r.thumbnail)}" onerror="this.style.display='none';">` : `<div class="vk-avatar">🔍</div>`}
             <div class="vk-info">
-              <div class="vk-name">${esc(r.name || 'Без имени')}</div>
-              ${r.similarity ? `<div class="vk-similarity">${r.similarity}% совпадение</div>` : ''}
-              ${r.info ? `<div class="vk-meta">${esc(r.info)}</div>` : ''}
-              ${r.url ? `<a class="vk-link" href="${esc(r.url)}" target="_blank">🔗 Открыть профиль</a>` : ''}
+              <div class="vk-name">${esc(r.title || 'Без названия')}</div>
+              ${r.source && r.source !== 'web' && r.source !== 'visual' ? `<div class="vk-similarity">${esc(r.source)}</div>` : ''}
+              ${r.description ? `<div class="vk-meta">${esc(r.description)}</div>` : ''}
+              ${r.url ? `<a class="vk-link" href="${esc(r.url)}" target="_blank">🔗 Открыть</a>` : ''}
             </div>
           </div>
         `).join('')}
@@ -771,7 +778,7 @@ function renderPhotoSearch() {
       `;
     } finally {
       btn.disabled = false;
-      btn.textContent = '🔍 Найти ВКонтакте';
+      btn.textContent = '🔍 Искать через Google Lens';
     }
   });
 }

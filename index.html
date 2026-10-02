@@ -52,7 +52,7 @@ input, textarea { user-select: text; -webkit-user-select: text; }
 .quick-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px; }
 .quick-card { background: var(--bg-elev); border-radius: 14px; padding: 20px 16px; cursor: pointer; display: flex; flex-direction: column; gap: 12px; border: none; text-align: left; font-family: inherit; color: var(--text); transition: transform 0.1s, background 0.15s; min-height: 130px; }
 .quick-card:active { transform: scale(0.97); background: var(--bg-elev-2); }
-.quick-card-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: rgba(0,122,255,0.12); color: var(--accent); }
+.quick-card-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: rgba(0,122,255,0.12); color: var(--accent); font-size: 22px; }
 .quick-card-icon.green { background: rgba(52,199,89,0.12); color: var(--green); }
 .quick-card-icon.orange { background: rgba(255,149,0,0.12); color: var(--orange); }
 .quick-card-icon.purple { background: rgba(175,82,222,0.12); color: var(--purple); }
@@ -251,7 +251,6 @@ input, textarea { user-select: text; -webkit-user-select: text; }
     <div class="auth-sub">Войдите через Telegram — бот пришлёт код подтверждения</div>
 
     <div class="auth-card">
-      <!-- ШАГ 1: ВВОД ID ИЛИ USERNAME -->
       <div id="auth-step-1">
         <div class="field">
           <label class="field-label">Telegram ID или @username</label>
@@ -264,7 +263,6 @@ input, textarea { user-select: text; -webkit-user-select: text; }
         <button class="btn secondary" id="auth-open-bot-btn">✈️ Открыть @dev1_robot</button>
       </div>
 
-      <!-- ШАГ 2: ВВОД КОДА -->
       <div id="auth-step-2" style="display:none;">
         <div class="field">
           <label class="field-label">Код из Telegram</label>
@@ -573,11 +571,6 @@ async function updateNotifBadge() {
   } catch(e) {}
 }
 
-function activityLabel(status) { if (!status) return 'Неизвестно'; const s = String(status).toLowerCase(); if (s.includes('online')) return 'В сети'; if (s.includes('recently')) return 'Недавно'; if (s.includes('lastweek') || s.includes('last_week')) return 'На прошлой неделе'; if (s.includes('lastmonth') || s.includes('last_month')) return 'Давно'; if (s.includes('offline')) return 'Оффлайн'; return status; }
-function activityIcon(status) { if (!status) return '❓'; const s = String(status).toLowerCase(); if (s.includes('online')) return '🟢'; if (s.includes('recently')) return '🟡'; if (s.includes('lastweek') || s.includes('last_week')) return '🟠'; if (s.includes('lastmonth') || s.includes('last_month')) return '🔴'; if (s.includes('offline')) return '⚫'; return '❓'; }
-function activityColor(status) { if (!status) return 'var(--text-mute)'; const s = String(status).toLowerCase(); if (s.includes('online')) return 'var(--green)'; if (s.includes('recently')) return 'var(--orange)'; if (s.includes('lastweek') || s.includes('last_week')) return 'var(--orange)'; if (s.includes('lastmonth') || s.includes('last_month')) return 'var(--red)'; return 'var(--text-mute)'; }
-function formatLastSeen(dateStr) { if (!dateStr) return '—'; try { const date = new Date(dateStr); if (isNaN(date.getTime())) return dateStr; const now = new Date(); const diffMs = now - date; const diffMin = Math.floor(diffMs / 60000); const diffHours = Math.floor(diffMs / 3600000); const diffDays = Math.floor(diffMs / 86400000); if (diffMin < 1) return 'Только что'; if (diffMin < 60) return diffMin + ' мин назад'; if (diffHours < 24) return diffHours + ' ч назад'; if (diffDays < 7) return diffDays + ' дн назад'; return formatTime(dateStr); } catch (e) { return dateStr; } }
-
 async function apiRequest(path, opts = {}) {
   const headers = { 'Authorization': 'Bearer ' + APIFY_TOKEN, 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true', ...(opts.headers || {}) };
   const r = await fetch(CONFIG.API_BASE + path, { ...opts, headers });
@@ -640,6 +633,11 @@ function renderScreen(name, data) {
     case 'me':            return renderMe();
     case 'profile':       return renderProfile(data);
     case 'phone-check':   return renderPhoneCheck();
+    case 'phone-full':    return renderPhoneFull();
+    case 'vk-search':     return renderVkSearch();
+    case 'tg-search':     return renderTgSearch();
+    case 'base-check':    return renderBaseChecker();
+    case 'name-phone':    return renderNameByPhone();
     case 'subscription':  return renderSubscription();
     case 'tracking':      return renderTracking();
     case 'delete-data':   return renderDeleteData();
@@ -706,17 +704,31 @@ async function renderHome() {
       <div class="stat-card"><div class="stat-value" id="my-chats">—</div><div class="stat-label">Моих чатов</div></div>
     </div>
 
-    <div class="section-title">Основное</div>
+    <div class="section-title">🔍 Пробив по базам</div>
     <div class="quick-grid">
-      <button class="quick-card" onclick="renderScreen('search')">
-        <div class="quick-card-icon">${I.search}</div>
+      <button class="quick-card" onclick="renderScreen('phone-full')">
+        <div class="quick-card-icon red">🔍</div>
         <div>
-          <div class="quick-card-title">Поиск</div>
-          <div class="quick-card-sub">Найти по ID / @username</div>
+          <div class="quick-card-title">Полный пробив</div>
+          <div class="quick-card-sub">ФИО, ДР, телефон, email</div>
+        </div>
+      </button>
+      <button class="quick-card" onclick="renderScreen('name-phone')">
+        <div class="quick-card-icon green">📞</div>
+        <div>
+          <div class="quick-card-title">ФИО по номеру</div>
+          <div class="quick-card-sub">Имя + дата рождения</div>
+        </div>
+      </button>
+      <button class="quick-card" onclick="renderScreen('base-check')">
+        <div class="quick-card-icon purple">📊</div>
+        <div>
+          <div class="quick-card-title">Чекер по базам</div>
+          <div class="quick-card-sub">В скольких базах есть</div>
         </div>
       </button>
       <button class="quick-card" onclick="renderScreen('phone-check')">
-        <div class="quick-card-icon green">${I.phone}</div>
+        <div class="quick-card-icon green">📱</div>
         <div>
           <div class="quick-card-title">Проверка номера</div>
           <div class="quick-card-sub">Страна, оператор, карта</div>
@@ -724,34 +736,34 @@ async function renderHome() {
       </button>
     </div>
 
-    <div class="section-title">✨ Новые функции</div>
+    <div class="section-title">👥 Соцсети</div>
     <div class="quick-grid">
-      <button class="quick-card" onclick="renderScreen('msg-search')">
-        <div class="quick-card-icon purple">${I.hash}</div>
+      <button class="quick-card" onclick="renderScreen('vk-search')">
+        <div class="quick-card-icon">🔵</div>
         <div>
-          <div class="quick-card-title">Поиск по сообщениям</div>
-          <div class="quick-card-sub">Найти слово в чатах</div>
+          <div class="quick-card-title">Поиск VK</div>
+          <div class="quick-card-sub">Профиль ВКонтакте</div>
+        </div>
+      </button>
+      <button class="quick-card" onclick="renderScreen('tg-search')">
+        <div class="quick-card-icon">✈️</div>
+        <div>
+          <div class="quick-card-title">Поиск Telegram</div>
+          <div class="quick-card-sub">ID, username, чаты</div>
         </div>
       </button>
       <button class="quick-card" onclick="renderScreen('username-check')">
-        <div class="quick-card-icon green">${I.globe}</div>
+        <div class="quick-card-icon green">🌐</div>
         <div>
           <div class="quick-card-title">Проверка @username</div>
           <div class="quick-card-sub">Все платформы</div>
         </div>
       </button>
-      <button class="quick-card" onclick="renderScreen('hidden-phone')">
-        <div class="quick-card-icon orange">${I.phone}</div>
-        <div>
-          <div class="quick-card-title">Скрытая проверка</div>
-          <div class="quick-card-sub">Имя + фото по номеру</div>
-        </div>
-      </button>
       <button class="quick-card" onclick="renderScreen('photo-search')">
-        <div class="quick-card-icon pink">${I.vk}</div>
+        <div class="quick-card-icon pink">📸</div>
         <div>
-          <div class="quick-card-title">Поиск VK по фото</div>
-          <div class="quick-card-sub">Найти профиль ВКонтакте</div>
+          <div class="quick-card-title">Поиск по фото</div>
+          <div class="quick-card-sub">Google Lens</div>
         </div>
       </button>
     </div>
@@ -759,28 +771,28 @@ async function renderHome() {
     <div class="section-title">🎁 Бонусы и связь</div>
     <div class="quick-grid">
       <button class="quick-card" onclick="renderScreen('bonus')">
-        <div class="quick-card-icon orange">${I.gift}</div>
+        <div class="quick-card-icon orange">🎁</div>
         <div>
           <div class="quick-card-title">Бонус</div>
           <div class="quick-card-sub">+10 алмазов в день</div>
         </div>
       </button>
       <button class="quick-card" onclick="renderScreen('referral')">
-        <div class="quick-card-icon purple">${I.share}</div>
+        <div class="quick-card-icon purple">🤝</div>
         <div>
           <div class="quick-card-title">Реферал</div>
           <div class="quick-card-sub">Приглашай и получай</div>
         </div>
       </button>
       <button class="quick-card" onclick="renderScreen('maryam')">
-        <div class="quick-card-icon pink">${I.robot}</div>
+        <div class="quick-card-icon pink">🤖</div>
         <div>
           <div class="quick-card-title">Марыям</div>
           <div class="quick-card-sub">AI помощник</div>
         </div>
       </button>
       <button class="quick-card" onclick="renderScreen('support')">
-        <div class="quick-card-icon green">${I.support}</div>
+        <div class="quick-card-icon green">💬</div>
         <div>
           <div class="quick-card-title">Связь с админом</div>
           <div class="quick-card-sub">Написать сообщение</div>
@@ -857,12 +869,461 @@ async function renderHome() {
 }
 
 // ============================================================
-// 📸 ПОИСК ПО ФОТО ВКОНТАКТЕ
+// 🔍 ХЕЛПЕРЫ ДЛЯ APISEARCH
+// ============================================================
+function fieldIcon(field) {
+  const f = String(field).toLowerCase();
+  if (f.includes('фио') || f.includes('имя') || f.includes('name') || f.includes('фамил')) return '👤';
+  if (f.includes('рожд') || f.includes('birth') || f.includes('дата')) return '📅';
+  if (f.includes('телефон') || f.includes('phone') || f.includes('тел')) return '📞';
+  if (f.includes('почт') || f.includes('email') || f.includes('mail')) return '📧';
+  if (f.includes('паспорт') || f.includes('passport')) return '🪪';
+  if (f.includes('адрес') || f.includes('address') || f.includes('город')) return '🏠';
+  if (f.includes('авто') || f.includes('car') || f.includes('машин')) return '🚗';
+  if (f.includes('банк') || f.includes('bank') || f.includes('карт')) return '🏦';
+  if (f.includes('инн')) return '📋';
+  if (f.includes('снилс')) return '🔢';
+  if (f.includes('vk') || f.includes('вк')) return '🔵';
+  if (f.includes('tg') || f.includes('telegram') || f.includes('телег')) return '✈️';
+  if (f.includes('ok') || f.includes('одноклассник')) return '🟠';
+  if (f.includes('fb') || f.includes('facebook')) return '📘';
+  if (f.includes('insta')) return '📷';
+  if (f.includes('database') || f.includes('база') || f.includes('источник')) return '🗄';
+  if (f.includes('парол') || f.includes('password')) return '🔑';
+  if (f.includes('логин') || f.includes('login')) return '👤';
+  if (f.includes('ник') || f.includes('nick')) return '🏷';
+  return '📌';
+}
+function renderLoading(text = 'Ищем в базах...') {
+  return `<div class="chart-wrap" style="text-align:center;">
+    <div class="loading-bar" style="margin:0 auto 12px;"></div>
+    <div style="font-size:13px;color:var(--text-mute);">${text}<br>Это может занять 10-30 секунд</div>
+  </div>`;
+}
+function renderError(msg) {
+  return `<div class="chart-wrap" style="text-align:center;color:var(--red);">❌ ${esc(msg)}</div>`;
+}
+function renderEmpty(msg = 'Ничего не найдено') {
+  return `<div class="chart-wrap" style="text-align:center;">
+    <div style="font-size:40px;margin-bottom:8px;">🔍</div>
+    <div style="font-size:15px;font-weight:600;color:var(--text);">${esc(msg)}</div>
+  </div>`;
+}
+
+// ============================================================
+// 🔍 ПОЛНЫЙ ПРОБИВ (extended_search)
+// ============================================================
+function renderPhoneFull() {
+  const u = getTelegramUser();
+  if (!u) { toast('Откройте через Telegram', 'error'); return; }
+
+  contentWrap.innerHTML = `
+    <div class="section-title">🔍 Полный пробив</div>
+    <div class="chart-wrap">
+      <div class="field">
+        <label class="field-label">Телефон, ФИО, email, паспорт и др.</label>
+        <input type="text" class="field-input" id="pf-query" placeholder="79939999985" autocomplete="off">
+        <div class="field-hint">Многоуровневый поиск по всем базам. Работает по любому запросу.</div>
+      </div>
+      <button class="btn" id="pf-btn">🔍 Пробить</button>
+    </div>
+    <div id="pf-result"></div>
+    <button class="btn secondary" onclick="renderScreen('home')">← На главную</button>
+  `;
+
+  $('pf-btn').addEventListener('click', async () => {
+    const query = ($('pf-query').value || '').trim();
+    if (!query || query.length < 3) { toast('Минимум 3 символа', 'error'); return; }
+
+    const limitCheck = await checkAndUseRequest();
+    if (!limitCheck.ok) { showLimitModal(); return; }
+
+    const btn = $('pf-btn'); btn.disabled = true; btn.textContent = '⏳ Пробиваем...';
+    $('pf-result').innerHTML = renderLoading();
+
+    try {
+      const data = await pubPost('/api/apisearch/search', {
+        user_id: u.id, query, type: 'extended'
+      });
+
+      if (!data.success) { $('pf-result').innerHTML = renderError(data.error || 'Ошибка'); return; }
+      const items = data.results || [];
+      if (!items.length) { $('pf-result').innerHTML = renderEmpty(`По запросу "${query}"`); return; }
+
+      const grouped = {};
+      items.forEach(item => {
+        Object.entries(item).forEach(([k, v]) => {
+          if (v === null || v === undefined || v === '' || k === 'database') return;
+          const key = String(k).trim();
+          if (!grouped[key]) grouped[key] = new Set();
+          grouped[key].add(String(v));
+        });
+      });
+
+      const databases = new Set();
+      items.forEach(it => { if (it.database) databases.add(it.database); });
+
+      let html = `<div class="section-title" style="color:var(--green);">✅ Найдено записей: ${items.length}</div>`;
+      if (databases.size) {
+        html += `<div style="background:var(--bg-elev);border-radius:12px;padding:12px 16px;margin-bottom:12px;font-size:13px;color:var(--text-mute);">
+          📊 Найдено в <b style="color:var(--accent);">${databases.size}</b> базах данных
+        </div>`;
+      }
+
+      const fieldOrder = ['ФИО', 'ДАТА РОЖДЕНИЯ', 'ТЕЛЕФОН', 'ПОЧТА', 'EMAIL', 'ПАСПОРТ', 'АДРЕС', 'ИНН', 'СНИЛС'];
+      const sortedKeys = Object.keys(grouped).sort((a, b) => {
+        const ia = fieldOrder.findIndex(x => a.toUpperCase().includes(x));
+        const ib = fieldOrder.findIndex(x => b.toUpperCase().includes(x));
+        if (ia === -1 && ib === -1) return a.localeCompare(b);
+        if (ia === -1) return 1;
+        if (ib === -1) return -1;
+        return ia - ib;
+      });
+
+      sortedKeys.forEach(field => {
+        const arr = Array.from(grouped[field]);
+        const icon = fieldIcon(field);
+        html += `
+          <div class="result-card" style="margin-bottom:12px;">
+            <div style="padding:12px 16px;background:var(--bg-elev);border-bottom:0.5px solid var(--border-soft);display:flex;align-items:center;gap:10px;">
+              <span style="font-size:18px;">${icon}</span>
+              <span style="font-size:13px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:0.5px;">${esc(field)}</span>
+              <span style="margin-left:auto;font-size:11px;color:var(--text-mute);background:var(--bg);padding:2px 8px;border-radius:8px;">${arr.length}</span>
+            </div>
+            ${arr.slice(0, 50).map(v => {
+              let display = esc(v);
+              if (/^https?:\/\//.test(v)) {
+                display = `<a href="${esc(v)}" target="_blank" style="color:var(--accent);text-decoration:none;word-break:break-all;">${esc(v)}</a>`;
+              } else if (/^[\w.+-]+@[\w.-]+\.\w+$/.test(v)) {
+                display = `<a href="mailto:${esc(v)}" style="color:var(--accent);text-decoration:none;">${esc(v)}</a>`;
+              }
+              return `<div class="result-row" style="border-bottom:0.5px solid var(--border-soft);"><div class="result-content"><div class="result-value" style="font-size:15px;word-break:break-word;">${display}</div></div></div>`;
+            }).join('')}
+            ${arr.length > 50 ? `<div class="result-row" style="text-align:center;color:var(--text-mute);font-size:12px;">... и ещё ${arr.length - 50}</div>` : ''}
+          </div>
+        `;
+      });
+
+      if (databases.size) {
+        html += `<div class="result-card">
+          <div style="padding:12px 16px;background:var(--bg-elev);border-bottom:0.5px solid var(--border-soft);font-size:13px;font-weight:700;">🗄 Источники (${databases.size})</div>
+          ${Array.from(databases).slice(0, 100).map(db => `<div class="result-row" style="border-bottom:0.5px solid var(--border-soft);"><div class="result-content"><div class="result-value" style="font-size:13px;color:var(--text-mute);">${esc(db)}</div></div></div>`).join('')}
+          ${databases.size > 100 ? `<div class="result-row" style="text-align:center;color:var(--text-mute);font-size:12px;">... и ещё ${databases.size - 100}</div>` : ''}
+        </div>`;
+      }
+
+      $('pf-result').innerHTML = html;
+      vibrate(50);
+      toast('✅ Найдено: ' + items.length + ' записей', 'ok');
+    } catch(e) {
+      $('pf-result').innerHTML = renderError('Ошибка сети: ' + e.message);
+    } finally {
+      btn.disabled = false; btn.textContent = '🔍 Пробить';
+    }
+  });
+}
+
+// ============================================================
+// 🔵 ПОИСК VK (vk_search)
+// ============================================================
+function renderVkSearch() {
+  const u = getTelegramUser();
+  if (!u) { toast('Откройте через Telegram', 'error'); return; }
+
+  contentWrap.innerHTML = `
+    <div class="section-title">🔵 Поиск ВКонтакте</div>
+    <div class="chart-wrap">
+      <div class="field">
+        <label class="field-label">VK ID, username или телефон</label>
+        <input type="text" class="field-input" id="vk-query" placeholder="durov или id1 или 79939999985" autocomplete="off">
+      </div>
+      <button class="btn" id="vk-btn" style="background:linear-gradient(135deg,#0077FF,#00A3FF);">🔵 Найти в VK</button>
+    </div>
+    <div id="vk-result"></div>
+    <button class="btn secondary" onclick="renderScreen('home')">← На главную</button>
+  `;
+
+  $('vk-btn').addEventListener('click', async () => {
+    const query = ($('vk-query').value || '').trim();
+    if (!query) { toast('Введите запрос', 'error'); return; }
+
+    const limitCheck = await checkAndUseRequest();
+    if (!limitCheck.ok) { showLimitModal(); return; }
+
+    const btn = $('vk-btn'); btn.disabled = true; btn.textContent = '⏳ Поиск...';
+    $('vk-result').innerHTML = renderLoading('Ищем во ВКонтакте...');
+
+    try {
+      const data = await pubPost('/api/apisearch/vk_search', { user_id: u.id, query });
+      if (!data.success) { $('vk-result').innerHTML = renderError(data.error || 'Ошибка'); return; }
+      const items = data.results || [];
+      if (!items.length) { $('vk-result').innerHTML = renderEmpty('Не найдено в VK'); return; }
+
+      const html = `<div class="section-title" style="color:var(--green);">✅ Найдено: ${items.length}</div>` +
+        items.map((p, idx) => {
+          const fields = Object.entries(p).filter(([k, v]) => v && !['photo', 'avatar', 'photo_url'].includes(k.toLowerCase()));
+          const photo = p.photo || p.avatar || p.photo_url || '';
+          const vkId = p['VK ID'] || p.vk_id || p.id || '';
+          const vkUrl = vkId ? (String(vkId).startsWith('id') ? `https://vk.com/${vkId}` : `https://vk.com/id${vkId}`) : '';
+
+          return `
+            <div class="result-card" style="margin-bottom:12px;">
+              <div style="padding:16px;display:flex;align-items:flex-start;gap:12px;">
+                ${photo ? `<img src="${esc(photo)}" style="width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid #0077FF;flex-shrink:0;" onerror="this.style.display='none';">` : `<div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#0077FF,#00A3FF);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:26px;flex-shrink:0;">${idx+1}</div>`}
+                <div style="flex:1;min-width:0;">
+                  ${vkUrl ? `<a href="${esc(vkUrl)}" target="_blank" style="display:inline-block;font-size:13px;color:#0077FF;text-decoration:none;background:rgba(0,119,255,0.1);padding:4px 10px;border-radius:8px;font-weight:600;margin-bottom:8px;">🔗 Открыть VK</a>` : ''}
+                  ${fields.map(([k, v]) => {
+                    let display = esc(Array.isArray(v) ? v.join(', ') : v);
+                    if (typeof v === 'string' && /^https?:\/\//.test(v)) display = `<a href="${esc(v)}" target="_blank" style="color:var(--accent);text-decoration:none;word-break:break-all;">${esc(v)}</a>`;
+                    return `<div style="display:flex;gap:8px;padding:4px 0;font-size:13px;border-bottom:0.5px solid var(--border-soft);"><span style="color:var(--text-mute);min-width:110px;flex-shrink:0;">${esc(k)}:</span><span style="color:var(--text);word-break:break-word;">${display}</span></div>`;
+                  }).join('')}
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+      $('vk-result').innerHTML = html;
+      vibrate(50);
+      toast('✅ Найдено: ' + items.length, 'ok');
+    } catch(e) {
+      $('vk-result').innerHTML = renderError('Ошибка: ' + e.message);
+    } finally {
+      btn.disabled = false; btn.textContent = '🔵 Найти в VK';
+    }
+  });
+}
+
+// ============================================================
+// ✈️ ПОИСК TELEGRAM (tg_search)
+// ============================================================
+function renderTgSearch() {
+  const u = getTelegramUser();
+  if (!u) { toast('Откройте через Telegram', 'error'); return; }
+
+  contentWrap.innerHTML = `
+    <div class="section-title">✈️ Поиск Telegram</div>
+    <div class="chart-wrap">
+      <div class="field">
+        <label class="field-label">ID, @username или телефон</label>
+        <input type="text" class="field-input" id="tg-query" placeholder="123456789 или @username или 79939999985" autocomplete="off">
+      </div>
+      <button class="btn" id="tg-btn" style="background:linear-gradient(135deg,#0088cc,#00aaff);">✈️ Найти в Telegram</button>
+    </div>
+    <div id="tg-result"></div>
+    <button class="btn secondary" onclick="renderScreen('home')">← На главную</button>
+  `;
+
+  $('tg-btn').addEventListener('click', async () => {
+    const query = ($('tg-query').value || '').trim();
+    if (!query || query.length < 2) { toast('Введите запрос', 'error'); return; }
+
+    const limitCheck = await checkAndUseRequest();
+    if (!limitCheck.ok) { showLimitModal(); return; }
+
+    const btn = $('tg-btn'); btn.disabled = true; btn.textContent = '⏳ Поиск...';
+    $('tg-result').innerHTML = renderLoading('Ищем в Telegram...');
+
+    try {
+      const data = await pubPost('/api/apisearch/tg_search', { user_id: u.id, query });
+      if (!data.success) { $('tg-result').innerHTML = renderError(data.error || 'Ошибка'); return; }
+
+      const r = data.result || {};
+      if (!r.telegram_id && !r.username) { $('tg-result').innerHTML = renderEmpty('Не найдено в Telegram'); return; }
+
+      const groups = r.groups_info || {};
+      const groupsArr = typeof groups === 'object' && !Array.isArray(groups) ? Object.values(groups) : (Array.isArray(groups) ? groups : []);
+
+      let html = `<div class="section-title" style="color:var(--green);">✅ Профиль найден</div><div class="result-card" style="margin-bottom:12px;">`;
+      if (r.telegram_id) html += `<div class="result-row"><div class="result-icon">🆔</div><div class="result-content"><div class="result-label">Telegram ID</div><div class="result-value mono accent">${esc(r.telegram_id)}</div></div></div>`;
+      if (r.username) html += `<div class="result-row"><div class="result-icon">🔗</div><div class="result-content"><div class="result-label">Username</div><div class="result-value"><a href="https://t.me/${esc(r.username)}" target="_blank" style="color:var(--accent);text-decoration:none;">@${esc(r.username)}</a></div></div></div>`;
+      if (r.phone) html += `<div class="result-row"><div class="result-icon">📞</div><div class="result-content"><div class="result-label">Телефон</div><div class="result-value mono">${esc(r.phone)}</div></div></div>`;
+      if (r.telegram_premium !== null && r.telegram_premium !== undefined) html += `<div class="result-row"><div class="result-icon">⭐</div><div class="result-content"><div class="result-label">Premium</div><div class="result-value">${r.telegram_premium ? '✅ Да' : '❌ Нет'}</div></div></div>`;
+      if (r.messages_count !== undefined) html += `<div class="result-row"><div class="result-icon">💬</div><div class="result-content"><div class="result-label">Сообщений</div><div class="result-value">${formatNumber(r.messages_count)}</div></div></div>`;
+      if (r.groups_count !== undefined) html += `<div class="result-row"><div class="result-icon">👥</div><div class="result-content"><div class="result-label">Чатов</div><div class="result-value">${formatNumber(r.groups_count)}</div></div></div>`;
+      html += `</div>`;
+
+      if (r.username) {
+        html += `<button class="btn" onclick="window.open('https://t.me/${esc(r.username)}','_blank')" style="margin-bottom:12px;">✈️ Открыть в Telegram</button>`;
+      } else if (r.telegram_id) {
+        html += `<button class="btn" onclick="window.open('tg://user?id=${esc(r.telegram_id)}','_blank')" style="margin-bottom:12px;">✈️ Открыть в Telegram</button>`;
+      }
+
+      if (groupsArr.length) {
+        html += `<div class="result-card"><div style="padding:12px 16px;background:var(--bg-elev);border-bottom:0.5px solid var(--border-soft);font-size:13px;font-weight:700;">👥 Группы (${groupsArr.length})</div>`;
+        groupsArr.slice(0, 100).forEach(g => {
+          const title = g.title || '—';
+          const uname = g.username ? `@${g.username}` : '';
+          const url = g.username ? `https://t.me/${g.username}` : '';
+          if (url) {
+            html += `<div class="result-row" style="border-bottom:0.5px solid var(--border-soft);"><div class="result-content"><a href="${esc(url)}" target="_blank" style="color:var(--accent);text-decoration:none;font-size:14px;">${esc(title)}</a>${uname ? ` <span style="color:var(--text-mute);font-size:12px;">${esc(uname)}</span>` : ''}</div></div>`;
+          } else {
+            html += `<div class="result-row" style="border-bottom:0.5px solid var(--border-soft);"><div class="result-content"><div class="result-value" style="font-size:14px;">${esc(title)}</div></div></div>`;
+          }
+        });
+        html += `</div>`;
+      }
+
+      $('tg-result').innerHTML = html;
+      vibrate(50);
+      toast('✅ Найдено', 'ok');
+    } catch(e) {
+      $('tg-result').innerHTML = renderError('Ошибка: ' + e.message);
+    } finally {
+      btn.disabled = false; btn.textContent = '✈️ Найти в Telegram';
+    }
+  });
+}
+
+// ============================================================
+// 📊 ЧЕКЕР ПО БАЗАМ (base_checker)
+// ============================================================
+function renderBaseChecker() {
+  const u = getTelegramUser();
+  if (!u) { toast('Откройте через Telegram', 'error'); return; }
+
+  contentWrap.innerHTML = `
+    <div class="section-title">📊 Чекер по базам</div>
+    <div class="chart-wrap">
+      <div class="field">
+        <label class="field-label">Запрос (телефон, ФИО, email, ИНН)</label>
+        <input type="text" class="field-input" id="bc-query" placeholder="79939999985" autocomplete="off">
+        <div class="field-hint">Покажет, в скольких базах есть данные</div>
+      </div>
+      <button class="btn" id="bc-btn" style="background:linear-gradient(135deg,#af52de,#ff2d55);">📊 Проверить</button>
+    </div>
+    <div id="bc-result"></div>
+    <button class="btn secondary" onclick="renderScreen('home')">← На главную</button>
+  `;
+
+  $('bc-btn').addEventListener('click', async () => {
+    const query = ($('bc-query').value || '').trim();
+    if (!query || query.length < 3) { toast('Введите запрос', 'error'); return; }
+
+    const limitCheck = await checkAndUseRequest();
+    if (!limitCheck.ok) { showLimitModal(); return; }
+
+    const btn = $('bc-btn'); btn.disabled = true; btn.textContent = '⏳ Проверяем...';
+    $('bc-result').innerHTML = renderLoading('Сканируем базы...');
+
+    try {
+      const data = await pubPost('/api/apisearch/base_checker', { user_id: u.id, query });
+      if (!data.success) { $('bc-result').innerHTML = renderError(data.error || 'Ошибка'); return; }
+
+      const r = data.result || {};
+      const found = r.found;
+      const stats = r.stats || {};
+
+      if (!found) {
+        $('bc-result').innerHTML = `
+          <div class="chart-wrap" style="text-align:center;">
+            <div style="font-size:48px;margin-bottom:12px;">❌</div>
+            <div style="font-size:18px;font-weight:700;color:var(--red);margin-bottom:6px;">Не найдено</div>
+            <div style="font-size:13px;color:var(--text-mute);">По запросу "${esc(query)}" данных нет</div>
+          </div>
+        `;
+        return;
+      }
+
+      const entries = Object.entries(stats).sort((a, b) => b[1] - a[1]);
+      const totalDocs = entries.reduce((s, [, c]) => s + c, 0);
+
+      let html = `
+        <div class="chart-wrap" style="background:linear-gradient(135deg, rgba(52,199,89,0.15), rgba(0,0,0,0));border:1px solid rgba(52,199,89,0.3);text-align:center;">
+          <div style="font-size:48px;margin-bottom:8px;">✅</div>
+          <div style="font-size:22px;font-weight:700;color:var(--green);margin-bottom:4px;">Найдено в ${entries.length} базах</div>
+          <div style="font-size:13px;color:var(--text-mute);">Всего документов: ${formatNumber(totalDocs)}</div>
+        </div>
+        <div class="section-title">🗄 Разбивка по базам</div>
+      `;
+
+      entries.forEach(([name, count]) => {
+        const maxCount = entries[0][1] || 1;
+        const percent = Math.round((count / maxCount) * 100);
+        html += `
+          <div style="background:var(--bg-elev);border-radius:12px;padding:12px 14px;margin-bottom:8px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px;">
+              <div style="font-size:13px;color:var(--text);font-weight:500;flex:1;min-width:0;word-break:break-word;">${esc(name)}</div>
+              <div style="font-size:13px;color:var(--accent);font-weight:700;flex-shrink:0;">${formatNumber(count)}</div>
+            </div>
+            <div style="height:6px;background:var(--bg);border-radius:3px;overflow:hidden;">
+              <div style="height:100%;width:${percent}%;background:linear-gradient(90deg,var(--accent),var(--purple));border-radius:3px;"></div>
+            </div>
+          </div>
+        `;
+      });
+
+      $('bc-result').innerHTML = html;
+      vibrate(50);
+      toast('✅ Найдено в ' + entries.length + ' базах', 'ok');
+    } catch(e) {
+      $('bc-result').innerHTML = renderError('Ошибка: ' + e.message);
+    } finally {
+      btn.disabled = false; btn.textContent = '📊 Проверить';
+    }
+  });
+}
+
+// ============================================================
+// 📞 ФИО + ДР ПО НОМЕРУ (name_by_phone)
+// ============================================================
+function renderNameByPhone() {
+  const u = getTelegramUser();
+  if (!u) { toast('Откройте через Telegram', 'error'); return; }
+
+  contentWrap.innerHTML = `
+    <div class="section-title">📞 ФИО + ДР по номеру</div>
+    <div class="chart-wrap">
+      <div class="field">
+        <label class="field-label">Номер телефона</label>
+        <input type="tel" class="field-input" id="np-phone" placeholder="+79939999985" autocomplete="off">
+        <div class="field-hint">Самая частая комбинация ФИО и даты рождения по номеру</div>
+      </div>
+      <button class="btn" id="np-btn" style="background:linear-gradient(135deg,#34c759,#30b14e);">📞 Узнать</button>
+    </div>
+    <div id="np-result"></div>
+    <button class="btn secondary" onclick="renderScreen('home')">← На главную</button>
+  `;
+
+  $('np-btn').addEventListener('click', async () => {
+    const phone = ($('np-phone').value || '').trim();
+    if (!phone || phone.replace(/\D/g, '').length < 10) { toast('Введите номер', 'error'); return; }
+
+    const limitCheck = await checkAndUseRequest();
+    if (!limitCheck.ok) { showLimitModal(); return; }
+
+    const btn = $('np-btn'); btn.disabled = true; btn.textContent = '⏳ Ищем...';
+    $('np-result').innerHTML = renderLoading('Ищем по номеру...');
+
+    try {
+      const data = await pubPost('/api/apisearch/name_by_phone', { user_id: u.id, phone });
+      if (!data.success) { $('np-result').innerHTML = renderError(data.error || 'Ошибка'); return; }
+
+      const r = data.result || {};
+      if (!r.name && !r.birth_date) { $('np-result').innerHTML = renderEmpty('Не найдено'); return; }
+
+      let html = `<div class="section-title" style="color:var(--green);">✅ Результат</div><div class="result-card">`;
+      if (r.name) html += `<div class="result-row"><div class="result-icon">👤</div><div class="result-content"><div class="result-label">ФИО</div><div class="result-value" style="font-size:18px;font-weight:600;">${esc(r.name)}</div></div></div>`;
+      if (r.birth_date) html += `<div class="result-row"><div class="result-icon">📅</div><div class="result-content"><div class="result-label">Дата рождения</div><div class="result-value" style="font-size:18px;font-weight:600;">${esc(r.birth_date)}</div></div></div>`;
+      html += `</div>`;
+
+      $('np-result').innerHTML = html;
+      vibrate(50);
+      toast('✅ Найдено', 'ok');
+    } catch(e) {
+      $('np-result').innerHTML = renderError('Ошибка: ' + e.message);
+    } finally {
+      btn.disabled = false; btn.textContent = '📞 Узнать';
+    }
+  });
+}
+
+// ============================================================
+// 📸 ПОИСК ПО ФОТО
 // ============================================================
 function renderPhotoSearch() {
   contentWrap.innerHTML = `
     <div class="section-title">📸 Поиск по фото (Google Lens)</div>
-
     <div class="chart-wrap">
       <div class="field">
         <label class="field-label">Загрузите фото</label>
@@ -873,30 +1334,23 @@ function renderPhotoSearch() {
       </div>
       <button class="btn" id="ps-btn" disabled style="background:linear-gradient(135deg,#4285F4,#EA4335);">🔍 Искать через Google Lens</button>
     </div>
-
     <div class="chart-wrap" style="background:rgba(66,133,244,0.08);border:1px solid rgba(66,133,244,0.2);">
       <div style="color:#4285F4;font-weight:600;margin-bottom:8px;">ℹ️ Как это работает</div>
       <div style="font-size:13px;color:var(--text-dim);line-height:1.6;">
-        Бот отправляет фото в <b>Google Lens</b> через Apify. Находит похожие изображения, профили соцсетей (включая ВКонтакте), товары и страницы, где встречается это фото.
-        <br><br>
-        ⚠️ <b>Совет:</b> чёткое лицо анфас даёт лучшие результаты.
+        Бот отправляет фото в <b>Google Lens</b>. Находит похожие изображения, профили соцсетей, товары и страницы.
+        <br><br>⚠️ <b>Совет:</b> чёткое лицо анфас даёт лучшие результаты.
       </div>
     </div>
-
     <div id="ps-results"></div>
-
     <button class="btn secondary" onclick="renderScreen('home')">← На главную</button>
   `;
 
   let imageData = null;
-
   $('ps-choose').addEventListener('click', () => $('ps-file').click());
-
   $('ps-file').addEventListener('change', e => {
     const file = e.target.files[0];
     if (!file) return;
     if (!file.type.startsWith('image/')) { toast('Выберите изображение', 'error'); return; }
-
     const reader = new FileReader();
     reader.onload = ev => {
       const img = new Image();
@@ -905,16 +1359,12 @@ function renderPhotoSearch() {
         let w = img.width, h = img.height;
         if (w > h && w > MAX_SIZE) { h = Math.round(h * MAX_SIZE / w); w = MAX_SIZE; }
         else if (h > MAX_SIZE) { w = Math.round(w * MAX_SIZE / h); h = MAX_SIZE; }
-
         const canvas = document.createElement('canvas');
-        canvas.width = w;
-        canvas.height = h;
+        canvas.width = w; canvas.height = h;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, w, h);
-
         imageData = canvas.toDataURL('image/jpeg', 0.75);
         const sizeKb = Math.round((imageData.length * 3 / 4) / 1024);
-
         $('ps-preview').innerHTML = `<img src="${imageData}" style="max-width:200px;max-height:200px;border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,0.4);border:2px solid #4285F4;">`;
         $('ps-size-info').textContent = `Сжато: ${w}×${h}px · ${sizeKb} КБ`;
         $('ps-btn').disabled = false;
@@ -927,417 +1377,37 @@ function renderPhotoSearch() {
 
   $('ps-btn').addEventListener('click', async () => {
     if (!imageData) { toast('Выберите фото', 'error'); return; }
-
     const sizeBytes = imageData.length * 3 / 4;
-    if (sizeBytes > 1500 * 1024) {
-      toast('Фото слишком большое: ' + Math.round(sizeBytes / 1024) + ' КБ', 'error');
-      return;
-    }
-
-    const btn = $('ps-btn');
-    btn.disabled = true;
-    btn.textContent = '⏳ Поиск через Google Lens...';
-
-    $('ps-results').innerHTML = `
-      <div class="chart-wrap" style="text-align:center;">
-        <div class="loading-bar" style="margin:0 auto 12px;"></div>
-        <div style="font-size:13px;color:var(--text-mute);">Отправляем фото в Google Lens...<br>Это может занять 15-40 секунд</div>
-      </div>
-    `;
-
+    if (sizeBytes > 1500 * 1024) { toast('Фото слишком большое: ' + Math.round(sizeBytes / 1024) + ' КБ', 'error'); return; }
+    const btn = $('ps-btn'); btn.disabled = true; btn.textContent = '⏳ Поиск...';
+    $('ps-results').innerHTML = renderLoading('Отправляем фото в Google Lens...');
     try {
       const data = await pubPost('/api/google_lens_search', { image: imageData });
-
-      if (!data.success) {
-        $('ps-results').innerHTML = `
-          <div class="chart-wrap" style="text-align:center;color:var(--red);">
-            ❌ ${esc(data.error || 'Ошибка поиска')}
-          </div>
-        `;
-        return;
-      }
-
+      if (!data.success) { $('ps-results').innerHTML = renderError(data.error || 'Ошибка'); return; }
       const results = data.results || [];
-
-      if (!results.length) {
-        $('ps-results').innerHTML = `
-          <div class="chart-wrap" style="text-align:center;">
-            <div style="font-size:40px;margin-bottom:8px;">🔍</div>
-            <div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px;">Ничего не найдено</div>
-            <div style="font-size:13px;color:var(--text-mute);">Попробуйте другое фото или более чёткое лицо</div>
+      if (!results.length) { $('ps-results').innerHTML = renderEmpty('Ничего не найдено'); return; }
+      $('ps-results').innerHTML = `<div class="section-title">🎯 Найдено: ${results.length}</div>` + results.map(r => `
+        <div class="vk-card">
+          ${r.thumbnail ? `<img class="vk-avatar" src="${esc(r.thumbnail)}" onerror="this.style.display='none';">` : `<div class="vk-avatar">🔍</div>`}
+          <div class="vk-info">
+            <div class="vk-name">${esc(r.title || 'Без названия')}</div>
+            ${r.description ? `<div class="vk-meta">${esc(r.description)}</div>` : ''}
+            ${r.url ? `<a class="vk-link" href="${esc(r.url)}" target="_blank">🔗 Открыть</a>` : ''}
           </div>
-        `;
-        return;
-      }
-
-      $('ps-results').innerHTML = `
-        <div class="section-title">🎯 Найдено: ${results.length}</div>
-        ${results.map(r => `
-          <div class="vk-card">
-            ${r.thumbnail ? `<img class="vk-avatar" src="${esc(r.thumbnail)}" onerror="this.style.display='none';">` : `<div class="vk-avatar">🔍</div>`}
-            <div class="vk-info">
-              <div class="vk-name">${esc(r.title || 'Без названия')}</div>
-              ${r.source && r.source !== 'web' && r.source !== 'visual' ? `<div class="vk-similarity">${esc(r.source)}</div>` : ''}
-              ${r.description ? `<div class="vk-meta">${esc(r.description)}</div>` : ''}
-              ${r.url ? `<a class="vk-link" href="${esc(r.url)}" target="_blank">🔗 Открыть</a>` : ''}
-            </div>
-          </div>
-        `).join('')}
-      `;
+        </div>`).join('');
       vibrate(50);
       toast('✅ Найдено: ' + results.length, 'ok');
     } catch(e) {
-      $('ps-results').innerHTML = `
-        <div class="chart-wrap" style="text-align:center;color:var(--red);">
-          ❌ Ошибка сети: ${esc(e.message)}
-        </div>
-      `;
+      $('ps-results').innerHTML = renderError('Ошибка сети: ' + e.message);
     } finally {
-      btn.disabled = false;
-      btn.textContent = '🔍 Искать через Google Lens';
+      btn.disabled = false; btn.textContent = '🔍 Искать через Google Lens';
     }
   });
 }
 
 // ============================================================
-// 4. ПОИСК ПО СООБЩЕНИЯМ
+// 📱 ПРОВЕРКА НОМЕРА (локальная)
 // ============================================================
-function renderMsgSearch() {
-  contentWrap.innerHTML = `
-    <div class="section-title">🔍 Поиск по сообщениям</div>
-    <div class="chart-wrap">
-      <div class="field"><label class="field-label">ID пользователя</label><input type="number" class="field-input" id="ms-user-id" placeholder="123456789"></div>
-      <div class="field"><label class="field-label">Ключевое слово</label><input type="text" class="field-input" id="ms-keyword" placeholder="крипта, работа..."></div>
-      <button class="btn" id="ms-search-btn">🔍 Найти</button>
-    </div>
-    <div id="ms-results"></div>
-    <button class="btn secondary" onclick="renderScreen('home')">← На главную</button>
-  `;
-  $('ms-search-btn').addEventListener('click', async () => {
-    const uid = $('ms-user-id').value.trim();
-    const keyword = $('ms-keyword').value.trim();
-    if (!uid || !/^\d+$/.test(uid)) { toast('Введите ID', 'error'); return; }
-    if (!keyword) { toast('Введите слово', 'error'); return; }
-    const btn = $('ms-search-btn'); btn.disabled = true; btn.textContent = '⏳ Поиск...';
-    try {
-      const data = await pubPost('/api/search_messages', { user_id: parseInt(uid), keyword, limit: 100 });
-      if (!data.success) { toast('❌ ' + (data.error || 'Ошибка'), 'error'); return; }
-      const results = data.results || [];
-      if (!results.length) { $('ms-results').innerHTML = `<div class="chart-wrap" style="text-align:center;color:var(--text-mute);">Ничего не найдено</div>`; return; }
-      $('ms-results').innerHTML = `<div class="section-title">Найдено: ${results.length}</div><div style="display:flex;flex-direction:column;gap:10px;">${results.map(r => `<div style="background:var(--bg-elev);border-radius:12px;padding:12px 14px;border-left:3px solid var(--purple);"><div style="font-size:11px;color:var(--text-mute);margin-bottom:4px;display:flex;justify-content:space-between;gap:8px;"><span>📌 ${esc((r.chat || '').slice(0, 24))}</span><span>${esc((r.date || '').slice(0, 16))}</span></div><div style="font-size:14px;color:var(--text);line-height:1.5;">${esc((r.text || '').slice(0, 300))}</div>${r.link ? `<div style="margin-top:6px;"><a href="${esc(r.link)}" target="_blank" style="font-size:12px;color:var(--accent);text-decoration:none;">🔗 Открыть</a></div>` : ''}</div>`).join('')}</div>`;
-    } catch(e) { toast('Ошибка сети', 'error'); }
-    finally { btn.disabled = false; btn.textContent = '🔍 Найти'; }
-  });
-}
-
-// ============================================================
-// 7. ПРОВЕРКА USERNAME
-// ============================================================
-function renderUsernameCheck() {
-  contentWrap.innerHTML = `
-    <div class="section-title">🌐 Проверка @username</div>
-    <div class="chart-wrap">
-      <div class="field"><label class="field-label">Username (без @)</label><input type="text" class="field-input" id="uc-input" placeholder="username" autocomplete="off"></div>
-      <button class="btn" id="uc-btn">🌐 Проверить</button>
-    </div>
-    <div id="uc-results"></div>
-    <button class="btn secondary" onclick="renderScreen('home')">← На главную</button>
-  `;
-  $('uc-btn').addEventListener('click', async () => {
-    const username = $('uc-input').value.trim().replace('@', '');
-    if (!username || username.length < 2) { toast('Введите username', 'error'); return; }
-    const btn = $('uc-btn'); btn.disabled = true; btn.textContent = '⏳ Проверка...';
-    try {
-      const data = await pubPost('/api/check_username', { username });
-      if (!data.success) { toast('❌ ' + (data.error || 'Ошибка'), 'error'); return; }
-      const results = data.results || [];
-      $('uc-results').innerHTML = `<div class="section-title">Результаты для @${esc(data.username)}</div><ul class="list">${results.map(r => { const icon = r.exists === true ? '✅' : (r.exists === false ? '❌' : '⚠️'); const color = r.exists === true ? 'var(--green)' : (r.exists === false ? 'var(--red)' : 'var(--orange)'); const statusText = r.exists === true ? 'Занят' : (r.exists === false ? 'Свободен' : 'Неизвестно'); return `<li class="list-item" onclick="window.open('${esc(r.url)}','_blank')"><div class="list-icon" style="background:${color}20;color:${color};font-size:18px;">${icon}</div><div class="list-content"><div class="list-title" style="text-transform:capitalize;">${esc(r.name)}</div><div class="list-sub" style="color:${color};">${statusText}</div></div><div class="list-chevron">${I.search}</div></li>`; }).join('')}</ul>`;
-    } catch(e) { toast('Ошибка сети', 'error'); }
-    finally { btn.disabled = false; btn.textContent = '🌐 Проверить'; }
-  });
-}
-
-// ============================================================
-// 17. СКРЫТАЯ ПРОВЕРКА
-// ============================================================
-function renderHiddenPhone() {
-  contentWrap.innerHTML = `
-    <div class="section-title">📱 Скрытая проверка номера</div>
-    <div class="chart-wrap">
-      <div class="field"><label class="field-label">Номер телефона</label><input type="tel" class="field-input" id="hp-phone" placeholder="+992901234567" autocomplete="off"><div class="field-hint">Поиск имени, фото и username в Telegram/WhatsApp</div></div>
-      <button class="btn" id="hp-btn">🔍 Проверить</button>
-    </div>
-    <div id="hp-results"></div>
-    <button class="btn secondary" onclick="renderScreen('home')">← На главную</button>
-  `;
-  $('hp-btn').addEventListener('click', async () => {
-    const phone = $('hp-phone').value.trim();
-    if (!phone) { toast('Введите номер', 'error'); return; }
-    const btn = $('hp-btn'); btn.disabled = true; btn.textContent = '⏳ Проверка...';
-    try {
-      const data = await pubPost('/api/hidden_phone_check', { phone });
-      if (!data.success) { toast('❌ ' + (data.error || 'Ошибка'), 'error'); return; }
-      const r = data.result || {};
-      const tg = r.telegram;
-      const wa = r.whatsapp;
-      $('hp-results').innerHTML = `<div class="section-title">Результат</div>${r.photo ? `<div style="text-align:center;margin-bottom:16px;"><img src="${r.photo}" style="width:96px;height:96px;border-radius:50%;object-fit:cover;border:3px solid var(--accent);box-shadow:0 8px 24px rgba(0,122,255,0.3);"></div>` : ''}<div class="result-card"><div class="result-row"><div class="result-icon">${I.phone}</div><div class="result-content"><div class="result-label">Номер</div><div class="result-value mono accent">${esc(r.phone || phone)}</div></div></div>${r.name ? `<div class="result-row"><div class="result-icon">${I.user}</div><div class="result-content"><div class="result-label">Имя</div><div class="result-value">${esc(r.name)}</div></div></div>` : ''}<div class="result-row"><div class="result-icon">${I.bot}</div><div class="result-content"><div class="result-label">Telegram</div><div class="result-value">${tg ? `✅ Найден<br><span style="font-size:13px;color:var(--accent);">${tg.username ? '@' + esc(tg.username) : 'ID: ' + tg.user_id}</span>` : '❌ Не найден'}</div></div></div><div class="result-row"><div class="result-icon">${I.msg}</div><div class="result-content"><div class="result-label">WhatsApp</div><div class="result-value">${wa && wa.exists ? '✅ Есть аккаунт' : '❌ Не найден'}</div></div></div></div>${tg && tg.username ? `<button class="btn" onclick="window.open('https://t.me/${esc(tg.username)}','_blank')">✈️ Открыть Telegram</button>` : ''}`;
-    } catch(e) { toast('Ошибка сети', 'error'); }
-    finally { btn.disabled = false; btn.textContent = '🔍 Проверить'; }
-  });
-}
-
-// ============================================================
-// 2. ГРАФИК ПО ЧАСАМ
-// ============================================================
-async function loadHourlyActivity(userId) {
-  const block = document.getElementById('hourly-block');
-  if (!block) return;
-  try {
-    const data = await pubGet('/api/hourly_activity/' + userId);
-    if (!data.success) return;
-    const hourly = data.hourly || {};
-    const maxVal = Math.max(...Object.values(hourly), 1);
-    block.innerHTML = `<div class="section-title">🕐 Активность по часам</div><div style="background:var(--bg-elev);border-radius:14px;padding:16px;margin-bottom:16px;"><div style="display:flex;align-items:flex-end;justify-content:space-between;gap:2px;height:70px;">${Object.entries(hourly).map(([hr, cnt]) => { const h = Math.max(2, (cnt / maxVal) * 60); const isPeak = hr === data.peak_hour; return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;"><div style="width:100%;height:${h}px;background:${isPeak ? 'var(--orange)' : 'linear-gradient(180deg,var(--accent),var(--accent-dim))'};border-radius:2px;min-height:2px;"></div><div style="font-size:7px;color:var(--text-mute);">${hr}</div></div>`; }).join('')}</div><div style="text-align:center;margin-top:10px;font-size:12px;color:var(--text-mute);">🎯 Пик: <b style="color:var(--orange);">${data.peak_hour || '—'}:00</b> · Всего: ${data.total}</div></div>`;
-  } catch(e) {}
-}
-
-// ============================================================
-// 6. TIMELINE
-// ============================================================
-async function loadTimeline(userId) {
-  const block = document.getElementById('timeline-block');
-  if (!block) return;
-  try {
-    const data = await pubGet('/api/timeline/' + userId);
-    if (!data.success || !data.events || !data.events.length) return;
-    const events = data.events.slice(-30);
-    block.innerHTML = `<div class="section-title">📅 Хронология (${data.events.length})</div><div style="background:var(--bg-elev);border-radius:14px;padding:16px;margin-bottom:16px;"><div style="position:relative;padding-left:20px;"><div style="position:absolute;left:6px;top:8px;bottom:8px;width:2px;background:var(--border);"></div>${events.map((e, i) => `<div style="position:relative;padding:8px 0;${i < events.length - 1 ? 'border-bottom:0.5px solid var(--border-soft);' : ''}"><div style="position:absolute;left:-18px;top:12px;width:10px;height:10px;border-radius:50%;background:var(--accent);border:2px solid var(--bg);"></div><div style="font-size:11px;color:var(--text-mute);margin-bottom:2px;">${esc((e.date || '').slice(0, 16))}</div><div style="font-size:13px;color:var(--text);">${e.icon || '📌'} ${esc(e.text)}</div></div>`).join('')}</div></div>`;
-  } catch(e) {}
-}
-
-// ============================================================
-// 9. ТОНАЛЬНОСТЬ
-// ============================================================
-async function loadSentiment(userId) {
-  const block = document.getElementById('sentiment-block');
-  if (!block) return;
-  block.innerHTML = `<div class="section-title">💭 Анализ тональности</div><div style="background:var(--bg-elev);border-radius:14px;padding:16px;margin-bottom:16px;text-align:center;"><div class="loading-bar" style="margin:0 auto 12px;"></div><div style="font-size:13px;color:var(--text-mute);">Анализируем...</div></div>`;
-  try {
-    const data = await pubPost('/api/sentiment', { user_id: userId, limit: 100 });
-    if (!data.success) { block.innerHTML = ''; return; }
-    const a = data.analysis || {};
-    block.innerHTML = `<div class="section-title">💭 Анализ тональности</div><div style="background:var(--bg-elev);border-radius:14px;padding:16px;margin-bottom:16px;"><div style="display:flex;height:24px;border-radius:12px;overflow:hidden;margin-bottom:12px;"><div style="width:${a.positive}%;background:var(--green);"></div><div style="width:${a.neutral}%;background:var(--text-mute);"></div><div style="width:${a.negative}%;background:var(--red);"></div></div><div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;"><span style="color:var(--green);">😊 ${a.positive}%</span><span style="color:var(--text-mute);">😐 ${a.neutral}%</span><span style="color:var(--red);">😡 ${a.negative}%</span></div>${a.summary ? `<div style="margin-top:12px;padding-top:12px;border-top:0.5px solid var(--border-soft);font-size:13px;color:var(--text-dim);line-height:1.5;">${esc(a.summary)}</div>` : ''}</div>`;
-  } catch(e) { block.innerHTML = ''; }
-}
-
-// ============================================================
-// 🎁 БОНУС
-// ============================================================
-async function renderBonus() {
-  const u = getTelegramUser();
-  if (!u) { toast('Откройте через Telegram', 'error'); return; }
-  contentWrap.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-mute);">Загрузка...</div>';
-  let status = { can_claim: true };
-  try { status = await pubGet('/api/bonus/status/' + u.id); } catch(e) {}
-  const me = await getMe(true);
-  const canClaim = status.can_claim;
-  contentWrap.innerHTML = `<div class="section-title">🎁 Ежедневный бонус</div><div class="result-card" style="background:linear-gradient(135deg, rgba(255,149,0,0.15), rgba(255,59,48,0.05));border:1px solid rgba(255,149,0,0.3);"><div class="result-row" style="border:none;"><div style="font-size:32px;margin-right:12px;">🎁</div><div class="result-content"><div class="result-label" style="font-size:14px;">Ежедневный бонус</div><div class="result-value" style="color:var(--orange);font-size:22px;font-weight:700;">+10 алмазов</div><div style="font-size:12px;color:var(--text-mute);margin-top:4px;">Раз в 24 часа</div></div></div></div><div style="background:var(--bg-elev);border-radius:14px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px;"><div style="font-size:24px;">💎</div><div style="flex:1;"><div style="font-size:13px;color:var(--text-mute);text-transform:uppercase;font-weight:600;">Текущий баланс</div><div style="font-size:22px;color:var(--orange);font-weight:700;margin-top:2px;">${me.diamonds} алмазов</div></div></div>${canClaim ? `<div style="background:rgba(52,199,89,0.1);border:1px solid rgba(52,199,89,0.3);border-radius:14px;padding:14px;text-align:center;margin-bottom:16px;color:var(--green);font-weight:600;">✅ Бонус доступен!</div><button class="btn" id="bonus-btn" style="background:linear-gradient(135deg,#34c759,#30b14e);">🎁 ЗАБРАТЬ +10 АЛМАЗОВ</button>` : `<div style="background:rgba(255,59,48,0.1);border:1px solid rgba(255,59,48,0.3);border-radius:14px;padding:14px;text-align:center;margin-bottom:16px;color:var(--red);font-weight:600;">⏰ Бонус уже получен сегодня<br><span style="font-size:12px;color:var(--text-mute);font-weight:400;">Возвращайтесь завтра</span></div>`}<button class="btn secondary" onclick="renderScreen('home')">← На главную</button>`;
-  if (canClaim) {
-    $('bonus-btn').addEventListener('click', async () => {
-      const btn = $('bonus-btn'); btn.disabled = true; btn.textContent = '⏳...';
-      try {
-        const data = await pubPost('/api/bonus/claim', { user_id: u.id });
-        if (data.success) { toast('🎁 +10 получено!', 'ok'); vibrate(50); _meCache = { userId: null, data: null, ts: 0 }; renderScreen('bonus'); }
-        else { toast('❌ ' + (data.error || 'Ошибка'), 'error'); btn.disabled = false; btn.textContent = '🎁 ЗАБРАТЬ +10'; }
-      } catch(e) { toast('Ошибка', 'error'); btn.disabled = false; btn.textContent = '🎁 ЗАБРАТЬ +10'; }
-    });
-  }
-}
-
-// ============================================================
-// 🤝 РЕФЕРАЛ
-// ============================================================
-async function renderReferral() {
-  const u = getTelegramUser();
-  if (!u) { toast('Откройте через Telegram', 'error'); return; }
-  contentWrap.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-mute);">Загрузка...</div>';
-  let info = { referral_code: '', referral_link: '', referrals_count: 0 };
-  try { info = await pubGet('/api/referral/info/' + u.id); } catch(e) {}
-  const me = await getMe(true);
-  contentWrap.innerHTML = `<div class="section-title">🤝 Реферал</div><div class="result-card" style="background:linear-gradient(135deg, rgba(175,82,222,0.15), rgba(0,122,255,0.05));border:1px solid rgba(175,82,222,0.3);"><div class="result-row" style="border:none;"><div style="font-size:32px;margin-right:12px;">🤝</div><div class="result-content"><div class="result-label" style="font-size:14px;">Приглашай друзей</div><div class="result-value" style="color:var(--purple);font-size:22px;font-weight:700;">+50 алмазов</div><div style="font-size:12px;color:var(--text-mute);margin-top:4px;">за 1-го, +20 за остальных</div></div></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;"><div style="background:var(--bg-elev);border-radius:14px;padding:16px;text-align:center;"><div style="font-size:28px;font-weight:700;color:var(--purple);">${info.referrals_count}</div><div style="font-size:11px;color:var(--text-mute);text-transform:uppercase;font-weight:600;margin-top:4px;">Приглашено</div></div><div style="background:var(--bg-elev);border-radius:14px;padding:16px;text-align:center;"><div style="font-size:28px;font-weight:700;color:var(--orange);">${me.diamonds}</div><div style="font-size:11px;color:var(--text-mute);text-transform:uppercase;font-weight:600;margin-top:4px;">Баланс</div></div></div><div class="section-title">🔗 Ваша ссылка</div><div style="background:var(--bg-elev);border-radius:14px;padding:14px;margin-bottom:16px;"><div style="font-size:11px;color:var(--text-mute);text-transform:uppercase;margin-bottom:6px;font-weight:600;">Код</div><div style="font-family:'SF Mono',monospace;font-size:16px;color:var(--accent);margin-bottom:12px;word-break:break-all;">${esc(info.referral_code)}</div><div style="font-size:11px;color:var(--text-mute);text-transform:uppercase;margin-bottom:6px;font-weight:600;">Ссылка</div><div style="font-family:'SF Mono',monospace;font-size:12px;color:var(--text);word-break:break-all;margin-bottom:12px;">${esc(info.referral_link)}</div><button class="btn" id="copy-ref-btn">📋 Скопировать</button><button class="btn" id="share-ref-btn" style="background:linear-gradient(135deg,#af52de,#007aff);">📤 Поделиться</button></div><button class="btn secondary" onclick="renderScreen('home')">← На главную</button>`;
-  $('copy-ref-btn').addEventListener('click', () => copyToClipboard(info.referral_link));
-  $('share-ref-btn').addEventListener('click', () => {
-    const tgShare = `https://t.me/share/url?url=${encodeURIComponent(info.referral_link)}&text=${encodeURIComponent('🤖 Попробуй AGENT ANALYTICS и получи +20 алмазов!')}`;
-    try { if (window.Telegram?.WebApp?.openTelegramLink) window.Telegram.WebApp.openTelegramLink(tgShare); else window.open(tgShare, '_blank'); } catch(e) { window.open(tgShare, '_blank'); }
-  });
-}
-
-// ============================================================
-// 🔔 УВЕДОМЛЕНИЯ
-// ============================================================
-async function renderNotifications() {
-  const u = getTelegramUser();
-  if (!u) { toast('Откройте через Telegram', 'error'); return; }
-  contentWrap.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-mute);">Загрузка...</div>';
-  let notifications = [];
-  try { const data = await pubGet('/api/notifications/' + u.id); notifications = data.notifications || []; } catch(e) {}
-  if (!notifications.length) {
-    contentWrap.innerHTML = `<div class="section-title">🔔 Уведомления</div><div class="chart-wrap" style="text-align:center;color:var(--text-mute);"><div style="font-size:48px;margin-bottom:12px;">🔕</div>Нет новых уведомлений</div><button class="btn secondary" onclick="renderScreen('home')">← На главную</button>`;
-    updateNotifBadge(); return;
-  }
-  const notifIcons = { 'new_chat': '💬', 'subscription_expiry': '⚠️', 'api_token_gifted': '🎁', 'tracking': '👀', 'payment': '💰', 'info': 'ℹ️', 'message': '💬' };
-  contentWrap.innerHTML = `<div class="section-title">🔔 Уведомления (${notifications.length})</div><ul class="list">${notifications.map(n => { const icon = notifIcons[n.type] || '🔔'; const colorClass = n.type === 'subscription_expiry' ? 'red' : (n.type === 'api_token_gifted' ? 'green' : ''); return `<li class="list-item" style="cursor:default;"><div class="list-icon ${colorClass}">${icon}</div><div class="list-content"><div class="list-title" style="font-size:14px;">${esc(n.message || '')}</div><div class="list-sub">${formatTime(n.created_at)}</div></div></li>`; }).join('')}</ul><button class="btn secondary" id="mark-read-btn">✅ Прочитать все</button><button class="btn secondary" onclick="renderScreen('home')">← На главную</button>`;
-  $('mark-read-btn').addEventListener('click', async () => {
-    try { await pubPost('/api/notifications/read', { user_id: u.id }); toast('✅ Прочитано', 'ok'); updateNotifBadge(); renderScreen('notifications'); } catch(e) { toast('Ошибка', 'error'); }
-  });
-  try { await pubPost('/api/notifications/read', { user_id: u.id }); updateNotifBadge(); } catch(e) {}
-}
-
-// ============================================================
-// 💬 СВЯЗЬ С АДМИНОМ
-// ============================================================
-async function renderSupport() {
-  const u = getTelegramUser();
-  if (!u) { toast('Откройте через Telegram', 'error'); return; }
-  contentWrap.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-mute);">Загрузка...</div>';
-  let messages = [];
-  try { const data = await pubGet('/api/support/messages/' + u.id); messages = data.messages || []; } catch(e) {}
-  contentWrap.innerHTML = `<div class="section-title">💬 Связь с админом</div><div class="chart-wrap" style="background:var(--bg-elev);border-radius:14px;padding:12px;max-height:60vh;overflow-y:auto;" id="chat-scroll"><div class="chat-messages" id="chat-messages">${messages.length ? messages.map(m => `<div class="chat-msg ${m.direction === 'user_to_admin' ? 'user' : 'admin'}">${esc(m.message)}<div class="chat-msg-time">${formatTime(m.created_at)}</div></div>`).join('') : '<div style="text-align:center;color:var(--text-mute);padding:20px;font-size:14px;">💬 Напишите сообщение — админ ответит</div>'}</div></div><div class="chart-wrap" style="margin-top:12px;"><div class="field" style="margin-bottom:8px;"><textarea class="field-input" id="support-text" rows="3" placeholder="Введите сообщение..." style="resize:vertical;font-family:inherit;"></textarea></div><button class="btn" id="support-send-btn">📤 Отправить</button></div><button class="btn secondary" onclick="renderScreen('home')">← На главную</button>`;
-  setTimeout(() => { const scroll = document.getElementById('chat-scroll'); if (scroll) scroll.scrollTop = scroll.scrollHeight; }, 100);
-  $('support-send-btn').addEventListener('click', async () => {
-    const text = $('support-text').value.trim();
-    if (!text) { toast('Введите сообщение', 'error'); return; }
-    const btn = $('support-send-btn'); btn.disabled = true; btn.textContent = '⏳...';
-    try {
-      const data = await pubPost('/api/support/send', { user_id: u.id, text });
-      if (data.success) { toast('✅ Отправлено!', 'ok'); vibrate(20); renderScreen('support'); }
-      else { toast('❌ ' + (data.error || 'Ошибка'), 'error'); btn.disabled = false; btn.textContent = '📤 Отправить'; }
-    } catch(e) { toast('Ошибка', 'error'); btn.disabled = false; btn.textContent = '📤 Отправить'; }
-  });
-}
-
-// ============================================================
-// 🤖 МАРЫЯМ
-// ============================================================
-async function renderMaryam() {
-  const u = getTelegramUser();
-  if (!u) { toast('Откройте через Telegram', 'error'); return; }
-  contentWrap.innerHTML = `<div class="section-title">🤖 Марыям</div><div class="chart-wrap" style="background:var(--bg-elev);border-radius:14px;padding:12px;max-height:55vh;overflow-y:auto;" id="maryam-scroll"><div class="chat-messages" id="maryam-messages"><div class="chat-msg admin">Привет! Я Марыям — AI-помощник 👋<br><br>Спроси о чём угодно:<br>• 📊 Статистика бота<br>• 👤 Найти пользователя<br>• 📱 Проверить номер<br>• 💎 Баланс и подписка<br>• 🎁 Как получить бонус</div></div></div><div class="chart-wrap" style="margin-top:12px;"><div class="field" style="margin-bottom:8px;"><textarea class="field-input" id="maryam-text" rows="2" placeholder="Напишите вопрос..." style="resize:vertical;font-family:inherit;"></textarea></div><button class="btn" id="maryam-send-btn">📤 Отправить</button></div><div class="section-title">💡 Примеры</div><ul class="list"><li class="list-item" onclick="maryamQuick('расскажи о боте')"><div class="list-icon">${I.info}</div><div class="list-content"><div class="list-title">Что умеет бот?</div></div></li><li class="list-item" onclick="maryamQuick('как получить бонус')"><div class="list-icon orange">${I.gift}</div><div class="list-content"><div class="list-title">Как получить бонус?</div></div></li><li class="list-item" onclick="maryamQuick('расскажи про подписку')"><div class="list-icon green">${I.star}</div><div class="list-content"><div class="list-title">Про подписку</div></div></li></ul><button class="btn secondary" onclick="renderScreen('home')">← На главную</button>`;
-  const sendBtn = $('maryam-send-btn');
-  const textarea = $('maryam-text');
-  sendBtn.addEventListener('click', async () => { const text = textarea.value.trim(); if (!text) { toast('Введите вопрос', 'error'); return; } textarea.value = ''; await maryamSend(text); });
-  textarea.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendBtn.click(); } });
-}
-async function maryamSend(text) {
-  const u = getTelegramUser(); if (!u) return;
-  const messagesEl = document.getElementById('maryam-messages'); if (!messagesEl) return;
-  const userMsg = document.createElement('div'); userMsg.className = 'chat-msg user'; userMsg.textContent = text; messagesEl.appendChild(userMsg);
-  const scroll = document.getElementById('maryam-scroll'); if (scroll) scroll.scrollTop = scroll.scrollHeight;
-  const loadingMsg = document.createElement('div'); loadingMsg.className = 'chat-msg admin'; loadingMsg.innerHTML = '<span style="opacity:0.6;">печатает...</span>'; loadingMsg.id = 'maryam-loading'; messagesEl.appendChild(loadingMsg);
-  if (scroll) scroll.scrollTop = scroll.scrollHeight;
-  try {
-    const data = await pubPost('/api/maryam/ask', { user_id: u.id, text });
-    const loading = document.getElementById('maryam-loading'); if (loading) loading.remove();
-    const botMsg = document.createElement('div'); botMsg.className = 'chat-msg admin'; botMsg.innerHTML = (data.answer || 'Не удалось получить ответ').replace(/\n/g, '<br>'); messagesEl.appendChild(botMsg);
-    if (scroll) scroll.scrollTop = scroll.scrollHeight; vibrate(10);
-  } catch(e) {
-    const loading = document.getElementById('maryam-loading'); if (loading) loading.remove();
-    const botMsg = document.createElement('div'); botMsg.className = 'chat-msg admin'; botMsg.textContent = '❌ Ошибка: ' + (e.message || 'сеть'); messagesEl.appendChild(botMsg);
-  }
-}
-function maryamQuick(text) { const textarea = $('maryam-text'); if (textarea) textarea.value = text; maryamSend(text); }
-
-// ============================================================
-// SEARCH TAB / STATS / HISTORY / API TOKENS / ME / PROFILE / PHONE / SUBSCRIPTION / TRACKING / DELETE / ABOUT / ADMIN
-// ============================================================
-function renderSearchTab() {
-  contentWrap.innerHTML = `<div class="section-title">Поиск</div><ul class="list"><li class="list-item" onclick="searchInput.focus()"><div class="list-icon">${I.search}</div><div class="list-content"><div class="list-title">Введите запрос в поле выше</div><div class="list-sub">ID, @username или телефон</div></div></li><li class="list-item" onclick="openMyProfile()"><div class="list-icon green">${I.user}</div><div class="list-content"><div class="list-title">Мой профиль</div><div class="list-sub">Найти себя</div></div><div class="list-chevron">${I.search}</div></li></ul><div id="search-results"></div>`;
-  setTimeout(() => searchInput.focus(), 100);
-}
-
-async function renderStats() {
-  contentWrap.innerHTML = `<div class="section-title">📊 Статистика</div><div class="stats-row"><div class="stat-card"><div class="stat-value" id="bs-users">—</div><div class="stat-label">Пользователей</div></div><div class="stat-card"><div class="stat-value" id="bs-comments">—</div><div class="stat-label">Сообщений</div></div><div class="stat-card"><div class="stat-value" id="bs-chats">—</div><div class="stat-label">Чатов</div></div><div class="stat-card"><div class="stat-value" id="bs-active">—</div><div class="stat-label">Активных</div></div></div><div class="section-title">📈 Активность (30 дней)</div><div class="chart-wrap"><div class="chart-canvas-wrap"><canvas id="activityChart"></canvas></div></div><div class="section-title">💬 Топ чатов</div><ul class="list" id="top-chats"><li class="list-item"><div class="list-content"><div class="list-sub">Загрузка...</div></div></li></ul><div class="section-title">🔤 Популярные слова</div><ul class="list" id="top-words"><li class="list-item"><div class="list-content"><div class="list-sub">Загрузка...</div></div></li></ul>`;
-  try {
-    const [stats, activity, chats, words] = await Promise.all([apiGetPublicStats().catch(() => ({})), apiGetActivity().catch(() => []), apiGetTopInterlocutors().catch(() => []), apiGetWords().catch(() => [])]);
-    $('bs-users').textContent = formatNumber(stats.users || 0);
-    $('bs-comments').textContent = formatNumber(stats.comments || 0);
-    $('bs-chats').textContent = formatNumber(stats.chats || 0);
-    $('bs-active').textContent = formatNumber(stats.started_bot || 0);
-    $('top-chats').innerHTML = chats.length ? chats.slice(0, 10).map(c => '<li class="list-item"><div class="list-icon">' + I.msg + '</div><div class="list-content"><div class="list-title">' + esc((c.chat || '').slice(0, 28)) + '</div><div class="list-sub">' + formatNumber(c.messages) + ' сообщений</div></div></li>').join('') : '<li class="list-item"><div class="list-content"><div class="list-sub">Нет данных</div></div></li>';
-    $('top-words').innerHTML = words.length ? words.slice(0, 15).map(w => '<li class="list-item"><div class="list-icon purple">#</div><div class="list-content"><div class="list-title">' + esc(w.word) + '</div></div><div class="list-chevron">' + formatNumber(w.count) + '</div></li>').join('') : '<li class="list-item"><div class="list-content"><div class="list-sub">Нет данных</div></div></li>';
-    renderChart(activity);
-  } catch (e) { toast(e.message, 'error'); }
-}
-function renderChart(activity) {
-  const canvas = $('activityChart');
-  if (!canvas || !activity || !activity.length || typeof Chart === 'undefined') return;
-  if (window._currentChart) { window._currentChart.destroy(); window._currentChart = null; }
-  const isDark = currentTheme === 'dark';
-  const gridColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
-  window._currentChart = new Chart(canvas, { type: 'bar', data: { labels: activity.map(x => (x.date || '').slice(5)), datasets: [{ data: activity.map(x => x.count), backgroundColor: isDark ? 'rgba(10,132,255,0.6)' : 'rgba(0,122,255,0.6)', borderColor: isDark ? '#0a84ff' : '#007aff', borderWidth: 0, borderRadius: 4, barThickness: 8 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: '#8e8e93', font: { size: 10 }, maxTicksLimit: 5 } }, x: { grid: { display: false }, ticks: { color: '#8e8e93', font: { size: 9 }, maxTicksLimit: 8 } } } } });
-}
-
-async function renderSearchHistory() {
-  contentWrap.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-mute);">Загрузка...</div>';
-  let history = [];
-  try { history = await pubGet('/api/search_history'); } catch(e) { history = []; }
-  if (!history || !history.length) { contentWrap.innerHTML = `<div class="section-title">📜 История</div><div class="chart-wrap" style="text-align:center;color:var(--text-mute);">История пуста</div><button class="btn secondary" onclick="renderScreen('home')">← На главную</button>`; return; }
-  contentWrap.innerHTML = `<div class="section-title">📜 История поисков (${history.length})</div><div>${history.slice(0, 100).map(h => `<div class="hist-item"><div class="hist-top"><span>#${h.searcher_id || '—'}</span><span>${esc((h.date || '').slice(0, 16))}</span></div><div class="hist-target">🎯 ${esc(h.target_id || '—')}</div><div class="hist-summary">${esc((h.result_summary || h.search_type || '').slice(0, 200))}</div></div>`).join('')}</div><button class="btn secondary" onclick="renderScreen('home')">← На главную</button>`;
-}
-
-async function renderApiTokens() {
-  const u = getTelegramUser();
-  if (!u) { toast('Откройте через Telegram', 'error'); return; }
-  contentWrap.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-mute);">Загрузка...</div>';
-  let tokens = [];
-  try { const resp = await pubGet('/api/api_tokens/' + u.id); tokens = resp.tokens || []; } catch(e) {}
-  if (!tokens.length) { contentWrap.innerHTML = `<div class="section-title">🔑 API токены</div><div class="chart-wrap" style="text-align:center;color:var(--text-mute);">У вас нет API токенов</div><button class="btn secondary" onclick="renderScreen('home')">← На главную</button>`; return; }
-  const items = tokens.map(t => { const remaining = t.total ? (t.total - t.used) : '∞'; const statusColor = t.active ? 'var(--green)' : 'var(--text-mute)'; const statusText = t.active ? '✅ Активен' : '⏳ Ожидает'; const expiry = t.expires ? t.expires.slice(0, 10) : 'навсегда'; return `<div class="hist-item" style="border-left-color:${statusColor};"><div class="hist-top"><span style="color:${statusColor};font-weight:600;">${statusText}</span><span>до ${expiry}</span></div><div class="hist-target" style="font-size:11px;word-break:break-all;">${esc(t.token)}</div><div class="hist-summary">📊 ${t.used} / ${t.total || '∞'} ${t.total ? ` · Остаток: <b>${remaining}</b>` : ''}</div><button class="btn secondary" onclick="copyToClipboard('${esc(t.token)}')" style="margin-top:8px;margin-bottom:0;font-size:13px;padding:8px;">📋 Скопировать</button></div>`; }).join('');
-  contentWrap.innerHTML = `<div class="section-title">🔑 Мои API токены (${tokens.length})</div>${items}<button class="btn secondary" onclick="renderScreen('home')">← На главную</button>`;
-}
-
-function renderMe() {
-  const u = getTelegramUser();
-  contentWrap.innerHTML = `${u ? '<div class="section-title">Мой Telegram</div><div class="result-card"><div class="result-row"><div class="result-icon">' + I.user + '</div><div class="result-content"><div class="result-label">Имя</div><div class="result-value">' + esc(u.first_name || '') + ' ' + esc(u.last_name || '') + '</div></div></div><div class="result-row"><div class="result-icon">' + I.user + '</div><div class="result-content"><div class="result-label">Username</div><div class="result-value">' + (u.username ? '@' + esc(u.username) : '—') + '</div></div></div><div class="result-row"><div class="result-icon">' + I.info + '</div><div class="result-content"><div class="result-label">ID</div><div class="result-value mono">' + u.id + '</div></div></div></div>' : ''}<div class="section-title">Действия</div><ul class="list"><li class="list-item" onclick="openMyProfile()"><div class="list-icon">${I.user}</div><div class="list-content"><div class="list-title">Мой профиль</div></div><div class="list-chevron">${I.search}</div></li><li class="list-item" onclick="renderScreen('bonus')"><div class="list-icon orange">${I.gift}</div><div class="list-content"><div class="list-title">Бонус</div></div><div class="list-chevron">${I.search}</div></li><li class="list-item" onclick="renderScreen('referral')"><div class="list-icon purple">${I.share}</div><div class="list-content"><div class="list-title">Реферал</div></div><div class="list-chevron">${I.search}</div></li><li class="list-item" onclick="renderScreen('maryam')"><div class="list-icon pink">${I.robot}</div><div class="list-content"><div class="list-title">Марыям AI</div></div><div class="list-chevron">${I.search}</div></li><li class="list-item" onclick="renderScreen('support')"><div class="list-icon green">${I.support}</div><div class="list-content"><div class="list-title">Связь с админом</div></div><div class="list-chevron">${I.search}</div></li><li class="list-item" onclick="renderScreen('api-tokens')"><div class="list-icon green">${I.key}</div><div class="list-content"><div class="list-title">Мои API токены</div></div><div class="list-chevron">${I.search}</div></li><li class="list-item" onclick="openSettings()"><div class="list-icon gray">${I.gear}</div><div class="list-content"><div class="list-title">Настройки</div></div><div class="list-chevron">${I.search}</div></li><li class="list-item" onclick="logout()"><div class="list-icon red">${I.trash}</div><div class="list-content"><div class="list-title" style="color:var(--red);">Выйти</div><div class="list-sub">Сбросить сессию</div></div><div class="list-chevron">${I.search}</div></li></ul>`;
-}
-
-async function renderProfile(userId) {
-  contentWrap.innerHTML = '<div style="padding-top:40px;text-align:center;"><div class="loading-bar" style="margin:0 auto;"></div><div style="margin-top:16px;color:var(--text-mute);font-size:13px;">Загрузка...</div></div>';
-  try {
-    const u = await apiGetUser(userId, 'all', 50);
-    if (u.error) throw new Error(u.error);
-    let me = { diamonds: '—', has_subscription: false, days_left: 0 };
-    try { me = await pubGet('/api/me/' + userId); } catch(e) {}
-    const name = ((u.first_name || '') + ' ' + (u.last_name || '')).trim() || 'Без имени';
-    const initial = (name[0] || '?').toUpperCase();
-    const username = u.username ? '@' + u.username : null;
-    const tier = (u.started_bot || me.has_subscription) ? 'PREMIUM' : 'USER';
-    const tierColor = (u.started_bot || me.has_subscription) ? 'var(--orange)' : 'var(--accent)';
-    const chatsCount = (u.chats || []).length, commentsCount = (u.comments || []).length, wordsCount = (u.words || []).length;
-    const subBlock = me.has_subscription ? `<div style="background:linear-gradient(135deg, rgba(52,199,89,0.15), rgba(52,199,89,0.05));border:1px solid rgba(52,199,89,0.3);border-radius:14px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px;"><div style="font-size:24px;">⭐</div><div style="flex:1;"><div style="font-size:13px;color:var(--green);font-weight:600;">Подписка активна</div><div style="font-size:12px;color:var(--text-mute);margin-top:2px;">до ${formatDate(me.subscription_end)}</div></div></div>` : '';
-    const balanceBlock = `<div style="background:var(--bg-elev);border-radius:14px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px;"><div style="font-size:24px;">💎</div><div style="flex:1;"><div style="font-size:13px;color:var(--text-mute);text-transform:uppercase;font-weight:600;">Баланс</div><div style="font-size:18px;color:var(--orange);font-weight:700;margin-top:2px;">${me.diamonds} алмазов</div></div></div>`;
-    contentWrap.innerHTML = `<div style="position:relative;margin:-16px -16px 0;padding:32px 24px 24px;background:linear-gradient(180deg,${tier === 'PREMIUM' ? 'rgba(255,149,0,0.15)' : 'rgba(0,122,255,0.12)'} 0%,transparent 100%);text-align:center;"><button class="icon-btn" onclick="renderScreen('home')" style="position:absolute;left:8px;top:8px;color:var(--text);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></button><button class="icon-btn" onclick="copyToClipboard('${u.user_id}')" style="position:absolute;right:8px;top:8px;color:var(--text);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button><div style="position:relative;width:96px;height:96px;margin:0 auto 16px;"><div style="width:100%;height:100%;border-radius:50%;background:linear-gradient(135deg,#0a84ff,#bf5af2);color:white;display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:700;box-shadow:0 8px 24px rgba(0,122,255,0.3);border:3px solid var(--bg);overflow:hidden;position:relative;"><span id="profile-avatar-initials" style="position:relative;z-index:1;">${esc(initial)}</span><img id="profile-avatar-img" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:2;opacity:0;transition:opacity .2s;"></div>${me.has_subscription ? '<div style="position:absolute;bottom:2px;right:2px;width:26px;height:26px;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;border:3px solid var(--bg);z-index:3;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></div>' : ''}</div><div style="font-size:24px;font-weight:700;color:var(--text);">${esc(name)}</div>${username ? '<div style="font-size:15px;color:var(--accent);margin-top:4px;">' + esc(username) + '</div>' : ''}<div style="display:inline-block;margin-top:10px;padding:4px 14px;background:${tierColor}20;color:${tierColor};border-radius:20px;font-size:11px;font-weight:700;">⚡ ${tier}</div></div>${subBlock}${balanceBlock}<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:20px 0;"><div style="background:var(--bg-elev);border-radius:14px;padding:16px 8px;text-align:center;"><div style="font-size:22px;font-weight:700;color:var(--text);">${formatNumber(commentsCount)}</div><div style="font-size:10px;color:var(--text-mute);text-transform:uppercase;font-weight:600;">Сообщений</div></div><div style="background:var(--bg-elev);border-radius:14px;padding:16px 8px;text-align:center;"><div style="font-size:22px;font-weight:700;color:var(--text);">${formatNumber(chatsCount)}</div><div style="font-size:10px;color:var(--text-mute);text-transform:uppercase;font-weight:600;">Чатов</div></div><div style="background:var(--bg-elev);border-radius:14px;padding:16px 8px;text-align:center;"><div style="font-size:22px;font-weight:700;color:var(--text);">${formatNumber(wordsCount)}</div><div style="font-size:10px;color:var(--text-mute);text-transform:uppercase;font-weight:600;">Слов</div></div></div><div id="hourly-block"></div><div id="timeline-block"></div><div id="sentiment-block"></div><div style="margin-top:20px;"><button class="btn secondary" onclick="copyToClipboard('${u.user_id}')" style="margin-bottom:8px;">📋 Скопировать ID</button><button class="btn secondary" onclick="renderScreen('home')">← На главную</button></div>`;
-    setTimeout(() => loadProfileAvatar(u.user_id), 80);
-    loadHourlyActivity(u.user_id);
-    loadTimeline(u.user_id);
-    loadSentiment(u.user_id);
-  } catch (e) {
-    contentWrap.innerHTML = '<div style="padding-top:40px;text-align:center;"><div style="font-size:36px;">⚠️</div><div style="font-size:18px;font-weight:600;margin:12px 0 6px;">Не найдено</div><div style="font-size:14px;color:var(--text-mute);margin-bottom:24px;">' + esc(e.message) + '</div><button class="btn secondary" onclick="renderScreen(\'home\')">← На главную</button></div>';
-  }
-}
-
-function loadProfileAvatar(userId) {
-  const img = document.getElementById('profile-avatar-img');
-  const initials = document.getElementById('profile-avatar-initials');
-  if (!img) return;
-  const url = CONFIG.API_BASE + '/api/user_avatar/' + userId + '?t=' + Date.now();
-  const test = new Image();
-  test.crossOrigin = 'anonymous';
-  test.onload = () => { if (test.naturalWidth > 1 && test.naturalHeight > 1) { img.src = url; img.style.opacity = '1'; if (initials) initials.style.display = 'none'; } };
-  test.onerror = () => { img.style.opacity = '0'; if (initials) initials.style.display = 'flex'; };
-  test.src = url;
-}
-
 function renderPhoneCheck() {
   contentWrap.innerHTML = `<div class="section-title">📱 Проверка номера</div><div class="chart-wrap"><div class="field"><label class="field-label">Номер</label><input type="tel" class="field-input" id="pc-phone" placeholder="+992901234567"><div class="field-hint">Страна, оператор, регион, карта</div></div><button class="btn" id="pc-check">📱 Проверить</button></div><div id="pc-result"></div><button class="btn secondary" onclick="renderScreen('home')">← Назад</button>`;
   $('pc-check').addEventListener('click', async () => {
@@ -1396,8 +1466,7 @@ function showPhoneMap(info) {
   document.querySelectorAll('.modal-overlay').forEach(m => m.remove());
   if (window._phoneMap) { window._phoneMap.remove(); window._phoneMap = null; }
   const overlay = document.createElement('div');
-  overlay.className = 'modal-overlay';
-  overlay.id = 'phone-map-modal';
+  overlay.className = 'modal-overlay'; overlay.id = 'phone-map-modal';
   overlay.style.padding = '0'; overlay.style.alignItems = 'flex-end';
   overlay.innerHTML = '<div style="background:var(--bg);width:100%;max-width:600px;border-radius:20px 20px 0 0;overflow:hidden;animation:slideUp 0.3s ease;max-height:95vh;display:flex;flex-direction:column;"><div style="padding:16px 20px;border-bottom:0.5px solid var(--border-soft);display:flex;align-items:center;gap:12px;"><div style="flex:1;"><div style="font-size:17px;font-weight:700;color:var(--text);">' + esc(info.flag || '') + ' ' + esc(info.phone || '') + '</div><div style="font-size:13px;color:var(--text-mute);margin-top:2px;">' + esc(info.country || '') + ' · ' + esc(info.operator || '') + '</div></div><button onclick="closePhoneMap()" style="width:32px;height:32px;border-radius:50%;background:var(--bg-elev);border:none;color:var(--text-mute);cursor:pointer;display:flex;align-items:center;justify-content:center;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div><div id="phone-map" style="height:340px;width:100%;background:var(--bg-elev);"></div><div style="padding:16px 20px;"><button class="btn secondary" onclick="closePhoneMap()">Закрыть</button></div></div>';
   document.body.appendChild(overlay);
@@ -1421,6 +1490,86 @@ function initPhoneMap(lat, lon, info) {
   setTimeout(() => map.invalidateSize(), 250);
 }
 
+// ============================================================
+// ПРОЧИЕ ЭКРАНЫ (сокращённые версии)
+// ============================================================
+function renderSearchTab() {
+  contentWrap.innerHTML = `<div class="section-title">Поиск</div><ul class="list"><li class="list-item" onclick="searchInput.focus()"><div class="list-icon">${I.search}</div><div class="list-content"><div class="list-title">Введите запрос в поле выше</div><div class="list-sub">ID, @username или телефон</div></div></li><li class="list-item" onclick="openMyProfile()"><div class="list-icon green">${I.user}</div><div class="list-content"><div class="list-title">Мой профиль</div><div class="list-sub">Найти себя</div></div><div class="list-chevron">${I.search}</div></li></ul><div id="search-results"></div>`;
+  setTimeout(() => searchInput.focus(), 100);
+}
+async function renderStats() {
+  contentWrap.innerHTML = `<div class="section-title">📊 Статистика</div><div class="stats-row"><div class="stat-card"><div class="stat-value" id="bs-users">—</div><div class="stat-label">Пользователей</div></div><div class="stat-card"><div class="stat-value" id="bs-comments">—</div><div class="stat-label">Сообщений</div></div><div class="stat-card"><div class="stat-value" id="bs-chats">—</div><div class="stat-label">Чатов</div></div><div class="stat-card"><div class="stat-value" id="bs-active">—</div><div class="stat-label">Активных</div></div></div><div class="section-title">📈 Активность (30 дней)</div><div class="chart-wrap"><div class="chart-canvas-wrap"><canvas id="activityChart"></canvas></div></div><div class="section-title">💬 Топ чатов</div><ul class="list" id="top-chats"><li class="list-item"><div class="list-content"><div class="list-sub">Загрузка...</div></div></li></ul><div class="section-title">🔤 Популярные слова</div><ul class="list" id="top-words"><li class="list-item"><div class="list-content"><div class="list-sub">Загрузка...</div></div></li></ul>`;
+  try {
+    const [stats, activity, chats, words] = await Promise.all([apiGetPublicStats().catch(() => ({})), apiGetActivity().catch(() => []), apiGetTopInterlocutors().catch(() => []), apiGetWords().catch(() => [])]);
+    $('bs-users').textContent = formatNumber(stats.users || 0);
+    $('bs-comments').textContent = formatNumber(stats.comments || 0);
+    $('bs-chats').textContent = formatNumber(stats.chats || 0);
+    $('bs-active').textContent = formatNumber(stats.started_bot || 0);
+    $('top-chats').innerHTML = chats.length ? chats.slice(0, 10).map(c => '<li class="list-item"><div class="list-icon">' + I.msg + '</div><div class="list-content"><div class="list-title">' + esc((c.chat || '').slice(0, 28)) + '</div><div class="list-sub">' + formatNumber(c.messages) + ' сообщений</div></div></li>').join('') : '<li class="list-item"><div class="list-content"><div class="list-sub">Нет данных</div></div></li>';
+    $('top-words').innerHTML = words.length ? words.slice(0, 15).map(w => '<li class="list-item"><div class="list-icon purple">#</div><div class="list-content"><div class="list-title">' + esc(w.word) + '</div></div><div class="list-chevron">' + formatNumber(w.count) + '</div></li>').join('') : '<li class="list-item"><div class="list-content"><div class="list-sub">Нет данных</div></div></li>';
+    renderChart(activity);
+  } catch (e) { toast(e.message, 'error'); }
+}
+function renderChart(activity) {
+  const canvas = $('activityChart');
+  if (!canvas || !activity || !activity.length || typeof Chart === 'undefined') return;
+  if (window._currentChart) { window._currentChart.destroy(); window._currentChart = null; }
+  const isDark = currentTheme === 'dark';
+  const gridColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+  window._currentChart = new Chart(canvas, { type: 'bar', data: { labels: activity.map(x => (x.date || '').slice(5)), datasets: [{ data: activity.map(x => x.count), backgroundColor: isDark ? 'rgba(10,132,255,0.6)' : 'rgba(0,122,255,0.6)', borderColor: isDark ? '#0a84ff' : '#007aff', borderWidth: 0, borderRadius: 4, barThickness: 8 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: '#8e8e93', font: { size: 10 }, maxTicksLimit: 5 } }, x: { grid: { display: false }, ticks: { color: '#8e8e93', font: { size: 9 }, maxTicksLimit: 8 } } } } });
+}
+async function renderSearchHistory() {
+  contentWrap.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-mute);">Загрузка...</div>';
+  let history = [];
+  try { history = await pubGet('/api/search_history'); } catch(e) { history = []; }
+  if (!history || !history.length) { contentWrap.innerHTML = `<div class="section-title">📜 История</div><div class="chart-wrap" style="text-align:center;color:var(--text-mute);">История пуста</div><button class="btn secondary" onclick="renderScreen('home')">← На главную</button>`; return; }
+  contentWrap.innerHTML = `<div class="section-title">📜 История поисков (${history.length})</div><div>${history.slice(0, 100).map(h => `<div class="hist-item"><div class="hist-top"><span>#${h.searcher_id || '—'}</span><span>${esc((h.date || '').slice(0, 16))}</span></div><div class="hist-target">🎯 ${esc(h.target_id || '—')}</div><div class="hist-summary">${esc((h.result_summary || h.search_type || '').slice(0, 200))}</div></div>`).join('')}</div><button class="btn secondary" onclick="renderScreen('home')">← На главную</button>`;
+}
+async function renderApiTokens() {
+  const u = getTelegramUser();
+  if (!u) { toast('Откройте через Telegram', 'error'); return; }
+  contentWrap.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-mute);">Загрузка...</div>';
+  let tokens = [];
+  try { const resp = await pubGet('/api/api_tokens/' + u.id); tokens = resp.tokens || []; } catch(e) {}
+  if (!tokens.length) { contentWrap.innerHTML = `<div class="section-title">🔑 API токены</div><div class="chart-wrap" style="text-align:center;color:var(--text-mute);">У вас нет API токенов</div><button class="btn secondary" onclick="renderScreen('home')">← На главную</button>`; return; }
+  const items = tokens.map(t => { const remaining = t.total ? (t.total - t.used) : '∞'; const statusColor = t.active ? 'var(--green)' : 'var(--text-mute)'; const statusText = t.active ? '✅ Активен' : '⏳ Ожидает'; const expiry = t.expires ? t.expires.slice(0, 10) : 'навсегда'; return `<div class="hist-item" style="border-left-color:${statusColor};"><div class="hist-top"><span style="color:${statusColor};font-weight:600;">${statusText}</span><span>до ${expiry}</span></div><div class="hist-target" style="font-size:11px;word-break:break-all;">${esc(t.token)}</div><div class="hist-summary">📊 ${t.used} / ${t.total || '∞'} ${t.total ? ` · Остаток: <b>${remaining}</b>` : ''}</div><button class="btn secondary" onclick="copyToClipboard('${esc(t.token)}')" style="margin-top:8px;margin-bottom:0;font-size:13px;padding:8px;">📋 Скопировать</button></div>`; }).join('');
+  contentWrap.innerHTML = `<div class="section-title">🔑 Мои API токены (${tokens.length})</div>${items}<button class="btn secondary" onclick="renderScreen('home')">← На главную</button>`;
+}
+function renderMe() {
+  const u = getTelegramUser();
+  contentWrap.innerHTML = `${u ? '<div class="section-title">Мой Telegram</div><div class="result-card"><div class="result-row"><div class="result-icon">' + I.user + '</div><div class="result-content"><div class="result-label">Имя</div><div class="result-value">' + esc(u.first_name || '') + ' ' + esc(u.last_name || '') + '</div></div></div><div class="result-row"><div class="result-icon">' + I.user + '</div><div class="result-content"><div class="result-label">Username</div><div class="result-value">' + (u.username ? '@' + esc(u.username) : '—') + '</div></div></div><div class="result-row"><div class="result-icon">' + I.info + '</div><div class="result-content"><div class="result-label">ID</div><div class="result-value mono">' + u.id + '</div></div></div></div>' : ''}<div class="section-title">Действия</div><ul class="list"><li class="list-item" onclick="openMyProfile()"><div class="list-icon">${I.user}</div><div class="list-content"><div class="list-title">Мой профиль</div></div><div class="list-chevron">${I.search}</div></li><li class="list-item" onclick="renderScreen('bonus')"><div class="list-icon orange">${I.gift}</div><div class="list-content"><div class="list-title">Бонус</div></div><div class="list-chevron">${I.search}</div></li><li class="list-item" onclick="renderScreen('referral')"><div class="list-icon purple">${I.share}</div><div class="list-content"><div class="list-title">Реферал</div></div><div class="list-chevron">${I.search}</div></li><li class="list-item" onclick="renderScreen('maryam')"><div class="list-icon pink">${I.robot}</div><div class="list-content"><div class="list-title">Марыям AI</div></div><div class="list-chevron">${I.search}</div></li><li class="list-item" onclick="renderScreen('support')"><div class="list-icon green">${I.support}</div><div class="list-content"><div class="list-title">Связь с админом</div></div><div class="list-chevron">${I.search}</div></li><li class="list-item" onclick="renderScreen('api-tokens')"><div class="list-icon green">${I.key}</div><div class="list-content"><div class="list-title">Мои API токены</div></div><div class="list-chevron">${I.search}</div></li><li class="list-item" onclick="openSettings()"><div class="list-icon gray">${I.gear}</div><div class="list-content"><div class="list-title">Настройки</div></div><div class="list-chevron">${I.search}</div></li><li class="list-item" onclick="logout()"><div class="list-icon red">${I.trash}</div><div class="list-content"><div class="list-title" style="color:var(--red);">Выйти</div><div class="list-sub">Сбросить сессию</div></div><div class="list-chevron">${I.search}</div></li></ul>`;
+}
+async function renderProfile(userId) {
+  contentWrap.innerHTML = '<div style="padding-top:40px;text-align:center;"><div class="loading-bar" style="margin:0 auto;"></div><div style="margin-top:16px;color:var(--text-mute);font-size:13px;">Загрузка...</div></div>';
+  try {
+    const u = await apiGetUser(userId, 'all', 50);
+    if (u.error) throw new Error(u.error);
+    let me = { diamonds: '—', has_subscription: false, days_left: 0 };
+    try { me = await pubGet('/api/me/' + userId); } catch(e) {}
+    const name = ((u.first_name || '') + ' ' + (u.last_name || '')).trim() || 'Без имени';
+    const initial = (name[0] || '?').toUpperCase();
+    const username = u.username ? '@' + u.username : null;
+    const tier = (u.started_bot || me.has_subscription) ? 'PREMIUM' : 'USER';
+    const tierColor = (u.started_bot || me.has_subscription) ? 'var(--orange)' : 'var(--accent)';
+    const chatsCount = (u.chats || []).length, commentsCount = (u.comments || []).length, wordsCount = (u.words || []).length;
+    const balanceBlock = `<div style="background:var(--bg-elev);border-radius:14px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px;"><div style="font-size:24px;">💎</div><div style="flex:1;"><div style="font-size:13px;color:var(--text-mute);text-transform:uppercase;font-weight:600;">Баланс</div><div style="font-size:18px;color:var(--orange);font-weight:700;margin-top:2px;">${me.diamonds} алмазов</div></div></div>`;
+    contentWrap.innerHTML = `<div style="position:relative;margin:-16px -16px 0;padding:32px 24px 24px;background:linear-gradient(180deg,${tier === 'PREMIUM' ? 'rgba(255,149,0,0.15)' : 'rgba(0,122,255,0.12)'} 0%,transparent 100%);text-align:center;"><button class="icon-btn" onclick="renderScreen('home')" style="position:absolute;left:8px;top:8px;color:var(--text);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></button><button class="icon-btn" onclick="copyToClipboard('${u.user_id}')" style="position:absolute;right:8px;top:8px;color:var(--text);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button><div style="position:relative;width:96px;height:96px;margin:0 auto 16px;"><div style="width:100%;height:100%;border-radius:50%;background:linear-gradient(135deg,#0a84ff,#bf5af2);color:white;display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:700;box-shadow:0 8px 24px rgba(0,122,255,0.3);border:3px solid var(--bg);overflow:hidden;position:relative;"><span id="profile-avatar-initials" style="position:relative;z-index:1;">${esc(initial)}</span><img id="profile-avatar-img" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:2;opacity:0;transition:opacity .2s;"></div></div><div style="font-size:24px;font-weight:700;color:var(--text);">${esc(name)}</div>${username ? '<div style="font-size:15px;color:var(--accent);margin-top:4px;">' + esc(username) + '</div>' : ''}<div style="display:inline-block;margin-top:10px;padding:4px 14px;background:${tierColor}20;color:${tierColor};border-radius:20px;font-size:11px;font-weight:700;">⚡ ${tier}</div></div>${balanceBlock}<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:20px 0;"><div style="background:var(--bg-elev);border-radius:14px;padding:16px 8px;text-align:center;"><div style="font-size:22px;font-weight:700;color:var(--text);">${formatNumber(commentsCount)}</div><div style="font-size:10px;color:var(--text-mute);text-transform:uppercase;font-weight:600;">Сообщений</div></div><div style="background:var(--bg-elev);border-radius:14px;padding:16px 8px;text-align:center;"><div style="font-size:22px;font-weight:700;color:var(--text);">${formatNumber(chatsCount)}</div><div style="font-size:10px;color:var(--text-mute);text-transform:uppercase;font-weight:600;">Чатов</div></div><div style="background:var(--bg-elev);border-radius:14px;padding:16px 8px;text-align:center;"><div style="font-size:22px;font-weight:700;color:var(--text);">${formatNumber(wordsCount)}</div><div style="font-size:10px;color:var(--text-mute);text-transform:uppercase;font-weight:600;">Слов</div></div></div><div style="margin-top:20px;"><button class="btn secondary" onclick="copyToClipboard('${u.user_id}')" style="margin-bottom:8px;">📋 Скопировать ID</button><button class="btn secondary" onclick="renderScreen('home')">← На главную</button></div>`;
+    setTimeout(() => loadProfileAvatar(u.user_id), 80);
+  } catch (e) {
+    contentWrap.innerHTML = '<div style="padding-top:40px;text-align:center;"><div style="font-size:36px;">⚠️</div><div style="font-size:18px;font-weight:600;margin:12px 0 6px;">Не найдено</div><div style="font-size:14px;color:var(--text-mute);margin-bottom:24px;">' + esc(e.message) + '</div><button class="btn secondary" onclick="renderScreen(\'home\')">← На главную</button></div>';
+  }
+}
+function loadProfileAvatar(userId) {
+  const img = document.getElementById('profile-avatar-img');
+  const initials = document.getElementById('profile-avatar-initials');
+  if (!img) return;
+  const url = CONFIG.API_BASE + '/api/user_avatar/' + userId + '?t=' + Date.now();
+  const test = new Image();
+  test.crossOrigin = 'anonymous';
+  test.onload = () => { if (test.naturalWidth > 1 && test.naturalHeight > 1) { img.src = url; img.style.opacity = '1'; if (initials) initials.style.display = 'none'; } };
+  test.onerror = () => { img.style.opacity = '0'; if (initials) initials.style.display = 'flex'; };
+  test.src = url;
+}
 async function renderSubscription() {
   const u = getTelegramUser();
   contentWrap.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-mute);">Загрузка...</div>';
@@ -1457,7 +1606,6 @@ async function buyPlan(planKey, planLabel, priceUsd) {
     }, 100);
   } catch(e) { closeModal(); toast('Ошибка', 'error'); }
 }
-
 async function renderTracking() {
   const u = getTelegramUser();
   contentWrap.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-mute);">Загрузка...</div>';
@@ -1483,7 +1631,6 @@ async function removeTracking(targetId) {
   const u = getTelegramUser(); if (!u) return;
   try { await pubPost('/api/tracking/remove', { user_id: u.id, target_id: targetId }); toast('Удалено', 'ok'); renderScreen('tracking'); } catch(e) { toast('Ошибка', 'error'); }
 }
-
 function renderDeleteData() {
   contentWrap.innerHTML = `<div class="section-title">🗑️ Удаление данных</div><div class="result-card"><div class="result-row"><div class="result-icon">${I.gem}</div><div class="result-content"><div class="result-label">Стоимость</div><div class="result-value accent">200 алмазов</div></div></div></div><div class="chart-wrap" style="background:rgba(255,59,48,0.08);border:1px solid rgba(255,59,48,0.2);"><div style="color:var(--red);font-weight:600;margin-bottom:12px;">⚠️ ВНИМАНИЕ</div><div style="color:var(--text-dim);font-size:14px;line-height:1.6;">• Удаляет ВСЕ данные<br>• Очищает историю имён<br>• Удаляет список чатов</div></div><button class="btn danger" id="del-btn">🗑️ Удалить (200 💎)</button><button class="btn secondary" onclick="renderScreen('home')">← Назад</button>`;
   $('del-btn').addEventListener('click', confirmDelete);
@@ -1504,11 +1651,9 @@ function confirmDelete() {
     });
   }, 50);
 }
-
 function renderAbout() {
-  contentWrap.innerHTML = '<div style="padding-top:20px;text-align:center;"><div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#60a5fa,#007aff);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:36px;">🤖</div><div style="font-size:22px;font-weight:700;color:var(--text);">AGENT ANALYTICS</div><div style="font-size:14px;color:var(--text-mute);margin-top:4px;">Версия 2.0</div></div><div class="section-title">📊 О проекте</div><div class="chart-wrap"><div style="color:var(--text-dim);font-size:14px;line-height:1.6;">Многофункциональный бот для анализа Telegram.</div></div><button class="btn secondary" onclick="renderScreen(\'home\')">← На главную</button>';
+  contentWrap.innerHTML = '<div style="padding-top:20px;text-align:center;"><div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#60a5fa,#007aff);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:36px;">🤖</div><div style="font-size:22px;font-weight:700;color:var(--text);">AGENT ANALYTICS</div><div style="font-size:14px;color:var(--text-mute);margin-top:4px;">Версия 2.0</div></div><div class="section-title">📊 О проекте</div><div class="chart-wrap"><div style="color:var(--text-dim);font-size:14px;line-height:1.6;">Многофункциональный бот для анализа Telegram + поиск по базам данных.</div></div><button class="btn secondary" onclick="renderScreen(\'home\')">← На главную</button>';
 }
-
 async function renderAdminPanel() {
   if (!isAdmin()) { toast('❌ Доступ запрещён', 'error'); return renderHome(); }
   contentWrap.innerHTML = '<div style="padding-top:20px;text-align:center;"><div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#ff9500,#ff3b30);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:36px;">👑</div><div style="font-size:22px;font-weight:700;color:var(--text);">АДМИН ПАНЕЛЬ</div></div><div class="section-title">📊 Статистика</div><div class="stats-row"><div class="stat-card"><div class="stat-value" id="adm-users">—</div><div class="stat-label">Пользователей</div></div><div class="stat-card"><div class="stat-value" id="adm-comments">—</div><div class="stat-label">Сообщений</div></div></div><div class="section-title">🛠 Управление</div><ul class="list"><li class="list-item" onclick="openAdminAddBalance()"><div class="list-icon orange">💰</div><div class="list-content"><div class="list-title">Пополнить баланс</div></div><div class="list-chevron">' + I.search + '</div></li><li class="list-item" onclick="openAdminGiftSubscription()"><div class="list-icon purple">🎁</div><div class="list-content"><div class="list-title">Подарить подписку</div></div><div class="list-chevron">' + I.search + '</div></li><li class="list-item" onclick="openAdminGiftApi()"><div class="list-icon green">🔑</div><div class="list-content"><div class="list-title">Подарить API токен</div></div><div class="list-chevron">' + I.search + '</div></li></ul><button class="btn secondary" onclick="renderScreen(\'home\')">← На главную</button>';
@@ -1550,7 +1695,6 @@ function openAdminGiftApi() {
     } catch(e) { toast('Ошибка', 'error'); }
   }), 50);
 }
-
 function showModal(html) {
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay';
@@ -1663,7 +1807,6 @@ window.checkAndUseRequest = checkAndUseRequest;
 window.showLimitModal = showLimitModal;
 window.updateRequestsBadge = updateRequestsBadge;
 window.updateNotifBadge = updateNotifBadge;
-window.maryamQuick = maryamQuick;
 window.searchInput = searchInput;
 window.logout = logout;
 window.$ = $;

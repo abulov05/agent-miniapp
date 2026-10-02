@@ -1356,24 +1356,98 @@ function initPhoneMap(lat, lon, info) {
 // ГЛАВНЫЙ ПОИСК
 // ============================================================
 async function handleSearch() {
-  const q = searchInput.value.trim(); if (!q) return;
-  const limitCheck = await checkAndUseRequest(); if (!limitCheck.ok) { showLimitModal(); return; }
-  searchBtn.disabled = true; vibrate(10);
+  const q = searchInput.value.trim();
+  if (!q) return;
+
+  searchBtn.disabled = true;
+  vibrate(10);
+
   try {
+    // Определяем тип запроса
     const isId = /^\d{5,15}$/.test(q);
     const isUsername = /^@?[a-zA-Z][a-zA-Z0-9_]{2,31}$/.test(q) && !q.includes(' ') && !/^\+?\d/.test(q);
-    if (isId) { try { await apiGetUser(parseInt(q)); renderScreen('profile', parseInt(q)); return; } catch (e) {} }
-    if (isUsername) { const clean = q.replace('@', '').toLowerCase(); try { const users = await apiGetUsers(); const found = users.filter(u => (u.username || '').toLowerCase() === clean); if (found.length === 1) { renderScreen('profile', found[0].user_id); return; } } catch (e) {} }
-    contentWrap.innerHTML = `<div class="section-title">🔍 Поиск: ${esc(q)}</div>${renderLoading('Ищем по всем базам...')}`;
+
+    // ✅ ШАГ 1: Если ID или @username — ищем в БАЗЕ БОТА
+    if (isId || isUsername) {
+      contentWrap.innerHTML = `
+        <div class="section-title">🔍 Поиск: ${esc(q)}</div>
+        ${renderLoading('Ищем в базе бота...')}
+      `;
+
+      try {
+        const localData = await pubPost('/api/search_local', { query: q });
+        if (localData.success && localData.user) {
+          // Нашли в базе бота → открываем профиль
+          renderScreen('profile', localData.user.user_id);
+          return;
+        }
+      } catch (e) {
+        console.warn('Локальный поиск не удался:', e);
+      }
+
+      // Если в базе бота нет — идём во внешние базы (apisearch)
+    }
+
+    // ✅ ШАГ 2: Для всего остального (телефон, ФИО, паспорт) — apisearch
+    const limitCheck = await checkAndUseRequest();
+    if (!limitCheck.ok) { showLimitModal(); return; }
+
+    contentWrap.innerHTML = `
+      <div class="section-title">🔍 Поиск: ${esc(q)}</div>
+      ${renderLoading('Ищем по базам...')}
+    `;
+
     const u = getTelegramUser();
-    const data = await pubPost('/api/apisearch/search', { user_id: u.id, query: q, type: 'extended' });
-    if (!data.success) { contentWrap.innerHTML = `<div class="section-title">🔍 Поиск: ${esc(q)}</div>${renderError(data.error || 'Не найдено')}<button class="btn secondary" onclick="renderScreen('home')" style="margin-top:12px;">← На главную</button>`; return; }
+
+    // Если @username — пробуем tg_search
+    if (isUsername) {
+      try {
+        const tgData = await pubPost('/api/apisearch/tg_search', {
+          user_id: u.id,
+          query: q.replace('@', '')
+        });
+        if (tgData.success && tgData.result && (tgData.result.telegram_id || tgData.result.username)) {
+          contentWrap.innerHTML = `<div class="section-title">🔍 Поиск: ${esc(q)}</div><div id="search-tg-result"></div><button class="btn secondary" onclick="renderScreen('home')" style="margin-top:12px;">← На главную</button>`;
+          renderTgProfile(tgData.result, q, 'search-tg-result');
+          return;
+        }
+      } catch (e) {}
+    }
+
+    // extended_search (поиск по базам: телефон, ФИО, паспорт)
+    const data = await pubPost('/api/apisearch/search', {
+      user_id: u.id,
+      query: q,
+      type: 'extended'
+    });
+
+    if (!data.success) {
+      contentWrap.innerHTML = `
+        <div class="section-title">🔍 Поиск: ${esc(q)}</div>
+        ${renderError(data.error || 'Не найдено')}
+        <button class="btn secondary" onclick="renderScreen('home')" style="margin-top:12px;">← На главную</button>
+      `;
+      return;
+    }
+
     const items = data.results || [];
-    if (!items.length) { contentWrap.innerHTML = `<div class="section-title">🔍 Поиск: ${esc(q)}</div>${renderEmpty('Ничего не найдено')}<button class="btn secondary" onclick="renderScreen('home')" style="margin-top:12px;">← На главную</button>`; return; }
+    if (!items.length) {
+      contentWrap.innerHTML = `
+        <div class="section-title">🔍 Поиск: ${esc(q)}</div>
+        ${renderEmpty('Ничего не найдено')}
+        <button class="btn secondary" onclick="renderScreen('home')" style="margin-top:12px;">← На главную</button>
+      `;
+      return;
+    }
+
     contentWrap.innerHTML = `<div class="section-title">🔍 Поиск: ${esc(q)}</div><div id="search-ext-result"></div><button class="btn secondary" onclick="renderScreen('home')" style="margin-top:12px;">← На главную</button>`;
     renderExtendedResults(items, q, 'search-ext-result');
-  } catch (e) { toast(e.message || 'Ошибка', 'error'); }
-  finally { searchBtn.disabled = false; }
+
+  } catch (e) {
+    toast(e.message || 'Ошибка', 'error');
+  } finally {
+    searchBtn.disabled = false;
+  }
 }
 
 searchBtn.addEventListener('click', handleSearch);

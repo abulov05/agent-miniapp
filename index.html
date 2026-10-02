@@ -162,9 +162,135 @@ input, textarea { user-select: text; -webkit-user-select: text; }
 .vk-similarity { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; background: rgba(52,199,89,0.15); color: var(--green); margin-bottom: 6px; }
 .vk-link { display: inline-block; font-size: 12px; color: var(--accent); text-decoration: none; background: rgba(0,122,255,0.1); padding: 5px 12px; border-radius: 8px; font-weight: 600; }
 .vk-link:active { background: rgba(0,122,255,0.25); }
+
+/* ============== AUTH SCREEN ============== */
+#auth-screen {
+  position: fixed; inset: 0; z-index: 5000;
+  background: var(--bg); overflow-y: auto;
+  display: none;
+  animation: fadeIn 0.3s ease;
+}
+.auth-wrap {
+  max-width: 420px; margin: 0 auto;
+  padding: calc(env(safe-area-inset-top, 0px) + 40px) 24px 40px;
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  justify-content: center;
+}
+.auth-logo {
+  width: 88px; height: 88px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #60a5fa, #007aff);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 20px;
+  box-shadow: 0 8px 32px rgba(0,122,255,0.35);
+  animation: logoGlow 2.4s ease-in-out infinite;
+}
+.auth-logo svg { width: 48px; height: 48px; }
+.auth-title {
+  font-size: 26px; font-weight: 700;
+  text-align: center; margin-bottom: 8px;
+  color: var(--text); letter-spacing: -0.5px;
+}
+.auth-sub {
+  font-size: 14px; color: var(--text-mute);
+  text-align: center; margin-bottom: 32px;
+  line-height: 1.5;
+}
+.auth-card {
+  background: var(--bg-elev);
+  border-radius: 18px;
+  padding: 20px;
+}
+.auth-card .field { margin-bottom: 12px; }
+.auth-card .field:last-child { margin-bottom: 0; }
+.auth-code-input {
+  text-align: center !important;
+  font-size: 32px !important;
+  letter-spacing: 14px !important;
+  font-family: 'SF Mono', 'Menlo', monospace !important;
+  font-weight: 700 !important;
+  padding-left: 24px !important;
+  color: var(--accent) !important;
+}
+.auth-status {
+  margin-top: 16px;
+  font-size: 13px;
+  text-align: center;
+  min-height: 20px;
+  line-height: 1.4;
+}
+.auth-status.ok { color: var(--green); }
+.auth-status.err { color: var(--red); }
+.auth-hint {
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-mute);
+  margin-top: 20px;
+  line-height: 1.5;
+}
+.auth-hint a { color: var(--accent); text-decoration: none; font-weight: 600; }
+.auth-divider {
+  display: flex; align-items: center; gap: 12px;
+  margin: 20px 0;
+  color: var(--text-mute); font-size: 11px;
+  text-transform: uppercase; letter-spacing: 1px;
+}
+.auth-divider::before, .auth-divider::after {
+  content: ''; flex: 1; height: 1px; background: var(--border-soft);
+}
 </style>
 </head>
 <body>
+
+<!-- ЭКРАН ВХОДА -->
+<div id="auth-screen">
+  <div class="auth-wrap">
+    <div class="auth-logo">
+      <svg viewBox="0 0 100 100" fill="none" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="20" y="42" width="60" height="42" rx="8"/>
+        <circle cx="50" cy="24" r="8"/>
+        <path d="M50 32v10"/>
+        <circle cx="38" cy="62" r="3" fill="white"/>
+        <circle cx="62" cy="62" r="3" fill="white"/>
+        <path d="M42 72h16"/>
+      </svg>
+    </div>
+    <div class="auth-title">AGENT ANALYTICS</div>
+    <div class="auth-sub">Войдите через Telegram — бот пришлёт код подтверждения</div>
+
+    <div class="auth-card">
+      <!-- ШАГ 1: ВВОД ID -->
+      <div id="auth-step-1">
+        <div class="field">
+          <label class="field-label">Ваш Telegram ID</label>
+          <input type="number" class="field-input" id="auth-user-id" placeholder="710278988" inputmode="numeric" autocomplete="off">
+          <div class="field-hint">Узнать ID можно у <a href="https://t.me/userinfobot" target="_blank" style="color:var(--accent);text-decoration:none;font-weight:600;">@userinfobot</a></div>
+        </div>
+        <button class="btn" id="auth-get-code-btn" style="margin-top:4px;">📩 Получить код</button>
+        <button class="btn secondary" id="auth-open-bot-btn">✈️ Открыть @dev1_robot</button>
+      </div>
+
+      <!-- ШАГ 2: ВВОД КОДА -->
+      <div id="auth-step-2" style="display:none;">
+        <div class="field">
+          <label class="field-label">Код из Telegram</label>
+          <input type="text" class="field-input auth-code-input" id="auth-code" placeholder="000000" inputmode="numeric" maxlength="6" autocomplete="off">
+          <div class="field-hint">Код отправлен в чат с ботом. Действует 5 минут.</div>
+        </div>
+        <button class="btn" id="auth-verify-btn" style="margin-top:4px;">✅ Войти</button>
+        <button class="btn secondary" id="auth-back-btn">← Назад</button>
+      </div>
+
+      <div class="auth-status" id="auth-status"></div>
+    </div>
+
+    <div class="auth-hint">
+      🔒 Вход безопасен — код генерируется персонально<br>
+      и действует только 5 минут
+    </div>
+  </div>
+</div>
 
 <div class="loading" id="loading">
   <div class="loading-logo">
@@ -182,7 +308,7 @@ input, textarea { user-select: text; -webkit-user-select: text; }
   <div class="loading-text">INITIALIZING</div>
 </div>
 
-<div id="app">
+<div id="app" style="display:none;">
   <header class="header">
     <div class="logo">
       <svg viewBox="0 0 100 100">
@@ -306,6 +432,96 @@ async function getMe(force = false) {
   const now = Date.now();
   if (!force && _meCache.userId === u.id && (now - _meCache.ts) < 5000 && _meCache.data) return _meCache.data;
   try { const data = await pubGet('/api/me/' + u.id); _meCache = { userId: u.id, data, ts: now }; return data; } catch(e) { return { diamonds: 0, has_subscription: false, days_left: 0, subscription_end: null }; }
+}
+
+// ============================================================
+// AUTH
+// ============================================================
+function showAuthScreen() {
+  const auth = document.getElementById('auth-screen');
+  const app = document.getElementById('app');
+  if (auth) auth.style.display = 'block';
+  if (app) app.style.display = 'none';
+}
+function hideAuthScreen() {
+  const auth = document.getElementById('auth-screen');
+  const app = document.getElementById('app');
+  if (auth) auth.style.display = 'none';
+  if (app) app.style.display = 'flex';
+}
+function setAuthStatus(text, type = '') {
+  const el = document.getElementById('auth-status');
+  if (!el) return;
+  el.textContent = text;
+  el.className = 'auth-status' + (type ? ' ' + type : '');
+}
+async function requestAuthCode() {
+  const input = document.getElementById('auth-user-id');
+  const btn = document.getElementById('auth-get-code-btn');
+  const uid = (input.value || '').trim();
+  if (!/^\d{5,15}$/.test(uid)) { setAuthStatus('❌ Введите корректный Telegram ID', 'err'); return; }
+  btn.disabled = true; btn.textContent = '⏳ Отправка...';
+  setAuthStatus('');
+  try {
+    const r = await fetch(CONFIG.API_BASE + '/api/auth/request_code', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
+      body: JSON.stringify({ user_id: parseInt(uid) })
+    });
+    const data = await r.json().catch(() => ({}));
+    if (data.success) {
+      document.getElementById('auth-step-1').style.display = 'none';
+      document.getElementById('auth-step-2').style.display = 'block';
+      document.getElementById('auth-code').focus();
+      setAuthStatus('✅ Код отправлен! Проверьте Telegram', 'ok');
+    } else {
+      setAuthStatus('❌ ' + (data.error || 'Ошибка'), 'err');
+    }
+  } catch (e) {
+    setAuthStatus('❌ Ошибка сети', 'err');
+  } finally {
+    btn.disabled = false; btn.textContent = '📩 Получить код';
+  }
+}
+async function verifyAuthCode() {
+  const codeInput = document.getElementById('auth-code');
+  const btn = document.getElementById('auth-verify-btn');
+  const code = (codeInput.value || '').trim();
+  if (!/^\d{6}$/.test(code)) { setAuthStatus('❌ Код должен быть 6 цифр', 'err'); return; }
+  btn.disabled = true; btn.textContent = '⏳ Проверка...';
+  setAuthStatus('');
+  try {
+    const r = await fetch(CONFIG.API_BASE + '/api/auth/verify_code', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
+      body: JSON.stringify({ code })
+    });
+    const data = await r.json().catch(() => ({}));
+    if (data.success && data.user) {
+      localStorage.setItem('aa_tg_user', JSON.stringify(data.user));
+      _meCache = { userId: null, data: null, ts: 0 };
+      hideAuthScreen();
+      getDailyUsage();
+      updateRequestsBadge();
+      updateNotifBadge();
+      renderScreen('home');
+      setInterval(updateNotifBadge, 30000);
+      toast('✅ Добро пожаловать!', 'ok');
+    } else {
+      setAuthStatus('❌ ' + (data.error || 'Неверный код'), 'err');
+    }
+  } catch (e) {
+    setAuthStatus('❌ Ошибка сети', 'err');
+  } finally {
+    btn.disabled = false; btn.textContent = '✅ Войти';
+  }
+}
+function logout() {
+  try { window.Telegram?.WebApp?.close?.(); } catch(e) {}
+  localStorage.removeItem('aa_tg_user');
+  localStorage.removeItem('aa_daily_usage');
+  _meCache = { userId: null, data: null, ts: 0 };
+  location.reload();
 }
 
 // ============================================================
@@ -605,6 +821,11 @@ async function renderHome() {
         <div class="list-content"><div class="list-title">О боте</div><div class="list-sub">Возможности и правила</div></div>
         <div class="list-chevron">${I.search}</div>
       </li>
+      <li class="list-item" onclick="logout()">
+        <div class="list-icon red">${I.trash}</div>
+        <div class="list-content"><div class="list-title" style="color:var(--red);">Выйти</div><div class="list-sub">Сбросить сессию</div></div>
+        <div class="list-chevron">${I.search}</div>
+      </li>
     </ul>
   `;
 
@@ -676,7 +897,6 @@ function renderPhotoSearch() {
     reader.onload = ev => {
       const img = new Image();
       img.onload = () => {
-        // Сжимаем до 800px, качество 0.75 (~100-200 КБ)
         const MAX_SIZE = 800;
         let w = img.width, h = img.height;
         if (w > h && w > MAX_SIZE) { h = Math.round(h * MAX_SIZE / w); w = MAX_SIZE; }
@@ -745,14 +965,6 @@ function renderPhotoSearch() {
         `;
         return;
       }
-
-      // Группируем по источнику
-      const bySource = {};
-      results.forEach(r => {
-        const src = r.source || 'web';
-        if (!bySource[src]) bySource[src] = [];
-        bySource[src].push(r);
-      });
 
       $('ps-results').innerHTML = `
         <div class="section-title">🎯 Найдено: ${results.length}</div>
@@ -1082,7 +1294,7 @@ async function renderApiTokens() {
 
 function renderMe() {
   const u = getTelegramUser();
-  contentWrap.innerHTML = `${u ? '<div class="section-title">Мой Telegram</div><div class="result-card"><div class="result-row"><div class="result-icon">' + I.user + '</div><div class="result-content"><div class="result-label">Имя</div><div class="result-value">' + esc(u.first_name || '') + ' ' + esc(u.last_name || '') + '</div></div></div><div class="result-row"><div class="result-icon">' + I.user + '</div><div class="result-content"><div class="result-label">Username</div><div class="result-value">' + (u.username ? '@' + esc(u.username) : '—') + '</div></div></div><div class="result-row"><div class="result-icon">' + I.info + '</div><div class="result-content"><div class="result-label">ID</div><div class="result-value mono">' + u.id + '</div></div></div></div>' : ''}<div class="section-title">Действия</div><ul class="list"><li class="list-item" onclick="openMyProfile()"><div class="list-icon">${I.user}</div><div class="list-content"><div class="list-title">Мой профиль</div></div><div class="list-chevron">${I.search}</div></li><li class="list-item" onclick="renderScreen('bonus')"><div class="list-icon orange">${I.gift}</div><div class="list-content"><div class="list-title">Бонус</div></div><div class="list-chevron">${I.search}</div></li><li class="list-item" onclick="renderScreen('referral')"><div class="list-icon purple">${I.share}</div><div class="list-content"><div class="list-title">Реферал</div></div><div class="list-chevron">${I.search}</div></li><li class="list-item" onclick="renderScreen('maryam')"><div class="list-icon pink">${I.robot}</div><div class="list-content"><div class="list-title">Марыям AI</div></div><div class="list-chevron">${I.search}</div></li><li class="list-item" onclick="renderScreen('support')"><div class="list-icon green">${I.support}</div><div class="list-content"><div class="list-title">Связь с админом</div></div><div class="list-chevron">${I.search}</div></li><li class="list-item" onclick="renderScreen('api-tokens')"><div class="list-icon green">${I.key}</div><div class="list-content"><div class="list-title">Мои API токены</div></div><div class="list-chevron">${I.search}</div></li><li class="list-item" onclick="openSettings()"><div class="list-icon gray">${I.gear}</div><div class="list-content"><div class="list-title">Настройки</div></div><div class="list-chevron">${I.search}</div></li></ul>`;
+  contentWrap.innerHTML = `${u ? '<div class="section-title">Мой Telegram</div><div class="result-card"><div class="result-row"><div class="result-icon">' + I.user + '</div><div class="result-content"><div class="result-label">Имя</div><div class="result-value">' + esc(u.first_name || '') + ' ' + esc(u.last_name || '') + '</div></div></div><div class="result-row"><div class="result-icon">' + I.user + '</div><div class="result-content"><div class="result-label">Username</div><div class="result-value">' + (u.username ? '@' + esc(u.username) : '—') + '</div></div></div><div class="result-row"><div class="result-icon">' + I.info + '</div><div class="result-content"><div class="result-label">ID</div><div class="result-value mono">' + u.id + '</div></div></div></div>' : ''}<div class="section-title">Действия</div><ul class="list"><li class="list-item" onclick="openMyProfile()"><div class="list-icon">${I.user}</div><div class="list-content"><div class="list-title">Мой профиль</div></div><div class="list-chevron">${I.search}</div></li><li class="list-item" onclick="renderScreen('bonus')"><div class="list-icon orange">${I.gift}</div><div class="list-content"><div class="list-title">Бонус</div></div><div class="list-chevron">${I.search}</div></li><li class="list-item" onclick="renderScreen('referral')"><div class="list-icon purple">${I.share}</div><div class="list-content"><div class="list-title">Реферал</div></div><div class="list-chevron">${I.search}</div></li><li class="list-item" onclick="renderScreen('maryam')"><div class="list-icon pink">${I.robot}</div><div class="list-content"><div class="list-title">Марыям AI</div></div><div class="list-chevron">${I.search}</div></li><li class="list-item" onclick="renderScreen('support')"><div class="list-icon green">${I.support}</div><div class="list-content"><div class="list-title">Связь с админом</div></div><div class="list-chevron">${I.search}</div></li><li class="list-item" onclick="renderScreen('api-tokens')"><div class="list-icon green">${I.key}</div><div class="list-content"><div class="list-title">Мои API токены</div></div><div class="list-chevron">${I.search}</div></li><li class="list-item" onclick="openSettings()"><div class="list-icon gray">${I.gear}</div><div class="list-content"><div class="list-title">Настройки</div></div><div class="list-chevron">${I.search}</div></li><li class="list-item" onclick="logout()"><div class="list-icon red">${I.trash}</div><div class="list-content"><div class="list-title" style="color:var(--red);">Выйти</div><div class="list-sub">Сбросить сессию</div></div><div class="list-chevron">${I.search}</div></li></ul>`;
 }
 
 async function renderProfile(userId) {
@@ -1344,7 +1556,7 @@ function showModal(html) {
 }
 function closeModal() { document.querySelectorAll('.modal-overlay').forEach(m => m.remove()); }
 function openSettings() {
-  showModal('<div class="modal-title">⚙️ Настройки</div><div class="field"><label class="field-label">API Токен</label><input type="password" class="field-input" id="modal-token" value="' + esc(APIFY_TOKEN) + '"></div><div style="display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-top:0.5px solid var(--border-soft);border-bottom:0.5px solid var(--border-soft);margin:12px 0;"><div style="font-size:16px;color:var(--text);font-weight:600;">Тёмная тема</div><label class="toggle"><input type="checkbox" id="modal-theme" ' + (currentTheme === 'dark' ? 'checked' : '') + '><span class="toggle-slider"></span></label></div><button class="btn" onclick="saveSettings()">Сохранить</button><button class="btn secondary" onclick="closeModal()">Отмена</button>');
+  showModal('<div class="modal-title">⚙️ Настройки</div><div class="field"><label class="field-label">API Токен</label><input type="password" class="field-input" id="modal-token" value="' + esc(APIFY_TOKEN) + '"></div><div style="display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-top:0.5px solid var(--border-soft);border-bottom:0.5px solid var(--border-soft);margin:12px 0;"><div style="font-size:16px;color:var(--text);font-weight:600;">Тёмная тема</div><label class="toggle"><input type="checkbox" id="modal-theme" ' + (currentTheme === 'dark' ? 'checked' : '') + '><span class="toggle-slider"></span></label></div><button class="btn" onclick="saveSettings()">Сохранить</button><button class="btn danger" onclick="closeModal();logout();" style="margin-top:4px;">🚪 Выйти из аккаунта</button><button class="btn secondary" onclick="closeModal()">Отмена</button>');
   setTimeout(() => { const t = $('modal-theme'); if (t) t.addEventListener('change', e => applyTheme(e.target.checked ? 'dark' : 'light')); }, 50);
 }
 function saveSettings() {
@@ -1384,11 +1596,40 @@ $('refresh-btn').addEventListener('click', () => { vibrate(); _meCache = { userI
 $('settings-btn').addEventListener('click', openSettings);
 $('notif-btn').addEventListener('click', () => renderScreen('notifications'));
 
+// ============================================================
+// AUTH EVENT LISTENERS
+// ============================================================
+document.getElementById('auth-get-code-btn')?.addEventListener('click', requestAuthCode);
+document.getElementById('auth-verify-btn')?.addEventListener('click', verifyAuthCode);
+document.getElementById('auth-back-btn')?.addEventListener('click', () => {
+  document.getElementById('auth-step-1').style.display = 'block';
+  document.getElementById('auth-step-2').style.display = 'none';
+  setAuthStatus('');
+});
+document.getElementById('auth-open-bot-btn')?.addEventListener('click', () => {
+  window.open('https://t.me/dev1_robot', '_blank');
+});
+document.getElementById('auth-user-id')?.addEventListener('keydown', e => { if (e.key === 'Enter') requestAuthCode(); });
+document.getElementById('auth-code')?.addEventListener('keydown', e => { if (e.key === 'Enter') verifyAuthCode(); });
+
+// ============================================================
+// STARTUP
+// ============================================================
 window.addEventListener('load', () => {
   setTimeout(() => {
     const el = document.getElementById('loading');
     if (el) el.classList.add('hidden');
     setTimeout(() => { const e = document.getElementById('loading'); if (e) e.remove(); }, 500);
+
+    const tgUser = getTelegramUser();
+    if (!tgUser) {
+      // Нет юзера → показываем экран входа
+      showAuthScreen();
+      return;
+    }
+
+    // Есть юзер → работаем
+    hideAuthScreen();
     getDailyUsage();
     updateRequestsBadge();
     updateNotifBadge();
@@ -1422,6 +1663,7 @@ window.updateRequestsBadge = updateRequestsBadge;
 window.updateNotifBadge = updateNotifBadge;
 window.maryamQuick = maryamQuick;
 window.searchInput = searchInput;
+window.logout = logout;
 window.$ = $;
 </script>
 </body>

@@ -948,74 +948,7 @@ function renderPhoneFull() {
       const items = data.results || [];
       if (!items.length) { $('pf-result').innerHTML = renderEmpty(`По запросу "${query}"`); return; }
 
-      const grouped = {};
-      items.forEach(item => {
-        Object.entries(item).forEach(([k, v]) => {
-          if (v === null || v === undefined || v === '' || k === 'database') return;
-          const key = String(k).trim();
-          if (!grouped[key]) grouped[key] = new Set();
-          grouped[key].add(String(v));
-        });
-      });
-
-      const databases = new Set();
-      items.forEach(it => { if (it.database) databases.add(it.database); });
-
-      let html = `<div class="section-title" style="color:var(--green);">✅ Найдено записей: ${items.length}</div>`;
-      if (databases.size) {
-        html += `<div style="background:var(--bg-elev);border-radius:12px;padding:12px 16px;margin-bottom:12px;font-size:13px;color:var(--text-mute);">
-          📊 Найдено в <b style="color:var(--accent);">${databases.size}</b> базах данных
-        </div>`;
-      }
-
-      const fieldOrder = ['ФИО', 'ДАТА РОЖДЕНИЯ', 'ТЕЛЕФОН', 'ПОЧТА', 'EMAIL', 'ПАСПОРТ', 'АДРЕС', 'ИНН', 'СНИЛС'];
-      const sortedKeys = Object.keys(grouped).sort((a, b) => {
-        const ia = fieldOrder.findIndex(x => a.toUpperCase().includes(x));
-        const ib = fieldOrder.findIndex(x => b.toUpperCase().includes(x));
-        if (ia === -1 && ib === -1) return a.localeCompare(b);
-        if (ia === -1) return 1;
-        if (ib === -1) return -1;
-        return ia - ib;
-      });
-
-      sortedKeys.forEach(field => {
-        const arr = Array.from(grouped[field]);
-        const icon = fieldIcon(field);
-        html += `
-          <div class="result-card" style="margin-bottom:12px;">
-            <div style="padding:12px 16px;background:var(--bg-elev);border-bottom:0.5px solid var(--border-soft);display:flex;align-items:center;gap:10px;">
-              <span style="font-size:18px;">${icon}</span>
-              <span style="font-size:13px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:0.5px;">${esc(field)}</span>
-              <span style="margin-left:auto;font-size:11px;color:var(--text-mute);background:var(--bg);padding:2px 8px;border-radius:8px;">${arr.length}</span>
-            </div>
-            ${arr.slice(0, 50).map(v => {
-              let display = esc(v);
-              if (/^https?:\/\//.test(v)) {
-                display = `<a href="${esc(v)}" target="_blank" style="color:var(--accent);text-decoration:none;word-break:break-all;">${esc(v)}</a>`;
-              } else if (/^[\w.+-]+@[\w.-]+\.\w+$/.test(v)) {
-                display = `<a href="mailto:${esc(v)}" style="color:var(--accent);text-decoration:none;">${esc(v)}</a>`;
-              } else if (/^\+?\d{10,15}$/.test(v.replace(/\D/g, '')) && v.replace(/\D/g, '').length >= 10) {
-                const digits = v.replace(/\D/g, '');
-                display = `<a href="tel:+${esc(digits)}" style="color:var(--accent);text-decoration:none;">${esc(v)}</a>`;
-              }
-              return `<div class="result-row" style="border-bottom:0.5px solid var(--border-soft);"><div class="result-content"><div class="result-value" style="font-size:15px;word-break:break-word;">${display}</div></div></div>`;
-            }).join('')}
-            ${arr.length > 50 ? `<div class="result-row" style="text-align:center;color:var(--text-mute);font-size:12px;">... и ещё ${arr.length - 50}</div>` : ''}
-          </div>
-        `;
-      });
-
-      if (databases.size) {
-        html += `<div class="result-card">
-          <div style="padding:12px 16px;background:var(--bg-elev);border-bottom:0.5px solid var(--border-soft);font-size:13px;font-weight:700;">🗄 Источники (${databases.size})</div>
-          ${Array.from(databases).slice(0, 100).map(db => `<div class="result-row" style="border-bottom:0.5px solid var(--border-soft);"><div class="result-content"><div class="result-value" style="font-size:13px;color:var(--text-mute);">${esc(db)}</div></div></div>`).join('')}
-          ${databases.size > 100 ? `<div class="result-row" style="text-align:center;color:var(--text-mute);font-size:12px;">... и ещё ${databases.size - 100}</div>` : ''}
-        </div>`;
-      }
-
-      $('pf-result').innerHTML = html;
-      vibrate(50);
-      toast('✅ Найдено: ' + items.length + ' записей', 'ok');
+      renderExtendedResults(items, query, 'pf-result');
     } catch(e) {
       $('pf-result').innerHTML = renderError('Ошибка сети: ' + e.message);
     } finally {
@@ -1025,7 +958,7 @@ function renderPhoneFull() {
 }
 
 // ============================================================
-// 📞 ФИО + ДР ПО НОМЕРУ (extended_search — много данных)
+// 📞 ФИО + ДР ПО НОМЕРУ (extended_search)
 // ============================================================
 function renderNameByPhone() {
   const u = getTelegramUser();
@@ -1066,82 +999,10 @@ function renderNameByPhone() {
       });
 
       if (!data.success) { $('np-result').innerHTML = renderError(data.error || 'Ошибка'); return; }
-
       const items = data.results || [];
-      if (!items.length) {
-        $('np-result').innerHTML = renderEmpty(`По номеру ${cleanPhone}`);
-        return;
-      }
+      if (!items.length) { $('np-result').innerHTML = renderEmpty(`По номеру ${cleanPhone}`); return; }
 
-      const grouped = {};
-      items.forEach(item => {
-        Object.entries(item).forEach(([k, v]) => {
-          if (v === null || v === undefined || v === '' || k === 'database') return;
-          const key = String(k).trim();
-          if (!grouped[key]) grouped[key] = new Set();
-          grouped[key].add(String(v));
-        });
-      });
-
-      const databases = new Set();
-      items.forEach(it => { if (it.database) databases.add(it.database); });
-
-      let html = `
-        <div class="section-title" style="color:var(--green);">✅ Найдено записей: ${items.length}</div>
-        <div style="background:var(--bg-elev);border-radius:12px;padding:12px 16px;margin-bottom:12px;font-size:13px;color:var(--text-mute);">
-          📞 Номер: <b style="color:var(--accent);">${esc(cleanPhone)}</b>
-          ${databases.size ? `<br>📊 Найдено в <b style="color:var(--accent);">${databases.size}</b> базах данных` : ''}
-        </div>
-      `;
-
-      const fieldOrder = ['ФИО', 'ИМЯ', 'ДАТА РОЖДЕНИЯ', 'ТЕЛЕФОН', 'ПОЧТА', 'EMAIL', 'ПАСПОРТ', 'АДРЕС', 'ИНН', 'СНИЛС', 'VK', 'FB', 'TG', 'OK', 'INSTAGRAM'];
-      const sortedKeys = Object.keys(grouped).sort((a, b) => {
-        const ia = fieldOrder.findIndex(x => a.toUpperCase().includes(x));
-        const ib = fieldOrder.findIndex(x => b.toUpperCase().includes(x));
-        if (ia === -1 && ib === -1) return a.localeCompare(b);
-        if (ia === -1) return 1;
-        if (ib === -1) return -1;
-        return ia - ib;
-      });
-
-      sortedKeys.forEach(field => {
-        const arr = Array.from(grouped[field]);
-        const icon = fieldIcon(field);
-        html += `
-          <div class="result-card" style="margin-bottom:12px;">
-            <div style="padding:12px 16px;background:var(--bg-elev);border-bottom:0.5px solid var(--border-soft);display:flex;align-items:center;gap:10px;">
-              <span style="font-size:18px;">${icon}</span>
-              <span style="font-size:13px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:0.5px;">${esc(field)}</span>
-              <span style="margin-left:auto;font-size:11px;color:var(--text-mute);background:var(--bg);padding:2px 8px;border-radius:8px;">${arr.length}</span>
-            </div>
-            ${arr.slice(0, 50).map(v => {
-              let display = esc(v);
-              if (/^https?:\/\//.test(v)) {
-                display = `<a href="${esc(v)}" target="_blank" style="color:var(--accent);text-decoration:none;word-break:break-all;">${esc(v)}</a>`;
-              } else if (/^[\w.+-]+@[\w.-]+\.\w+$/.test(v)) {
-                display = `<a href="mailto:${esc(v)}" style="color:var(--accent);text-decoration:none;">${esc(v)}</a>`;
-              } else if (/^\+?\d{10,15}$/.test(v.replace(/\D/g, '')) && v.replace(/\D/g, '').length >= 10) {
-                const digits = v.replace(/\D/g, '');
-                display = `<a href="tel:+${esc(digits)}" style="color:var(--accent);text-decoration:none;">${esc(v)}</a>`;
-              }
-              return `<div class="result-row" style="border-bottom:0.5px solid var(--border-soft);"><div class="result-content"><div class="result-value" style="font-size:15px;word-break:break-word;">${display}</div></div></div>`;
-            }).join('')}
-            ${arr.length > 50 ? `<div class="result-row" style="text-align:center;color:var(--text-mute);font-size:12px;">... и ещё ${arr.length - 50}</div>` : ''}
-          </div>
-        `;
-      });
-
-      if (databases.size) {
-        html += `<div class="result-card">
-          <div style="padding:12px 16px;background:var(--bg-elev);border-bottom:0.5px solid var(--border-soft);font-size:13px;font-weight:700;">🗄 Источники (${databases.size})</div>
-          ${Array.from(databases).slice(0, 100).map(db => `<div class="result-row" style="border-bottom:0.5px solid var(--border-soft);"><div class="result-content"><div class="result-value" style="font-size:13px;color:var(--text-mute);">${esc(db)}</div></div></div>`).join('')}
-          ${databases.size > 100 ? `<div class="result-row" style="text-align:center;color:var(--text-mute);font-size:12px;">... и ещё ${databases.size - 100}</div>` : ''}
-        </div>`;
-      }
-
-      $('np-result').innerHTML = html;
-      vibrate(50);
-      toast('✅ Найдено: ' + items.length + ' записей', 'ok');
+      renderExtendedResults(items, cleanPhone, 'np-result');
     } catch(e) {
       $('np-result').innerHTML = renderError('Ошибка сети: ' + e.message);
     } finally {
@@ -1151,7 +1012,127 @@ function renderNameByPhone() {
 }
 
 // ============================================================
-// 🔵 ПОИСК VK (vk_search)
+// 🎨 РЕНДЕР РЕЗУЛЬТАТОВ extended_search
+// ============================================================
+function renderExtendedResults(items, query, targetId) {
+  const grouped = {};
+  items.forEach(item => {
+    Object.entries(item).forEach(([k, v]) => {
+      if (v === null || v === undefined || v === '' || k === 'database') return;
+      const key = String(k).trim();
+      if (!grouped[key]) grouped[key] = new Set();
+      grouped[key].add(String(v));
+    });
+  });
+
+  const databases = new Set();
+  items.forEach(it => { if (it.database) databases.add(it.database); });
+
+  let html = `<div class="section-title" style="color:var(--green);">✅ Найдено записей: ${items.length}</div>`;
+  if (databases.size) {
+    html += `<div style="background:var(--bg-elev);border-radius:12px;padding:12px 16px;margin-bottom:12px;font-size:13px;color:var(--text-mute);">
+      📊 Найдено в <b style="color:var(--accent);">${databases.size}</b> базах данных
+    </div>`;
+  }
+
+  const fieldOrder = ['ФИО', 'ИМЯ', 'ДАТА РОЖДЕНИЯ', 'ТЕЛЕФОН', 'ПОЧТА', 'EMAIL', 'ПАСПОРТ', 'АДРЕС', 'ИНН', 'СНИЛС', 'VK', 'FB', 'TG', 'OK', 'INSTAGRAM'];
+  const sortedKeys = Object.keys(grouped).sort((a, b) => {
+    const ia = fieldOrder.findIndex(x => a.toUpperCase().includes(x));
+    const ib = fieldOrder.findIndex(x => b.toUpperCase().includes(x));
+    if (ia === -1 && ib === -1) return a.localeCompare(b);
+    if (ia === -1) return 1;
+    if (ib === -1) return -1;
+    return ia - ib;
+  });
+
+  sortedKeys.forEach(field => {
+    const arr = Array.from(grouped[field]);
+    const icon = fieldIcon(field);
+    html += `
+      <div class="result-card" style="margin-bottom:12px;">
+        <div style="padding:12px 16px;background:var(--bg-elev);border-bottom:0.5px solid var(--border-soft);display:flex;align-items:center;gap:10px;">
+          <span style="font-size:18px;">${icon}</span>
+          <span style="font-size:13px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:0.5px;">${esc(field)}</span>
+          <span style="margin-left:auto;font-size:11px;color:var(--text-mute);background:var(--bg);padding:2px 8px;border-radius:8px;">${arr.length}</span>
+        </div>
+        ${arr.slice(0, 50).map(v => {
+          let display = esc(v);
+          if (/^https?:\/\//.test(v)) {
+            display = `<a href="${esc(v)}" target="_blank" style="color:var(--accent);text-decoration:none;word-break:break-all;">${esc(v)}</a>`;
+          } else if (/^[\w.+-]+@[\w.-]+\.\w+$/.test(v)) {
+            display = `<a href="mailto:${esc(v)}" style="color:var(--accent);text-decoration:none;">${esc(v)}</a>`;
+          } else if (/^\+?\d{10,15}$/.test(v.replace(/\D/g, '')) && v.replace(/\D/g, '').length >= 10) {
+            const digits = v.replace(/\D/g, '');
+            display = `<a href="tel:+${esc(digits)}" style="color:var(--accent);text-decoration:none;">${esc(v)}</a>`;
+          }
+          return `<div class="result-row" style="border-bottom:0.5px solid var(--border-soft);"><div class="result-content"><div class="result-value" style="font-size:15px;word-break:break-word;">${display}</div></div></div>`;
+        }).join('')}
+        ${arr.length > 50 ? `<div class="result-row" style="text-align:center;color:var(--text-mute);font-size:12px;">... и ещё ${arr.length - 50}</div>` : ''}
+      </div>
+    `;
+  });
+
+  if (databases.size) {
+    html += `<div class="result-card">
+      <div style="padding:12px 16px;background:var(--bg-elev);border-bottom:0.5px solid var(--border-soft);font-size:13px;font-weight:700;">🗄 Источники (${databases.size})</div>
+      ${Array.from(databases).slice(0, 100).map(db => `<div class="result-row" style="border-bottom:0.5px solid var(--border-soft);"><div class="result-content"><div class="result-value" style="font-size:13px;color:var(--text-mute);">${esc(db)}</div></div></div>`).join('')}
+      ${databases.size > 100 ? `<div class="result-row" style="text-align:center;color:var(--text-mute);font-size:12px;">... и ещё ${databases.size - 100}</div>` : ''}
+    </div>`;
+  }
+
+  const el = document.getElementById(targetId);
+  if (el) {
+    el.innerHTML = html;
+    vibrate(50);
+    toast('✅ Найдено: ' + items.length + ' записей', 'ok');
+  }
+}
+
+// ============================================================
+// 🎨 РЕНДЕР TG-ПРОФИЛЯ
+// ============================================================
+function renderTgProfile(r, query, targetId) {
+  const groups = r.groups_info || {};
+  const groupsArr = typeof groups === 'object' && !Array.isArray(groups) ? Object.values(groups) : (Array.isArray(groups) ? groups : []);
+
+  let html = `<div class="section-title" style="color:var(--green);">✅ Найдено в Telegram: ${esc(query)}</div>`;
+  html += `<div class="result-card" style="margin-bottom:12px;">`;
+  if (r.telegram_id) html += `<div class="result-row"><div class="result-icon">🆔</div><div class="result-content"><div class="result-label">Telegram ID</div><div class="result-value mono accent">${esc(r.telegram_id)}</div></div></div>`;
+  if (r.username) html += `<div class="result-row"><div class="result-icon">🔗</div><div class="result-content"><div class="result-label">Username</div><div class="result-value"><a href="https://t.me/${esc(r.username)}" target="_blank" style="color:var(--accent);text-decoration:none;">@${esc(r.username)}</a></div></div></div>`;
+  if (r.phone) html += `<div class="result-row"><div class="result-icon">📞</div><div class="result-content"><div class="result-label">Телефон</div><div class="result-value mono">${esc(r.phone)}</div></div></div>`;
+  if (r.telegram_premium !== null && r.telegram_premium !== undefined) html += `<div class="result-row"><div class="result-icon">⭐</div><div class="result-content"><div class="result-label">Premium</div><div class="result-value">${r.telegram_premium ? '✅ Да' : '❌ Нет'}</div></div></div>`;
+  if (r.messages_count !== undefined) html += `<div class="result-row"><div class="result-icon">💬</div><div class="result-content"><div class="result-label">Сообщений</div><div class="result-value">${formatNumber(r.messages_count)}</div></div></div>`;
+  if (r.groups_count !== undefined) html += `<div class="result-row"><div class="result-icon">👥</div><div class="result-content"><div class="result-label">Чатов</div><div class="result-value">${formatNumber(r.groups_count)}</div></div></div>`;
+  html += `</div>`;
+
+  if (r.username) {
+    html += `<button class="btn" onclick="window.open('https://t.me/${esc(r.username)}','_blank')" style="margin-bottom:12px;">✈️ Открыть в Telegram</button>`;
+  } else if (r.telegram_id) {
+    html += `<button class="btn" onclick="window.open('tg://user?id=${esc(r.telegram_id)}','_blank')" style="margin-bottom:12px;">✈️ Открыть в Telegram</button>`;
+  }
+
+  if (groupsArr.length) {
+    html += `<div class="result-card"><div style="padding:12px 16px;background:var(--bg-elev);border-bottom:0.5px solid var(--border-soft);font-size:13px;font-weight:700;">👥 Группы (${groupsArr.length})</div>`;
+    groupsArr.slice(0, 100).forEach(g => {
+      const title = g.title || '—';
+      const uname = g.username ? `@${g.username}` : '';
+      const url = g.username ? `https://t.me/${g.username}` : '';
+      if (url) html += `<div class="result-row" style="border-bottom:0.5px solid var(--border-soft);"><div class="result-content"><a href="${esc(url)}" target="_blank" style="color:var(--accent);text-decoration:none;font-size:14px;">${esc(title)}</a>${uname ? ` <span style="color:var(--text-mute);font-size:12px;">${esc(uname)}</span>` : ''}</div></div>`;
+      else html += `<div class="result-row" style="border-bottom:0.5px solid var(--border-soft);"><div class="result-content"><div class="result-value" style="font-size:14px;">${esc(title)}</div></div></div>`;
+    });
+    html += `</div>`;
+  }
+
+  const el = document.getElementById(targetId);
+  if (el) {
+    el.innerHTML = html;
+    vibrate(50);
+    toast('✅ Найдено в Telegram', 'ok');
+  }
+}
+
+// ============================================================
+// 🔵 ПОИСК VK
 // ============================================================
 function renderVkSearch() {
   const u = getTelegramUser();
@@ -1222,7 +1203,7 @@ function renderVkSearch() {
 }
 
 // ============================================================
-// ✈️ ПОИСК TELEGRAM (tg_search)
+// ✈️ ПОИСК TELEGRAM (отдельная кнопка)
 // ============================================================
 function renderTgSearch() {
   const u = getTelegramUser();
@@ -1252,48 +1233,13 @@ function renderTgSearch() {
     $('tg-result').innerHTML = renderLoading('Ищем в Telegram...');
 
     try {
-      const data = await pubPost('/api/apisearch/tg_search', { user_id: u.id, query });
+      const data = await pubPost('/api/apisearch/tg_search', { user_id: u.id, query: query.replace('@','') });
       if (!data.success) { $('tg-result').innerHTML = renderError(data.error || 'Ошибка'); return; }
 
       const r = data.result || {};
       if (!r.telegram_id && !r.username) { $('tg-result').innerHTML = renderEmpty('Не найдено в Telegram'); return; }
 
-      const groups = r.groups_info || {};
-      const groupsArr = typeof groups === 'object' && !Array.isArray(groups) ? Object.values(groups) : (Array.isArray(groups) ? groups : []);
-
-      let html = `<div class="section-title" style="color:var(--green);">✅ Профиль найден</div><div class="result-card" style="margin-bottom:12px;">`;
-      if (r.telegram_id) html += `<div class="result-row"><div class="result-icon">🆔</div><div class="result-content"><div class="result-label">Telegram ID</div><div class="result-value mono accent">${esc(r.telegram_id)}</div></div></div>`;
-      if (r.username) html += `<div class="result-row"><div class="result-icon">🔗</div><div class="result-content"><div class="result-label">Username</div><div class="result-value"><a href="https://t.me/${esc(r.username)}" target="_blank" style="color:var(--accent);text-decoration:none;">@${esc(r.username)}</a></div></div></div>`;
-      if (r.phone) html += `<div class="result-row"><div class="result-icon">📞</div><div class="result-content"><div class="result-label">Телефон</div><div class="result-value mono">${esc(r.phone)}</div></div></div>`;
-      if (r.telegram_premium !== null && r.telegram_premium !== undefined) html += `<div class="result-row"><div class="result-icon">⭐</div><div class="result-content"><div class="result-label">Premium</div><div class="result-value">${r.telegram_premium ? '✅ Да' : '❌ Нет'}</div></div></div>`;
-      if (r.messages_count !== undefined) html += `<div class="result-row"><div class="result-icon">💬</div><div class="result-content"><div class="result-label">Сообщений</div><div class="result-value">${formatNumber(r.messages_count)}</div></div></div>`;
-      if (r.groups_count !== undefined) html += `<div class="result-row"><div class="result-icon">👥</div><div class="result-content"><div class="result-label">Чатов</div><div class="result-value">${formatNumber(r.groups_count)}</div></div></div>`;
-      html += `</div>`;
-
-      if (r.username) {
-        html += `<button class="btn" onclick="window.open('https://t.me/${esc(r.username)}','_blank')" style="margin-bottom:12px;">✈️ Открыть в Telegram</button>`;
-      } else if (r.telegram_id) {
-        html += `<button class="btn" onclick="window.open('tg://user?id=${esc(r.telegram_id)}','_blank')" style="margin-bottom:12px;">✈️ Открыть в Telegram</button>`;
-      }
-
-      if (groupsArr.length) {
-        html += `<div class="result-card"><div style="padding:12px 16px;background:var(--bg-elev);border-bottom:0.5px solid var(--border-soft);font-size:13px;font-weight:700;">👥 Группы (${groupsArr.length})</div>`;
-        groupsArr.slice(0, 100).forEach(g => {
-          const title = g.title || '—';
-          const uname = g.username ? `@${g.username}` : '';
-          const url = g.username ? `https://t.me/${g.username}` : '';
-          if (url) {
-            html += `<div class="result-row" style="border-bottom:0.5px solid var(--border-soft);"><div class="result-content"><a href="${esc(url)}" target="_blank" style="color:var(--accent);text-decoration:none;font-size:14px;">${esc(title)}</a>${uname ? ` <span style="color:var(--text-mute);font-size:12px;">${esc(uname)}</span>` : ''}</div></div>`;
-          } else {
-            html += `<div class="result-row" style="border-bottom:0.5px solid var(--border-soft);"><div class="result-content"><div class="result-value" style="font-size:14px;">${esc(title)}</div></div></div>`;
-          }
-        });
-        html += `</div>`;
-      }
-
-      $('tg-result').innerHTML = html;
-      vibrate(50);
-      toast('✅ Найдено', 'ok');
+      renderTgProfile(r, query, 'tg-result');
     } catch(e) {
       $('tg-result').innerHTML = renderError('Ошибка: ' + e.message);
     } finally {
@@ -1303,7 +1249,7 @@ function renderTgSearch() {
 }
 
 // ============================================================
-// 📊 ЧЕКЕР ПО БАЗАМ (base_checker)
+// 📊 ЧЕКЕР ПО БАЗАМ
 // ============================================================
 function renderBaseChecker() {
   const u = getTelegramUser();
@@ -1589,7 +1535,269 @@ function initPhoneMap(lat, lon, info) {
   window._phoneMap = map;
   setTimeout(() => map.invalidateSize(), 250);
 }
+// ============================================================
+// 📜 ИСТОРИЯ ПОИСКОВ (с раскрытием результата)
+// ============================================================
+async function renderSearchHistory() {
+  const u = getTelegramUser();
+  if (!u) { toast('Откройте через Telegram', 'error'); return; }
 
+  contentWrap.innerHTML = `
+    <div class="section-title">📜 История поисков (30 дней)</div>
+    <div style="background:var(--bg-elev);border-radius:12px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:var(--text-mute);">
+      ℹ️ Записи хранятся 30 дней, потом автоматически удаляются. Нажмите на запись, чтобы открыть отчёт заново.
+    </div>
+    <div id="history-list">${renderLoading('Загружаем историю...')}</div>
+    <button class="btn secondary" onclick="renderScreen('home')">← На главную</button>
+  `;
+
+  try {
+    const data = await pubGet('/api/history/' + u.id);
+    if (!data.success) { $('history-list').innerHTML = renderError(data.error || 'Ошибка'); return; }
+
+    const items = data.items || [];
+    if (!items.length) {
+      $('history-list').innerHTML = `
+        <div class="chart-wrap" style="text-align:center;">
+          <div style="font-size:48px;margin-bottom:12px;">📭</div>
+          <div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px;">История пуста</div>
+          <div style="font-size:13px;color:var(--text-mute);">Записи появятся после первого поиска</div>
+        </div>
+      `;
+      return;
+    }
+
+    const typeIcons = {
+      'extended': '🔍',
+      'vk': '🔵',
+      'tg': '✈️',
+      'base': '📊',
+      'phone': '📞',
+    };
+    const typeLabels = {
+      'extended': 'Полный пробив',
+      'vk': 'Поиск VK',
+      'tg': 'Поиск Telegram',
+      'base': 'Чекер по базам',
+      'phone': 'Поиск по номеру',
+    };
+
+    let html = '';
+    items.forEach(item => {
+      const icon = typeIcons[item.search_type] || '🔍';
+      const label = typeLabels[item.search_type] || item.search_type;
+      const dateStr = formatTime(item.created_at);
+      const q = item.query || '—';
+      const count = item.results_count || 0;
+      const countColor = count > 0 ? 'var(--green)' : 'var(--text-mute)';
+
+      html += `
+        <div class="hist-item" onclick="openHistoryItem(${item.id})" style="cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background='var(--bg-elev-2)'" onmouseout="this.style.background='var(--bg-elev)'">
+          <div class="hist-top">
+            <span>${icon} ${esc(label)}</span>
+            <span>${esc(dateStr)}</span>
+          </div>
+          <div class="hist-target" style="font-size:15px;font-weight:600;color:var(--text);word-break:break-all;">${esc(q)}</div>
+          <div style="margin-top:6px;display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:12px;color:${countColor};">📊 Найдено: <b>${count}</b> записей</span>
+            <span style="font-size:12px;color:var(--accent);">Открыть →</span>
+          </div>
+        </div>
+      `;
+    });
+
+    $('history-list').innerHTML = html;
+  } catch (e) {
+    $('history-list').innerHTML = renderError('Ошибка загрузки: ' + e.message);
+  }
+}
+
+async function openHistoryItem(itemId) {
+  const u = getTelegramUser();
+  if (!u) return;
+  vibrate();
+
+  contentWrap.innerHTML = `
+    <div class="section-title">📜 Из истории</div>
+    <div id="history-view">${renderLoading('Загружаем отчёт...')}</div>
+    <button class="btn secondary" onclick="renderScreen('history')" style="margin-top:12px;">← К истории</button>
+  `;
+
+  try {
+    const data = await pubGet('/api/history/' + u.id + '/' + itemId);
+    if (!data.success || !data.item) {
+      $('history-view').innerHTML = renderError(data.error || 'Запись не найдена');
+      return;
+    }
+
+    const item = data.item;
+    const results = item.results || [];
+    const q = item.query || '';
+    const type = item.search_type || 'extended';
+
+    // Шапка с инфой о записи
+    let header = `
+      <div style="background:var(--bg-elev);border-radius:12px;padding:12px 16px;margin-bottom:12px;font-size:13px;color:var(--text-mute);">
+        📅 ${esc(formatTime(item.created_at))}<br>
+        🔍 Запрос: <b style="color:var(--text);">${esc(q)}</b><br>
+        📊 Найдено: <b style="color:var(--green);">${results.length}</b> записей
+      </div>
+    `;
+
+    // Если это tg_search — специальный рендер
+    if (type === 'tg' && results.length === 1 && results[0].telegram_id) {
+      const html = header + `<div id="history-tg-result"></div>`;
+      $('history-view').innerHTML = html;
+      renderTgProfile(results[0], q, 'history-tg-result');
+      return;
+    }
+
+    // Если vk_search
+    if (type === 'vk') {
+      const html = header + renderVkResults(results);
+      $('history-view').innerHTML = html;
+      vibrate(50);
+      return;
+    }
+
+    // base_checker
+    if (type === 'base') {
+      const r = results[0] || {};
+      const stats = r.stats || {};
+      const entries = Object.entries(stats).sort((a, b) => b[1] - a[1]);
+      const totalDocs = entries.reduce((s, [, c]) => s + c, 0);
+
+      let html = header;
+      if (r.found) {
+        html += `
+          <div class="chart-wrap" style="background:linear-gradient(135deg, rgba(52,199,89,0.15), rgba(0,0,0,0));border:1px solid rgba(52,199,89,0.3);text-align:center;">
+            <div style="font-size:48px;margin-bottom:8px;">✅</div>
+            <div style="font-size:20px;font-weight:700;color:var(--green);">Найдено в ${entries.length} базах</div>
+            <div style="font-size:13px;color:var(--text-mute);">Всего документов: ${formatNumber(totalDocs)}</div>
+          </div>
+        `;
+        entries.forEach(([name, count]) => {
+          const maxCount = entries[0][1] || 1;
+          const percent = Math.round((count / maxCount) * 100);
+          html += `
+            <div style="background:var(--bg-elev);border-radius:12px;padding:12px 14px;margin-bottom:8px;">
+              <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+                <div style="font-size:13px;color:var(--text);flex:1;min-width:0;word-break:break-word;">${esc(name)}</div>
+                <div style="font-size:13px;color:var(--accent);font-weight:700;">${formatNumber(count)}</div>
+              </div>
+              <div style="height:6px;background:var(--bg);border-radius:3px;overflow:hidden;">
+                <div style="height:100%;width:${percent}%;background:linear-gradient(90deg,var(--accent),var(--purple));"></div>
+              </div>
+            </div>
+          `;
+        });
+      } else {
+        html += `<div class="chart-wrap" style="text-align:center;"><div style="font-size:48px;">❌</div><div style="font-size:16px;font-weight:600;color:var(--red);">Не найдено</div></div>`;
+      }
+      $('history-view').innerHTML = html;
+      vibrate(50);
+      return;
+    }
+
+    // extended / search — стандартный рендер
+    if (!results.length) {
+      $('history-view').innerHTML = header + renderEmpty('В этой записи результатов нет');
+      return;
+    }
+
+    // Рендерим результаты как в extended_search
+    const grouped = {};
+    results.forEach(item => {
+      Object.entries(item).forEach(([k, v]) => {
+        if (v === null || v === undefined || v === '' || k === 'database') return;
+        const key = String(k).trim();
+        if (!grouped[key]) grouped[key] = new Set();
+        grouped[key].add(String(v));
+      });
+    });
+
+    const databases = new Set();
+    results.forEach(it => { if (it.database) databases.add(it.database); });
+
+    let html = header;
+    if (databases.size) {
+      html += `<div style="background:var(--bg-elev);border-radius:12px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:var(--text-mute);">📊 Найдено в <b style="color:var(--accent);">${databases.size}</b> базах</div>`;
+    }
+
+    const fieldOrder = ['ФИО', 'ИМЯ', 'ДАТА РОЖДЕНИЯ', 'ТЕЛЕФОН', 'ПОЧТА', 'EMAIL', 'ПАСПОРТ', 'АДРЕС', 'ИНН', 'СНИЛС', 'VK', 'FB', 'TG', 'OK', 'INSTAGRAM'];
+    const sortedKeys = Object.keys(grouped).sort((a, b) => {
+      const ia = fieldOrder.findIndex(x => a.toUpperCase().includes(x));
+      const ib = fieldOrder.findIndex(x => b.toUpperCase().includes(x));
+      if (ia === -1 && ib === -1) return a.localeCompare(b);
+      if (ia === -1) return 1;
+      if (ib === -1) return -1;
+      return ia - ib;
+    });
+
+    sortedKeys.forEach(field => {
+      const arr = Array.from(grouped[field]);
+      const icon = fieldIcon(field);
+      html += `
+        <div class="result-card" style="margin-bottom:12px;">
+          <div style="padding:12px 16px;background:var(--bg-elev);border-bottom:0.5px solid var(--border-soft);display:flex;align-items:center;gap:10px;">
+            <span style="font-size:18px;">${icon}</span>
+            <span style="font-size:13px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:0.5px;">${esc(field)}</span>
+            <span style="margin-left:auto;font-size:11px;color:var(--text-mute);background:var(--bg);padding:2px 8px;border-radius:8px;">${arr.length}</span>
+          </div>
+          ${arr.slice(0, 50).map(v => {
+            let display = esc(v);
+            if (/^https?:\/\//.test(v)) display = `<a href="${esc(v)}" target="_blank" style="color:var(--accent);text-decoration:none;word-break:break-all;">${esc(v)}</a>`;
+            else if (/^[\w.+-]+@[\w.-]+\.\w+$/.test(v)) display = `<a href="mailto:${esc(v)}" style="color:var(--accent);text-decoration:none;">${esc(v)}</a>`;
+            else if (/^\+?\d{10,15}$/.test(v.replace(/\D/g, '')) && v.replace(/\D/g, '').length >= 10) {
+              const digits = v.replace(/\D/g, '');
+              display = `<a href="tel:+${esc(digits)}" style="color:var(--accent);text-decoration:none;">${esc(v)}</a>`;
+            }
+            return `<div class="result-row" style="border-bottom:0.5px solid var(--border-soft);"><div class="result-content"><div class="result-value" style="font-size:15px;word-break:break-word;">${display}</div></div></div>`;
+          }).join('')}
+        </div>
+      `;
+    });
+
+    if (databases.size) {
+      html += `<div class="result-card">
+        <div style="padding:12px 16px;background:var(--bg-elev);border-bottom:0.5px solid var(--border-soft);font-size:13px;font-weight:700;">🗄 Источники (${databases.size})</div>
+        ${Array.from(databases).slice(0, 100).map(db => `<div class="result-row" style="border-bottom:0.5px solid var(--border-soft);"><div class="result-content"><div class="result-value" style="font-size:13px;color:var(--text-mute);">${esc(db)}</div></div></div>`).join('')}
+      </div>`;
+    }
+
+    $('history-view').innerHTML = html;
+    vibrate(50);
+  } catch (e) {
+    $('history-view').innerHTML = renderError('Ошибка: ' + e.message);
+  }
+}
+
+// Хелпер для рендера VK-результатов (используется и в истории, и в основном поиске)
+function renderVkResults(items) {
+  if (!items.length) return renderEmpty('Не найдено в VK');
+  return items.map((p, idx) => {
+    const fields = Object.entries(p).filter(([k, v]) => v && !['photo', 'avatar', 'photo_url'].includes(k.toLowerCase()));
+    const photo = p.photo || p.avatar || p.photo_url || '';
+    const vkId = p['VK ID'] || p.vk_id || p.id || '';
+    const vkUrl = vkId ? (String(vkId).startsWith('id') ? `https://vk.com/${vkId}` : `https://vk.com/id${vkId}`) : '';
+
+    return `
+      <div class="result-card" style="margin-bottom:12px;">
+        <div style="padding:16px;display:flex;align-items:flex-start;gap:12px;">
+          ${photo ? `<img src="${esc(photo)}" style="width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid #0077FF;flex-shrink:0;" onerror="this.style.display='none';">` : `<div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#0077FF,#00A3FF);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:26px;flex-shrink:0;">${idx+1}</div>`}
+          <div style="flex:1;min-width:0;">
+            ${vkUrl ? `<a href="${esc(vkUrl)}" target="_blank" style="display:inline-block;font-size:13px;color:#0077FF;text-decoration:none;background:rgba(0,119,255,0.1);padding:4px 10px;border-radius:8px;font-weight:600;margin-bottom:8px;">🔗 Открыть VK</a>` : ''}
+            ${fields.map(([k, v]) => {
+              let display = esc(Array.isArray(v) ? v.join(', ') : v);
+              if (typeof v === 'string' && /^https?:\/\//.test(v)) display = `<a href="${esc(v)}" target="_blank" style="color:var(--accent);text-decoration:none;word-break:break-all;">${esc(v)}</a>`;
+              return `<div style="display:flex;gap:8px;padding:4px 0;font-size:13px;border-bottom:0.5px solid var(--border-soft);"><span style="color:var(--text-mute);min-width:110px;flex-shrink:0;">${esc(k)}:</span><span style="color:var(--text);word-break:break-word;">${display}</span></div>`;
+            }).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
 // ============================================================
 // ПРОЧИЕ ЭКРАНЫ
 // ============================================================
@@ -1617,14 +1825,9 @@ function renderChart(activity) {
   const isDark = currentTheme === 'dark';
   const gridColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
   window._currentChart = new Chart(canvas, { type: 'bar', data: { labels: activity.map(x => (x.date || '').slice(5)), datasets: [{ data: activity.map(x => x.count), backgroundColor: isDark ? 'rgba(10,132,255,0.6)' : 'rgba(0,122,255,0.6)', borderColor: isDark ? '#0a84ff' : '#007aff', borderWidth: 0, borderRadius: 4, barThickness: 8 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: '#8e8e93', font: { size: 10 }, maxTicksLimit: 5 } }, x: { grid: { display: false }, ticks: { color: '#8e8e93', font: { size: 9 }, maxTicksLimit: 8 } } } } });
-}
-async function renderSearchHistory() {
-  contentWrap.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-mute);">Загрузка...</div>';
-  let history = [];
-  try { history = await pubGet('/api/search_history'); } catch(e) { history = []; }
-  if (!history || !history.length) { contentWrap.innerHTML = `<div class="section-title">📜 История</div><div class="chart-wrap" style="text-align:center;color:var(--text-mute);">История пуста</div><button class="btn secondary" onclick="renderScreen('home')">← На главную</button>`; return; }
-  contentWrap.innerHTML = `<div class="section-title">📜 История поисков (${history.length})</div><div>${history.slice(0, 100).map(h => `<div class="hist-item"><div class="hist-top"><span>#${h.searcher_id || '—'}</span><span>${esc((h.date || '').slice(0, 16))}</span></div><div class="hist-target">🎯 ${esc(h.target_id || '—')}</div><div class="hist-summary">${esc((h.result_summary || h.search_type || '').slice(0, 200))}</div></div>`).join('')}</div><button class="btn secondary" onclick="renderScreen('home')">← На главную</button>`;
-}
+
+
+  
 async function renderApiTokens() {
   const u = getTelegramUser();
   if (!u) { toast('Откройте через Telegram', 'error'); return; }
@@ -1819,23 +2022,96 @@ async function openMyProfile() {
   if (!limitCheck.ok) { showLimitModal(); return; }
   searchInput.value = String(u.id); handleSearch();
 }
+
+// ============================================================
+// 🔍 ГЛАВНЫЙ ПОИСК (улучшен: сначала локальная, потом apisearch)
+// ============================================================
 async function handleSearch() {
   const q = searchInput.value.trim();
   if (!q) return;
+
   const limitCheck = await checkAndUseRequest();
   if (!limitCheck.ok) { showLimitModal(); return; }
+
   searchBtn.disabled = true; vibrate(10);
+
   try {
     const isId = /^\d{5,15}$/.test(q);
-    if (isId) { const userId = parseInt(q); try { await apiGetUser(userId); renderScreen('profile', userId); return; } catch (e) {} }
-    const users = await apiGetUsers();
-    const query = q.toLowerCase().replace('@', '').replace(/[\s\-]/g, '');
-    const found = users.filter(u => String(u.user_id).includes(query) || (u.username || '').toLowerCase().includes(query) || ((u.first_name || '') + ' ' + (u.last_name || '')).toLowerCase().includes(query));
-    if (found.length === 0) { toast('Ничего не найдено', 'error'); return; }
-    if (found.length === 1) { renderScreen('profile', found[0].user_id); return; }
-    contentWrap.innerHTML = '<div class="section-title">Найдено: ' + found.length + '</div><ul class="list">' + found.slice(0, 50).map(u => '<li class="list-item" onclick="renderScreen(\'profile\', ' + u.user_id + ')"><div class="list-icon">' + I.user + '</div><div class="list-content"><div class="list-title">' + esc(((u.first_name || '') + ' ' + (u.last_name || '')).trim() || 'Без имени') + '</div><div class="list-sub">' + (u.username ? '@' + esc(u.username) : 'ID: ' + u.user_id) + '</div></div><div class="list-chevron">' + I.search + '</div></li>').join('') + '</ul>';
-  } catch (e) { toast(e.message || 'Ошибка', 'error'); }
-  finally { searchBtn.disabled = false; }
+    const isUsername = /^@?[a-zA-Z][a-zA-Z0-9_]{2,31}$/.test(q) && !q.includes(' ') && !/^\+?\d/.test(q);
+
+    // 1. Локальный поиск по ID
+    if (isId) {
+      const userId = parseInt(q);
+      try { await apiGetUser(userId); renderScreen('profile', userId); return; } catch (e) {}
+    }
+
+    // 2. Локальный поиск по username
+    if (isUsername) {
+      const clean = q.replace('@', '').toLowerCase();
+      try {
+        const users = await apiGetUsers();
+        const found = users.filter(u => (u.username || '').toLowerCase() === clean);
+        if (found.length === 1) { renderScreen('profile', found[0].user_id); return; }
+      } catch (e) {}
+    }
+
+    // 3. Общий поиск через apisearch
+    contentWrap.innerHTML = `
+      <div class="section-title">🔍 Поиск: ${esc(q)}</div>
+      ${renderLoading('Ищем по всем базам...')}
+    `;
+
+    const u = getTelegramUser();
+
+    // 3a. Если @username — сначала tg_search
+    if (isUsername) {
+      try {
+        const tgData = await pubPost('/api/apisearch/tg_search', {
+          user_id: u.id,
+          query: q.replace('@', '')
+        });
+        if (tgData.success && tgData.result && (tgData.result.telegram_id || tgData.result.username)) {
+          contentWrap.innerHTML = `<div class="section-title">🔍 Поиск: ${esc(q)}</div><div id="search-tg-result"></div>`;
+          renderTgProfile(tgData.result, q, 'search-tg-result');
+          return;
+        }
+      } catch (e) {}
+    }
+
+    // 3b. extended_search
+    const data = await pubPost('/api/apisearch/search', {
+      user_id: u.id,
+      query: q,
+      type: 'extended'
+    });
+
+    if (!data.success) {
+      contentWrap.innerHTML = `
+        <div class="section-title">🔍 Поиск: ${esc(q)}</div>
+        ${renderError(data.error || 'Не найдено')}
+        <button class="btn secondary" onclick="renderScreen('home')" style="margin-top:12px;">← На главную</button>
+      `;
+      return;
+    }
+
+    const items = data.results || [];
+    if (!items.length) {
+      contentWrap.innerHTML = `
+        <div class="section-title">🔍 Поиск: ${esc(q)}</div>
+        ${renderEmpty('Ничего не найдено')}
+        <button class="btn secondary" onclick="renderScreen('home')" style="margin-top:12px;">← На главную</button>
+      `;
+      return;
+    }
+
+    contentWrap.innerHTML = `<div class="section-title">🔍 Поиск: ${esc(q)}</div><div id="search-ext-result"></div><button class="btn secondary" onclick="renderScreen('home')" style="margin-top:12px;">← На главную</button>`;
+    renderExtendedResults(items, q, 'search-ext-result');
+
+  } catch (e) {
+    toast(e.message || 'Ошибка', 'error');
+  } finally {
+    searchBtn.disabled = false;
+  }
 }
 
 searchBtn.addEventListener('click', handleSearch);

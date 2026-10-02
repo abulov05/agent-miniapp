@@ -649,9 +649,7 @@ function renderScreen(name, data) {
     case 'notifications': return renderNotifications();
     case 'support':       return renderSupport();
     case 'maryam':        return renderMaryam();
-    case 'msg-search':    return renderMsgSearch();
     case 'username-check':return renderUsernameCheck();
-    case 'hidden-phone':  return renderHiddenPhone();
     case 'photo-search':  return renderPhotoSearch();
     case 'admin':         return renderAdminPanel();
     default:              return renderHome();
@@ -717,7 +715,7 @@ async function renderHome() {
         <div class="quick-card-icon green">📞</div>
         <div>
           <div class="quick-card-title">ФИО по номеру</div>
-          <div class="quick-card-sub">Имя + дата рождения</div>
+          <div class="quick-card-sub">Полный пробив по телефону</div>
         </div>
       </button>
       <button class="quick-card" onclick="renderScreen('base-check')">
@@ -996,6 +994,9 @@ function renderPhoneFull() {
                 display = `<a href="${esc(v)}" target="_blank" style="color:var(--accent);text-decoration:none;word-break:break-all;">${esc(v)}</a>`;
               } else if (/^[\w.+-]+@[\w.-]+\.\w+$/.test(v)) {
                 display = `<a href="mailto:${esc(v)}" style="color:var(--accent);text-decoration:none;">${esc(v)}</a>`;
+              } else if (/^\+?\d{10,15}$/.test(v.replace(/\D/g, '')) && v.replace(/\D/g, '').length >= 10) {
+                const digits = v.replace(/\D/g, '');
+                display = `<a href="tel:+${esc(digits)}" style="color:var(--accent);text-decoration:none;">${esc(v)}</a>`;
               }
               return `<div class="result-row" style="border-bottom:0.5px solid var(--border-soft);"><div class="result-content"><div class="result-value" style="font-size:15px;word-break:break-word;">${display}</div></div></div>`;
             }).join('')}
@@ -1019,6 +1020,132 @@ function renderPhoneFull() {
       $('pf-result').innerHTML = renderError('Ошибка сети: ' + e.message);
     } finally {
       btn.disabled = false; btn.textContent = '🔍 Пробить';
+    }
+  });
+}
+
+// ============================================================
+// 📞 ФИО + ДР ПО НОМЕРУ (extended_search — много данных)
+// ============================================================
+function renderNameByPhone() {
+  const u = getTelegramUser();
+  if (!u) { toast('Откройте через Telegram', 'error'); return; }
+
+  contentWrap.innerHTML = `
+    <div class="section-title">📞 Поиск по номеру</div>
+    <div class="chart-wrap">
+      <div class="field">
+        <label class="field-label">Номер телефона</label>
+        <input type="tel" class="field-input" id="np-phone" placeholder="+79939999985" autocomplete="off">
+        <div class="field-hint">Полный пробив: ФИО, ДР, email, паспорт, VK, FB и др.</div>
+      </div>
+      <button class="btn" id="np-btn" style="background:linear-gradient(135deg,#34c759,#30b14e);">📞 Узнать всё</button>
+    </div>
+    <div id="np-result"></div>
+    <button class="btn secondary" onclick="renderScreen('home')">← На главную</button>
+  `;
+
+  $('np-btn').addEventListener('click', async () => {
+    const phone = ($('np-phone').value || '').trim();
+    if (!phone || phone.replace(/\D/g, '').length < 10) { toast('Введите корректный номер', 'error'); return; }
+
+    const limitCheck = await checkAndUseRequest();
+    if (!limitCheck.ok) { showLimitModal(); return; }
+
+    const btn = $('np-btn'); btn.disabled = true; btn.textContent = '⏳ Пробиваем...';
+    $('np-result').innerHTML = renderLoading('Ищем по всем базам...');
+
+    try {
+      let cleanPhone = phone.replace(/\D/g, '');
+      if (cleanPhone.startsWith('8') && cleanPhone.length === 11) cleanPhone = '7' + cleanPhone.slice(1);
+
+      const data = await pubPost('/api/apisearch/search', {
+        user_id: u.id,
+        query: cleanPhone,
+        type: 'extended'
+      });
+
+      if (!data.success) { $('np-result').innerHTML = renderError(data.error || 'Ошибка'); return; }
+
+      const items = data.results || [];
+      if (!items.length) {
+        $('np-result').innerHTML = renderEmpty(`По номеру ${cleanPhone}`);
+        return;
+      }
+
+      const grouped = {};
+      items.forEach(item => {
+        Object.entries(item).forEach(([k, v]) => {
+          if (v === null || v === undefined || v === '' || k === 'database') return;
+          const key = String(k).trim();
+          if (!grouped[key]) grouped[key] = new Set();
+          grouped[key].add(String(v));
+        });
+      });
+
+      const databases = new Set();
+      items.forEach(it => { if (it.database) databases.add(it.database); });
+
+      let html = `
+        <div class="section-title" style="color:var(--green);">✅ Найдено записей: ${items.length}</div>
+        <div style="background:var(--bg-elev);border-radius:12px;padding:12px 16px;margin-bottom:12px;font-size:13px;color:var(--text-mute);">
+          📞 Номер: <b style="color:var(--accent);">${esc(cleanPhone)}</b>
+          ${databases.size ? `<br>📊 Найдено в <b style="color:var(--accent);">${databases.size}</b> базах данных` : ''}
+        </div>
+      `;
+
+      const fieldOrder = ['ФИО', 'ИМЯ', 'ДАТА РОЖДЕНИЯ', 'ТЕЛЕФОН', 'ПОЧТА', 'EMAIL', 'ПАСПОРТ', 'АДРЕС', 'ИНН', 'СНИЛС', 'VK', 'FB', 'TG', 'OK', 'INSTAGRAM'];
+      const sortedKeys = Object.keys(grouped).sort((a, b) => {
+        const ia = fieldOrder.findIndex(x => a.toUpperCase().includes(x));
+        const ib = fieldOrder.findIndex(x => b.toUpperCase().includes(x));
+        if (ia === -1 && ib === -1) return a.localeCompare(b);
+        if (ia === -1) return 1;
+        if (ib === -1) return -1;
+        return ia - ib;
+      });
+
+      sortedKeys.forEach(field => {
+        const arr = Array.from(grouped[field]);
+        const icon = fieldIcon(field);
+        html += `
+          <div class="result-card" style="margin-bottom:12px;">
+            <div style="padding:12px 16px;background:var(--bg-elev);border-bottom:0.5px solid var(--border-soft);display:flex;align-items:center;gap:10px;">
+              <span style="font-size:18px;">${icon}</span>
+              <span style="font-size:13px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:0.5px;">${esc(field)}</span>
+              <span style="margin-left:auto;font-size:11px;color:var(--text-mute);background:var(--bg);padding:2px 8px;border-radius:8px;">${arr.length}</span>
+            </div>
+            ${arr.slice(0, 50).map(v => {
+              let display = esc(v);
+              if (/^https?:\/\//.test(v)) {
+                display = `<a href="${esc(v)}" target="_blank" style="color:var(--accent);text-decoration:none;word-break:break-all;">${esc(v)}</a>`;
+              } else if (/^[\w.+-]+@[\w.-]+\.\w+$/.test(v)) {
+                display = `<a href="mailto:${esc(v)}" style="color:var(--accent);text-decoration:none;">${esc(v)}</a>`;
+              } else if (/^\+?\d{10,15}$/.test(v.replace(/\D/g, '')) && v.replace(/\D/g, '').length >= 10) {
+                const digits = v.replace(/\D/g, '');
+                display = `<a href="tel:+${esc(digits)}" style="color:var(--accent);text-decoration:none;">${esc(v)}</a>`;
+              }
+              return `<div class="result-row" style="border-bottom:0.5px solid var(--border-soft);"><div class="result-content"><div class="result-value" style="font-size:15px;word-break:break-word;">${display}</div></div></div>`;
+            }).join('')}
+            ${arr.length > 50 ? `<div class="result-row" style="text-align:center;color:var(--text-mute);font-size:12px;">... и ещё ${arr.length - 50}</div>` : ''}
+          </div>
+        `;
+      });
+
+      if (databases.size) {
+        html += `<div class="result-card">
+          <div style="padding:12px 16px;background:var(--bg-elev);border-bottom:0.5px solid var(--border-soft);font-size:13px;font-weight:700;">🗄 Источники (${databases.size})</div>
+          ${Array.from(databases).slice(0, 100).map(db => `<div class="result-row" style="border-bottom:0.5px solid var(--border-soft);"><div class="result-content"><div class="result-value" style="font-size:13px;color:var(--text-mute);">${esc(db)}</div></div></div>`).join('')}
+          ${databases.size > 100 ? `<div class="result-row" style="text-align:center;color:var(--text-mute);font-size:12px;">... и ещё ${databases.size - 100}</div>` : ''}
+        </div>`;
+      }
+
+      $('np-result').innerHTML = html;
+      vibrate(50);
+      toast('✅ Найдено: ' + items.length + ' записей', 'ok');
+    } catch(e) {
+      $('np-result').innerHTML = renderError('Ошибка сети: ' + e.message);
+    } finally {
+      btn.disabled = false; btn.textContent = '📞 Узнать всё';
     }
   });
 }
@@ -1265,56 +1392,29 @@ function renderBaseChecker() {
 }
 
 // ============================================================
-// 📞 ФИО + ДР ПО НОМЕРУ (name_by_phone)
+// 🌐 ПРОВЕРКА USERNAME
 // ============================================================
-function renderNameByPhone() {
-  const u = getTelegramUser();
-  if (!u) { toast('Откройте через Telegram', 'error'); return; }
-
+function renderUsernameCheck() {
   contentWrap.innerHTML = `
-    <div class="section-title">📞 ФИО + ДР по номеру</div>
+    <div class="section-title">🌐 Проверка @username</div>
     <div class="chart-wrap">
-      <div class="field">
-        <label class="field-label">Номер телефона</label>
-        <input type="tel" class="field-input" id="np-phone" placeholder="+79939999985" autocomplete="off">
-        <div class="field-hint">Самая частая комбинация ФИО и даты рождения по номеру</div>
-      </div>
-      <button class="btn" id="np-btn" style="background:linear-gradient(135deg,#34c759,#30b14e);">📞 Узнать</button>
+      <div class="field"><label class="field-label">Username (без @)</label><input type="text" class="field-input" id="uc-input" placeholder="username" autocomplete="off"></div>
+      <button class="btn" id="uc-btn">🌐 Проверить</button>
     </div>
-    <div id="np-result"></div>
+    <div id="uc-results"></div>
     <button class="btn secondary" onclick="renderScreen('home')">← На главную</button>
   `;
-
-  $('np-btn').addEventListener('click', async () => {
-    const phone = ($('np-phone').value || '').trim();
-    if (!phone || phone.replace(/\D/g, '').length < 10) { toast('Введите номер', 'error'); return; }
-
-    const limitCheck = await checkAndUseRequest();
-    if (!limitCheck.ok) { showLimitModal(); return; }
-
-    const btn = $('np-btn'); btn.disabled = true; btn.textContent = '⏳ Ищем...';
-    $('np-result').innerHTML = renderLoading('Ищем по номеру...');
-
+  $('uc-btn').addEventListener('click', async () => {
+    const username = $('uc-input').value.trim().replace('@', '');
+    if (!username || username.length < 2) { toast('Введите username', 'error'); return; }
+    const btn = $('uc-btn'); btn.disabled = true; btn.textContent = '⏳ Проверка...';
     try {
-      const data = await pubPost('/api/apisearch/name_by_phone', { user_id: u.id, phone });
-      if (!data.success) { $('np-result').innerHTML = renderError(data.error || 'Ошибка'); return; }
-
-      const r = data.result || {};
-      if (!r.name && !r.birth_date) { $('np-result').innerHTML = renderEmpty('Не найдено'); return; }
-
-      let html = `<div class="section-title" style="color:var(--green);">✅ Результат</div><div class="result-card">`;
-      if (r.name) html += `<div class="result-row"><div class="result-icon">👤</div><div class="result-content"><div class="result-label">ФИО</div><div class="result-value" style="font-size:18px;font-weight:600;">${esc(r.name)}</div></div></div>`;
-      if (r.birth_date) html += `<div class="result-row"><div class="result-icon">📅</div><div class="result-content"><div class="result-label">Дата рождения</div><div class="result-value" style="font-size:18px;font-weight:600;">${esc(r.birth_date)}</div></div></div>`;
-      html += `</div>`;
-
-      $('np-result').innerHTML = html;
-      vibrate(50);
-      toast('✅ Найдено', 'ok');
-    } catch(e) {
-      $('np-result').innerHTML = renderError('Ошибка: ' + e.message);
-    } finally {
-      btn.disabled = false; btn.textContent = '📞 Узнать';
-    }
+      const data = await pubPost('/api/check_username', { username });
+      if (!data.success) { toast('❌ ' + (data.error || 'Ошибка'), 'error'); return; }
+      const results = data.results || [];
+      $('uc-results').innerHTML = `<div class="section-title">Результаты для @${esc(data.username)}</div><ul class="list">${results.map(r => { const icon = r.exists === true ? '✅' : (r.exists === false ? '❌' : '⚠️'); const color = r.exists === true ? 'var(--green)' : (r.exists === false ? 'var(--red)' : 'var(--orange)'); const statusText = r.exists === true ? 'Занят' : (r.exists === false ? 'Свободен' : 'Неизвестно'); return `<li class="list-item" onclick="window.open('${esc(r.url)}','_blank')"><div class="list-icon" style="background:${color}20;color:${color};font-size:18px;">${icon}</div><div class="list-content"><div class="list-title" style="text-transform:capitalize;">${esc(r.name)}</div><div class="list-sub" style="color:${color};">${statusText}</div></div><div class="list-chevron">${I.search}</div></li>`; }).join('')}</ul>`;
+    } catch(e) { toast('Ошибка сети', 'error'); }
+    finally { btn.disabled = false; btn.textContent = '🌐 Проверить'; }
   });
 }
 
@@ -1491,7 +1591,7 @@ function initPhoneMap(lat, lon, info) {
 }
 
 // ============================================================
-// ПРОЧИЕ ЭКРАНЫ (сокращённые версии)
+// ПРОЧИЕ ЭКРАНЫ
 // ============================================================
 function renderSearchTab() {
   contentWrap.innerHTML = `<div class="section-title">Поиск</div><ul class="list"><li class="list-item" onclick="searchInput.focus()"><div class="list-icon">${I.search}</div><div class="list-content"><div class="list-title">Введите запрос в поле выше</div><div class="list-sub">ID, @username или телефон</div></div></li><li class="list-item" onclick="openMyProfile()"><div class="list-icon green">${I.user}</div><div class="list-content"><div class="list-title">Мой профиль</div><div class="list-sub">Найти себя</div></div><div class="list-chevron">${I.search}</div></li></ul><div id="search-results"></div>`;

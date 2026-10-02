@@ -230,15 +230,6 @@ input, textarea { user-select: text; -webkit-user-select: text; }
   line-height: 1.5;
 }
 .auth-hint a { color: var(--accent); text-decoration: none; font-weight: 600; }
-.auth-divider {
-  display: flex; align-items: center; gap: 12px;
-  margin: 20px 0;
-  color: var(--text-mute); font-size: 11px;
-  text-transform: uppercase; letter-spacing: 1px;
-}
-.auth-divider::before, .auth-divider::after {
-  content: ''; flex: 1; height: 1px; background: var(--border-soft);
-}
 </style>
 </head>
 <body>
@@ -260,12 +251,14 @@ input, textarea { user-select: text; -webkit-user-select: text; }
     <div class="auth-sub">Войдите через Telegram — бот пришлёт код подтверждения</div>
 
     <div class="auth-card">
-      <!-- ШАГ 1: ВВОД ID -->
+      <!-- ШАГ 1: ВВОД ID ИЛИ USERNAME -->
       <div id="auth-step-1">
         <div class="field">
-          <label class="field-label">Ваш Telegram ID</label>
-          <input type="number" class="field-input" id="auth-user-id" placeholder="710278988" inputmode="numeric" autocomplete="off">
-          <div class="field-hint">Узнать ID можно у <a href="https://t.me/userinfobot" target="_blank" style="color:var(--accent);text-decoration:none;font-weight:600;">@userinfobot</a></div>
+          <label class="field-label">Telegram ID или @username</label>
+          <input type="text" class="field-input" id="auth-identifier" placeholder="710278988 или @username" autocomplete="off" autocapitalize="off" spellcheck="false">
+          <div class="field-hint">
+            Узнать ID можно у <a href="https://t.me/userinfobot" target="_blank" style="color:var(--accent);text-decoration:none;font-weight:600;">@userinfobot</a>
+          </div>
         </div>
         <button class="btn" id="auth-get-code-btn" style="margin-top:4px;">📩 Получить код</button>
         <button class="btn secondary" id="auth-open-bot-btn">✈️ Открыть @dev1_robot</button>
@@ -456,17 +449,28 @@ function setAuthStatus(text, type = '') {
   el.className = 'auth-status' + (type ? ' ' + type : '');
 }
 async function requestAuthCode() {
-  const input = document.getElementById('auth-user-id');
+  const input = document.getElementById('auth-identifier');
   const btn = document.getElementById('auth-get-code-btn');
-  const uid = (input.value || '').trim();
-  if (!/^\d{5,15}$/.test(uid)) { setAuthStatus('❌ Введите корректный Telegram ID', 'err'); return; }
+  const raw = (input.value || '').trim();
+
+  if (!raw) { setAuthStatus('❌ Введите ID или @username', 'err'); return; }
+
+  const isId = /^\d{5,15}$/.test(raw);
+  const isUsername = /^@?[a-zA-Z][a-zA-Z0-9_]{2,31}$/.test(raw);
+
+  if (!isId && !isUsername) {
+    setAuthStatus('❌ Введите корректный ID (710278988) или @username', 'err');
+    return;
+  }
+
   btn.disabled = true; btn.textContent = '⏳ Отправка...';
   setAuthStatus('');
+
   try {
     const r = await fetch(CONFIG.API_BASE + '/api/auth/request_code', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
-      body: JSON.stringify({ user_id: parseInt(uid) })
+      body: JSON.stringify({ identifier: raw })
     });
     const data = await r.json().catch(() => ({}));
     if (data.success) {
@@ -1609,7 +1613,7 @@ document.getElementById('auth-back-btn')?.addEventListener('click', () => {
 document.getElementById('auth-open-bot-btn')?.addEventListener('click', () => {
   window.open('https://t.me/dev1_robot', '_blank');
 });
-document.getElementById('auth-user-id')?.addEventListener('keydown', e => { if (e.key === 'Enter') requestAuthCode(); });
+document.getElementById('auth-identifier')?.addEventListener('keydown', e => { if (e.key === 'Enter') requestAuthCode(); });
 document.getElementById('auth-code')?.addEventListener('keydown', e => { if (e.key === 'Enter') verifyAuthCode(); });
 
 // ============================================================
@@ -1623,12 +1627,10 @@ window.addEventListener('load', () => {
 
     const tgUser = getTelegramUser();
     if (!tgUser) {
-      // Нет юзера → показываем экран входа
       showAuthScreen();
       return;
     }
 
-    // Есть юзер → работаем
     hideAuthScreen();
     getDailyUsage();
     updateRequestsBadge();

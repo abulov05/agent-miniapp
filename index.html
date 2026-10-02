@@ -415,8 +415,24 @@ function getTelegramUser() { try { const u = window.Telegram?.WebApp?.initDataUn
 function isAdmin() { const u = getTelegramUser(); return u && u.id === CONFIG.ADMIN_ID; }
 function copyToClipboard(text) { try { navigator.clipboard.writeText(text).then(() => { toast('✅ Скопировано', 'ok'); vibrate(); }).catch(() => { const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); toast('✅ Скопировано', 'ok'); }); } catch (e) { toast('Не удалось скопировать', 'error'); } }
 
-async function pubGet(path) { const r = await fetch(CONFIG.API_BASE + path, { headers: { 'ngrok-skip-browser-warning': 'true' } }); if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); }
-async function pubPost(path, body) { const r = await fetch(CONFIG.API_BASE + path, { method: 'POST', headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' }, body: JSON.stringify(body) }); const data = await r.json().catch(() => ({})); return data; }
+// ⚡ ИСПРАВЛЕНО: безопасный парсинг JSON (ngrok может вернуть HTML)
+async function pubGet(path) {
+  const r = await fetch(CONFIG.API_BASE + path, { headers: { 'ngrok-skip-browser-warning': 'true' } });
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  const text = await r.text();
+  try { return JSON.parse(text); }
+  catch (e) { throw new Error('Сервер вернул не JSON (возможно ngrok-предупреждение)'); }
+}
+async function pubPost(path, body) {
+  const r = await fetch(CONFIG.API_BASE + path, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
+    body: JSON.stringify(body)
+  });
+  const text = await r.text();
+  try { return JSON.parse(text); }
+  catch (e) { return { success: false, error: 'Сервер вернул не JSON' }; }
+}
 async function getMe(force = false) {
   const u = getTelegramUser();
   if (!u) return { diamonds: 0, has_subscription: false, days_left: 0, subscription_end: null };
@@ -470,7 +486,9 @@ async function requestAuthCode() {
       headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
       body: JSON.stringify({ identifier: raw })
     });
-    const data = await r.json().catch(() => ({}));
+    const text = await r.text();
+    let data = {};
+    try { data = JSON.parse(text); } catch(e) { data = { success: false, error: 'Сервер вернул не JSON' }; }
     if (data.success) {
       document.getElementById('auth-step-1').style.display = 'none';
       document.getElementById('auth-step-2').style.display = 'block';
@@ -480,7 +498,7 @@ async function requestAuthCode() {
       setAuthStatus('❌ ' + (data.error || 'Ошибка'), 'err');
     }
   } catch (e) {
-    setAuthStatus('❌ Ошибка сети', 'err');
+    setAuthStatus('❌ Ошибка сети: ' + e.message, 'err');
   } finally {
     btn.disabled = false; btn.textContent = '📩 Получить код';
   }
@@ -498,7 +516,9 @@ async function verifyAuthCode() {
       headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
       body: JSON.stringify({ code })
     });
-    const data = await r.json().catch(() => ({}));
+    const text = await r.text();
+    let data = {};
+    try { data = JSON.parse(text); } catch(e) { data = { success: false, error: 'Сервер вернул не JSON' }; }
     if (data.success && data.user) {
       localStorage.setItem('aa_tg_user', JSON.stringify(data.user));
       _meCache = { userId: null, data: null, ts: 0 };
@@ -513,7 +533,7 @@ async function verifyAuthCode() {
       setAuthStatus('❌ ' + (data.error || 'Неверный код'), 'err');
     }
   } catch (e) {
-    setAuthStatus('❌ Ошибка сети', 'err');
+    setAuthStatus('❌ Ошибка сети: ' + e.message, 'err');
   } finally {
     btn.disabled = false; btn.textContent = '✅ Войти';
   }
@@ -615,8 +635,7 @@ const I = {
   support:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 10h.01M12 10h.01M16 10h.01"/></svg>',
   robot:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4M8 16h.01M16 16h.01"/></svg>',
   image:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>',
-  hash:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>',
-  vk:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21.5 7c.2-.7 0-1.2-.9-1.2h-2.6c-.7 0-1 .4-1.2.8 0 0-1.4 3.4-3.4 5.6-.6.6-.9.8-1.3.8-.2 0-.4-.2-.4-.8V7c0-.8-.2-1.2-1-1.2h-4c-.6 0-1 .4-1 1 0 1 .5 1.2 1 1.4.5.2.6.4.6 1v3.3c0 1-.2 1.2-.7 1.2-.9 0-2.3-1.5-3.3-3.5-.5-.9-.8-1.5-1-2-.2-.5-.5-.6-1.1-.6h-2c-.6 0-.9.4-.9 1 0 1 .5 2.2 1.5 3.7 1.3 2.3 3 3.9 4.5 4.7 1.6.8 3 .9 4.2.9.9 0 1.6-.2 2-.7.5-.5.6-1.3.6-2v-2.1c0-.6.2-.8.6-.8.4 0 .8.2 1.5.8 1.3 1.3 2.3 2.4 2.8 3.2.3.5.6.7 1.3.7h2.6c.8 0 1.1-.4 1-1.1-.1-.7-.6-1.7-1.4-2.9-.6-.8-1.4-1.7-1.7-2-.3-.4-.2-.6.1-.9 1-1 1.9-2.2 2.6-3.4.5-.9.6-1.5.3-1.9z"/></svg>'
+  hash:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>'
 };
 
 // ============================================================
@@ -644,11 +663,7 @@ function renderScreen(name, data) {
     case 'about':         return renderAbout();
     case 'history':       return renderSearchHistory();
     case 'api-tokens':    return renderApiTokens();
-    case 'referral':      return renderReferral();
-    case 'bonus':         return renderBonus();
     case 'notifications': return renderNotifications();
-    case 'support':       return renderSupport();
-    case 'maryam':        return renderMaryam();
     case 'username-check':return renderUsernameCheck();
     case 'photo-search':  return renderPhotoSearch();
     case 'admin':         return renderAdminPanel();
@@ -768,58 +783,38 @@ async function renderHome() {
 
     <div class="section-title">🎁 Бонусы и связь</div>
     <div class="quick-grid">
-      <button class="quick-card" onclick="renderScreen('bonus')">
-        <div class="quick-card-icon orange">🎁</div>
+      <button class="quick-card" onclick="renderScreen('notifications')">
+        <div class="quick-card-icon orange">🔔</div>
         <div>
-          <div class="quick-card-title">Бонус</div>
-          <div class="quick-card-sub">+10 алмазов в день</div>
+          <div class="quick-card-title">Уведомления</div>
+          <div class="quick-card-sub">Новые события</div>
         </div>
       </button>
-      <button class="quick-card" onclick="renderScreen('referral')">
-        <div class="quick-card-icon purple">🤝</div>
+      <button class="quick-card" onclick="renderScreen('subscription')">
+        <div class="quick-card-icon purple">⭐</div>
         <div>
-          <div class="quick-card-title">Реферал</div>
-          <div class="quick-card-sub">Приглашай и получай</div>
+          <div class="quick-card-title">Подписка</div>
+          <div class="quick-card-sub">Безлимитный доступ</div>
         </div>
       </button>
-      <button class="quick-card" onclick="renderScreen('maryam')">
-        <div class="quick-card-icon pink">🤖</div>
+      <button class="quick-card" onclick="renderScreen('api-tokens')">
+        <div class="quick-card-icon green">🔑</div>
         <div>
-          <div class="quick-card-title">Марыям</div>
-          <div class="quick-card-sub">AI помощник</div>
+          <div class="quick-card-title">API токены</div>
+          <div class="quick-card-sub">Управление токенами</div>
         </div>
       </button>
-      <button class="quick-card" onclick="renderScreen('support')">
-        <div class="quick-card-icon green">💬</div>
+      <button class="quick-card" onclick="renderScreen('history')">
+        <div class="quick-card-icon pink">📜</div>
         <div>
-          <div class="quick-card-title">Связь с админом</div>
-          <div class="quick-card-sub">Написать сообщение</div>
+          <div class="quick-card-title">История</div>
+          <div class="quick-card-sub">Последние запросы</div>
         </div>
       </button>
     </div>
 
     <div class="section-title">Инструменты</div>
     <ul class="list">
-      <li class="list-item" onclick="renderScreen('history')">
-        <div class="list-icon purple">${I.clock}</div>
-        <div class="list-content"><div class="list-title">История поисков</div><div class="list-sub">Последние запросы</div></div>
-        <div class="list-chevron">${I.search}</div>
-      </li>
-      <li class="list-item" onclick="renderScreen('notifications')">
-        <div class="list-icon red">${I.bell}</div>
-        <div class="list-content"><div class="list-title">Уведомления</div><div class="list-sub">Новые события</div></div>
-        <div class="list-chevron">${I.search}</div>
-      </li>
-      <li class="list-item" onclick="renderScreen('subscription')">
-        <div class="list-icon orange">${I.star}</div>
-        <div class="list-content"><div class="list-title">Подписка</div><div class="list-sub">Безлимитный доступ</div></div>
-        <div class="list-chevron">${I.search}</div>
-      </li>
-      <li class="list-item" onclick="renderScreen('api-tokens')">
-        <div class="list-icon green">${I.key}</div>
-        <div class="list-content"><div class="list-title">Мои API токены</div><div class="list-sub">Управление токенами</div></div>
-        <div class="list-chevron">${I.search}</div>
-      </li>
       <li class="list-item" onclick="renderScreen('tracking')">
         <div class="list-icon purple">${I.eye}</div>
         <div class="list-content"><div class="list-title">Отслеживание</div><div class="list-sub">20 алмазов / 7 дней</div></div>
@@ -1203,7 +1198,7 @@ function renderVkSearch() {
 }
 
 // ============================================================
-// ✈️ ПОИСК TELEGRAM (отдельная кнопка)
+// ✈️ ПОИСК TELEGRAM
 // ============================================================
 function renderTgSearch() {
   const u = getTelegramUser();
@@ -1486,7 +1481,7 @@ function analyzePhoneNumber(phone) {
     '375': { country: 'Беларусь', flag: '🇧🇾', region: 'Беларусь', tz: 'UTC+3', type: 'Мобильный', lat: 53.9045, lon: 27.5615 },
     '995': { country: 'Грузия', flag: '🇬🇪', region: 'Грузия', tz: 'UTC+4', type: 'Мобильный', lat: 41.7151, lon: 44.8271 },
     '374': { country: 'Армения', flag: '🇦🇲', region: 'Армения', tz: 'UTC+4', type: 'Мобильный', lat: 40.1792, lon: 44.4991 },
-    '994': { country: 'Азербайджан', flag: '🇦🇿', region: 'Азербайджан', tz: 'UTC+4', type: 'Мобильный', lat: 40.4093, lon: 49.8671 },
+    '994': { country: 'Азербайджан', flag: '🇦🇿', region: 'Азербайджан', tz: 'UTC+4', type: 'Мобильный', lat: 40.4093, lon: 49.8671 }
   };
   let countryInfo = null, countryCodeLen = 0;
   for (let len = 3; len >= 1; len--) { const prefix = clean.slice(0, len); if (countries[prefix]) { countryInfo = countries[prefix]; countryCodeLen = len; break; } }
@@ -1536,7 +1531,7 @@ function initPhoneMap(lat, lon, info) {
   setTimeout(() => map.invalidateSize(), 250);
 }
 // ============================================================
-// 📜 ИСТОРИЯ ПОИСКОВ (с раскрытием результата)
+// 📜 ИСТОРИЯ ПОИСКОВ
 // ============================================================
 async function renderSearchHistory() {
   const u = getTelegramUser();
@@ -1545,7 +1540,7 @@ async function renderSearchHistory() {
   contentWrap.innerHTML = `
     <div class="section-title">📜 История поисков (30 дней)</div>
     <div style="background:var(--bg-elev);border-radius:12px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:var(--text-mute);">
-      ℹ️ Записи хранятся 30 дней, потом автоматически удаляются. Нажмите на запись, чтобы открыть отчёт заново.
+      ℹ️ Записи хранятся 30 дней. Нажмите на запись, чтобы открыть отчёт заново.
     </div>
     <div id="history-list">${renderLoading('Загружаем историю...')}</div>
     <button class="btn secondary" onclick="renderScreen('home')">← На главную</button>
@@ -1567,20 +1562,8 @@ async function renderSearchHistory() {
       return;
     }
 
-    const typeIcons = {
-      'extended': '🔍',
-      'vk': '🔵',
-      'tg': '✈️',
-      'base': '📊',
-      'phone': '📞',
-    };
-    const typeLabels = {
-      'extended': 'Полный пробив',
-      'vk': 'Поиск VK',
-      'tg': 'Поиск Telegram',
-      'base': 'Чекер по базам',
-      'phone': 'Поиск по номеру',
-    };
+    const typeIcons = { 'extended': '🔍', 'vk': '🔵', 'tg': '✈️', 'base': '📊', 'phone': '📞' };
+    const typeLabels = { 'extended': 'Полный пробив', 'vk': 'Поиск VK', 'tg': 'Поиск Telegram', 'base': 'Чекер по базам', 'phone': 'Поиск по номеру' };
 
     let html = '';
     items.forEach(item => {
@@ -1592,7 +1575,7 @@ async function renderSearchHistory() {
       const countColor = count > 0 ? 'var(--green)' : 'var(--text-mute)';
 
       html += `
-        <div class="hist-item" onclick="openHistoryItem(${item.id})" style="cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background='var(--bg-elev-2)'" onmouseout="this.style.background='var(--bg-elev)'">
+        <div class="hist-item" onclick="openHistoryItem(${item.id})" style="cursor:pointer;">
           <div class="hist-top">
             <span>${icon} ${esc(label)}</span>
             <span>${esc(dateStr)}</span>
@@ -1635,7 +1618,6 @@ async function openHistoryItem(itemId) {
     const q = item.query || '';
     const type = item.search_type || 'extended';
 
-    // Шапка с инфой о записи
     let header = `
       <div style="background:var(--bg-elev);border-radius:12px;padding:12px 16px;margin-bottom:12px;font-size:13px;color:var(--text-mute);">
         📅 ${esc(formatTime(item.created_at))}<br>
@@ -1644,7 +1626,6 @@ async function openHistoryItem(itemId) {
       </div>
     `;
 
-    // Если это tg_search — специальный рендер
     if (type === 'tg' && results.length === 1 && results[0].telegram_id) {
       const html = header + `<div id="history-tg-result"></div>`;
       $('history-view').innerHTML = html;
@@ -1652,7 +1633,6 @@ async function openHistoryItem(itemId) {
       return;
     }
 
-    // Если vk_search
     if (type === 'vk') {
       const html = header + renderVkResults(results);
       $('history-view').innerHTML = html;
@@ -1660,7 +1640,6 @@ async function openHistoryItem(itemId) {
       return;
     }
 
-    // base_checker
     if (type === 'base') {
       const r = results[0] || {};
       const stats = r.stats || {};
@@ -1699,13 +1678,11 @@ async function openHistoryItem(itemId) {
       return;
     }
 
-    // extended / search — стандартный рендер
     if (!results.length) {
       $('history-view').innerHTML = header + renderEmpty('В этой записи результатов нет');
       return;
     }
 
-    // Рендерим результаты как в extended_search
     const grouped = {};
     results.forEach(item => {
       Object.entries(item).forEach(([k, v]) => {
@@ -1772,7 +1749,6 @@ async function openHistoryItem(itemId) {
   }
 }
 
-// Хелпер для рендера VK-результатов (используется и в истории, и в основном поиске)
 function renderVkResults(items) {
   if (!items.length) return renderEmpty('Не найдено в VK');
   return items.map((p, idx) => {
@@ -1798,6 +1774,7 @@ function renderVkResults(items) {
     `;
   }).join('');
 }
+
 // ============================================================
 // ПРОЧИЕ ЭКРАНЫ
 // ============================================================
@@ -1805,6 +1782,8 @@ function renderSearchTab() {
   contentWrap.innerHTML = `<div class="section-title">Поиск</div><ul class="list"><li class="list-item" onclick="searchInput.focus()"><div class="list-icon">${I.search}</div><div class="list-content"><div class="list-title">Введите запрос в поле выше</div><div class="list-sub">ID, @username или телефон</div></div></li><li class="list-item" onclick="openMyProfile()"><div class="list-icon green">${I.user}</div><div class="list-content"><div class="list-title">Мой профиль</div><div class="list-sub">Найти себя</div></div><div class="list-chevron">${I.search}</div></li></ul><div id="search-results"></div>`;
   setTimeout(() => searchInput.focus(), 100);
 }
+
+// ⚡ ИСПРАВЛЕНО: добавлена закрывающая скобка
 async function renderStats() {
   contentWrap.innerHTML = `<div class="section-title">📊 Статистика</div><div class="stats-row"><div class="stat-card"><div class="stat-value" id="bs-users">—</div><div class="stat-label">Пользователей</div></div><div class="stat-card"><div class="stat-value" id="bs-comments">—</div><div class="stat-label">Сообщений</div></div><div class="stat-card"><div class="stat-value" id="bs-chats">—</div><div class="stat-label">Чатов</div></div><div class="stat-card"><div class="stat-value" id="bs-active">—</div><div class="stat-label">Активных</div></div></div><div class="section-title">📈 Активность (30 дней)</div><div class="chart-wrap"><div class="chart-canvas-wrap"><canvas id="activityChart"></canvas></div></div><div class="section-title">💬 Топ чатов</div><ul class="list" id="top-chats"><li class="list-item"><div class="list-content"><div class="list-sub">Загрузка...</div></div></li></ul><div class="section-title">🔤 Популярные слова</div><ul class="list" id="top-words"><li class="list-item"><div class="list-content"><div class="list-sub">Загрузка...</div></div></li></ul>`;
   try {
@@ -1817,7 +1796,9 @@ async function renderStats() {
     $('top-words').innerHTML = words.length ? words.slice(0, 15).map(w => '<li class="list-item"><div class="list-icon purple">#</div><div class="list-content"><div class="list-title">' + esc(w.word) + '</div></div><div class="list-chevron">' + formatNumber(w.count) + '</div></li>').join('') : '<li class="list-item"><div class="list-content"><div class="list-sub">Нет данных</div></div></li>';
     renderChart(activity);
   } catch (e) { toast(e.message, 'error'); }
-}
+}  // ← ДОБАВЛЕНА ЗАКРЫВАЮЩАЯ СКОБКА
+
+// ⚡ ИСПРАВЛЕНО: добавлена закрывающая скобка
 function renderChart(activity) {
   const canvas = $('activityChart');
   if (!canvas || !activity || !activity.length || typeof Chart === 'undefined') return;
@@ -1825,9 +1806,8 @@ function renderChart(activity) {
   const isDark = currentTheme === 'dark';
   const gridColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
   window._currentChart = new Chart(canvas, { type: 'bar', data: { labels: activity.map(x => (x.date || '').slice(5)), datasets: [{ data: activity.map(x => x.count), backgroundColor: isDark ? 'rgba(10,132,255,0.6)' : 'rgba(0,122,255,0.6)', borderColor: isDark ? '#0a84ff' : '#007aff', borderWidth: 0, borderRadius: 4, barThickness: 8 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: '#8e8e93', font: { size: 10 }, maxTicksLimit: 5 } }, x: { grid: { display: false }, ticks: { color: '#8e8e93', font: { size: 9 }, maxTicksLimit: 8 } } } } });
+}  // ← ДОБАВЛЕНА ЗАКРЫВАЮЩАЯ СКОБКА
 
-
-  
 async function renderApiTokens() {
   const u = getTelegramUser();
   if (!u) { toast('Откройте через Telegram', 'error'); return; }
@@ -1838,10 +1818,12 @@ async function renderApiTokens() {
   const items = tokens.map(t => { const remaining = t.total ? (t.total - t.used) : '∞'; const statusColor = t.active ? 'var(--green)' : 'var(--text-mute)'; const statusText = t.active ? '✅ Активен' : '⏳ Ожидает'; const expiry = t.expires ? t.expires.slice(0, 10) : 'навсегда'; return `<div class="hist-item" style="border-left-color:${statusColor};"><div class="hist-top"><span style="color:${statusColor};font-weight:600;">${statusText}</span><span>до ${expiry}</span></div><div class="hist-target" style="font-size:11px;word-break:break-all;">${esc(t.token)}</div><div class="hist-summary">📊 ${t.used} / ${t.total || '∞'} ${t.total ? ` · Остаток: <b>${remaining}</b>` : ''}</div><button class="btn secondary" onclick="copyToClipboard('${esc(t.token)}')" style="margin-top:8px;margin-bottom:0;font-size:13px;padding:8px;">📋 Скопировать</button></div>`; }).join('');
   contentWrap.innerHTML = `<div class="section-title">🔑 Мои API токены (${tokens.length})</div>${items}<button class="btn secondary" onclick="renderScreen('home')">← На главную</button>`;
 }
+
 function renderMe() {
   const u = getTelegramUser();
-  contentWrap.innerHTML = `${u ? '<div class="section-title">Мой Telegram</div><div class="result-card"><div class="result-row"><div class="result-icon">' + I.user + '</div><div class="result-content"><div class="result-label">Имя</div><div class="result-value">' + esc(u.first_name || '') + ' ' + esc(u.last_name || '') + '</div></div></div><div class="result-row"><div class="result-icon">' + I.user + '</div><div class="result-content"><div class="result-label">Username</div><div class="result-value">' + (u.username ? '@' + esc(u.username) : '—') + '</div></div></div><div class="result-row"><div class="result-icon">' + I.info + '</div><div class="result-content"><div class="result-label">ID</div><div class="result-value mono">' + u.id + '</div></div></div></div>' : ''}<div class="section-title">Действия</div><ul class="list"><li class="list-item" onclick="openMyProfile()"><div class="list-icon">${I.user}</div><div class="list-content"><div class="list-title">Мой профиль</div></div><div class="list-chevron">${I.search}</div></li><li class="list-item" onclick="renderScreen('bonus')"><div class="list-icon orange">${I.gift}</div><div class="list-content"><div class="list-title">Бонус</div></div><div class="list-chevron">${I.search}</div></li><li class="list-item" onclick="renderScreen('referral')"><div class="list-icon purple">${I.share}</div><div class="list-content"><div class="list-title">Реферал</div></div><div class="list-chevron">${I.search}</div></li><li class="list-item" onclick="renderScreen('maryam')"><div class="list-icon pink">${I.robot}</div><div class="list-content"><div class="list-title">Марыям AI</div></div><div class="list-chevron">${I.search}</div></li><li class="list-item" onclick="renderScreen('support')"><div class="list-icon green">${I.support}</div><div class="list-content"><div class="list-title">Связь с админом</div></div><div class="list-chevron">${I.search}</div></li><li class="list-item" onclick="renderScreen('api-tokens')"><div class="list-icon green">${I.key}</div><div class="list-content"><div class="list-title">Мои API токены</div></div><div class="list-chevron">${I.search}</div></li><li class="list-item" onclick="openSettings()"><div class="list-icon gray">${I.gear}</div><div class="list-content"><div class="list-title">Настройки</div></div><div class="list-chevron">${I.search}</div></li><li class="list-item" onclick="logout()"><div class="list-icon red">${I.trash}</div><div class="list-content"><div class="list-title" style="color:var(--red);">Выйти</div><div class="list-sub">Сбросить сессию</div></div><div class="list-chevron">${I.search}</div></li></ul>`;
+  contentWrap.innerHTML = `${u ? '<div class="section-title">Мой Telegram</div><div class="result-card"><div class="result-row"><div class="result-icon">' + I.user + '</div><div class="result-content"><div class="result-label">Имя</div><div class="result-value">' + esc(u.first_name || '') + ' ' + esc(u.last_name || '') + '</div></div></div><div class="result-row"><div class="result-icon">' + I.user + '</div><div class="result-content"><div class="result-label">Username</div><div class="result-value">' + (u.username ? '@' + esc(u.username) : '—') + '</div></div></div><div class="result-row"><div class="result-icon">' + I.info + '</div><div class="result-content"><div class="result-label">ID</div><div class="result-value mono">' + u.id + '</div></div></div></div>' : ''}<div class="section-title">Действия</div><ul class="list"><li class="list-item" onclick="openMyProfile()"><div class="list-icon">${I.user}</div><div class="list-content"><div class="list-title">Мой профиль</div></div><div class="list-chevron">${I.search}</div></li><li class="list-item" onclick="renderScreen('history')"><div class="list-icon purple">📜</div><div class="list-content"><div class="list-title">История поисков</div></div><div class="list-chevron">${I.search}</div></li><li class="list-item" onclick="renderScreen('api-tokens')"><div class="list-icon green">${I.key}</div><div class="list-content"><div class="list-title">Мои API токены</div></div><div class="list-chevron">${I.search}</div></li><li class="list-item" onclick="openSettings()"><div class="list-icon gray">${I.gear}</div><div class="list-content"><div class="list-title">Настройки</div></div><div class="list-chevron">${I.search}</div></li><li class="list-item" onclick="logout()"><div class="list-icon red">${I.trash}</div><div class="list-content"><div class="list-title" style="color:var(--red);">Выйти</div><div class="list-sub">Сбросить сессию</div></div><div class="list-chevron">${I.search}</div></li></ul>`;
 }
+
 async function renderProfile(userId) {
   contentWrap.innerHTML = '<div style="padding-top:40px;text-align:center;"><div class="loading-bar" style="margin:0 auto;"></div><div style="margin-top:16px;color:var(--text-mute);font-size:13px;">Загрузка...</div></div>';
   try {
@@ -1873,6 +1855,7 @@ function loadProfileAvatar(userId) {
   test.onerror = () => { img.style.opacity = '0'; if (initials) initials.style.display = 'flex'; };
   test.src = url;
 }
+
 async function renderSubscription() {
   const u = getTelegramUser();
   contentWrap.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-mute);">Загрузка...</div>';
@@ -1883,6 +1866,7 @@ async function renderSubscription() {
   const planItems = plans.length ? plans.map(p => `<li class="list-item" onclick="buyPlan('${p.key}','${p.label}',${p.price_usd})"><div class="list-icon orange">${I.star}</div><div class="list-content"><div class="list-title">${esc(p.label)}</div><div class="list-sub">${p.price_usd} USD</div></div><div class="list-chevron">${I.search}</div></li>`).join('') : '';
   contentWrap.innerHTML = `<div class="section-title">⭐ Подписка</div>${activeBlock}<div class="section-title">Планы</div><ul class="list">${planItems}</ul><button class="btn secondary" onclick="renderScreen('home')">← Назад</button>`;
 }
+
 async function buyPlan(planKey, planLabel, priceUsd) {
   const u = getTelegramUser();
   if (!u) { toast('Откройте через Telegram', 'error'); return; }
@@ -1909,6 +1893,7 @@ async function buyPlan(planKey, planLabel, priceUsd) {
     }, 100);
   } catch(e) { closeModal(); toast('Ошибка', 'error'); }
 }
+
 async function renderTracking() {
   const u = getTelegramUser();
   contentWrap.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-mute);">Загрузка...</div>';
@@ -1957,9 +1942,20 @@ function confirmDelete() {
 function renderAbout() {
   contentWrap.innerHTML = '<div style="padding-top:20px;text-align:center;"><div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#60a5fa,#007aff);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:36px;">🤖</div><div style="font-size:22px;font-weight:700;color:var(--text);">AGENT ANALYTICS</div><div style="font-size:14px;color:var(--text-mute);margin-top:4px;">Версия 2.0</div></div><div class="section-title">📊 О проекте</div><div class="chart-wrap"><div style="color:var(--text-dim);font-size:14px;line-height:1.6;">Многофункциональный бот для анализа Telegram + поиск по базам данных.</div></div><button class="btn secondary" onclick="renderScreen(\'home\')">← На главную</button>';
 }
+async function renderNotifications() {
+  const u = getTelegramUser();
+  if (!u) { toast('Откройте через Telegram', 'error'); return; }
+  contentWrap.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-mute);">Загрузка...</div>';
+  try {
+    const data = await pubGet('/api/notifications/' + u.id);
+    const items = data.notifications || [];
+    if (!items.length) { contentWrap.innerHTML = '<div class="section-title">🔔 Уведомления</div><div class="chart-wrap" style="text-align:center;color:var(--text-mute);">Нет уведомлений</div><button class="btn secondary" onclick="renderScreen(\'home\')">← На главную</button>'; return; }
+    contentWrap.innerHTML = '<div class="section-title">🔔 Уведомления</div>' + items.map(n => `<div class="hist-item" style="border-left-color:var(--accent);"><div class="hist-top"><span>${esc(n.title||'')}</span><span>${esc(formatTime(n.created_at))}</span></div><div style="font-size:14px;color:var(--text);">${esc(n.message||'')}</div></div>`).join('') + '<button class="btn secondary" onclick="renderScreen(\'home\')">← На главную</button>';
+  } catch(e) { contentWrap.innerHTML = renderError('Ошибка'); }
+}
 async function renderAdminPanel() {
   if (!isAdmin()) { toast('❌ Доступ запрещён', 'error'); return renderHome(); }
-  contentWrap.innerHTML = '<div style="padding-top:20px;text-align:center;"><div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#ff9500,#ff3b30);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:36px;">👑</div><div style="font-size:22px;font-weight:700;color:var(--text);">АДМИН ПАНЕЛЬ</div></div><div class="section-title">📊 Статистика</div><div class="stats-row"><div class="stat-card"><div class="stat-value" id="adm-users">—</div><div class="stat-label">Пользователей</div></div><div class="stat-card"><div class="stat-value" id="adm-comments">—</div><div class="stat-label">Сообщений</div></div></div><div class="section-title">🛠 Управление</div><ul class="list"><li class="list-item" onclick="openAdminAddBalance()"><div class="list-icon orange">💰</div><div class="list-content"><div class="list-title">Пополнить баланс</div></div><div class="list-chevron">' + I.search + '</div></li><li class="list-item" onclick="openAdminGiftSubscription()"><div class="list-icon purple">🎁</div><div class="list-content"><div class="list-title">Подарить подписку</div></div><div class="list-chevron">' + I.search + '</div></li><li class="list-item" onclick="openAdminGiftApi()"><div class="list-icon green">🔑</div><div class="list-content"><div class="list-title">Подарить API токен</div></div><div class="list-chevron">' + I.search + '</div></li></ul><button class="btn secondary" onclick="renderScreen(\'home\')">← На главную</button>';
+  contentWrap.innerHTML = '<div style="padding-top:20px;text-align:center;"><div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#ff9500,#ff3b30);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:36px;">👑</div><div style="font-size:22px;font-weight:700;color:var(--text);">АДМИН ПАНЕЛЬ</div></div><div class="section-title">📊 Статистика</div><div class="stats-row"><div class="stat-card"><div class="stat-value" id="adm-users">—</div><div class="stat-label">Пользователей</div></div><div class="stat-card"><div class="stat-value" id="adm-comments">—</div><div class="stat-label">Сообщений</div></div></div><div class="section-title">🛠 Управление</div><ul class="list"><li class="list-item" onclick="openAdminAddBalance()"><div class="list-icon orange">💰</div><div class="list-content"><div class="list-title">Пополнить баланс</div></div><div class="list-chevron">' + I.search + '</div></li><li class="list-item" onclick="openAdminGiftSubscription()"><div class="list-icon purple">🎁</div><div class="list-content"><div class="list-title">Подарить подписку</div></div><div class="list-chevron">' + I.search + '</div></li></ul><button class="btn secondary" onclick="renderScreen(\'home\')">← На главную</button>';
   try { const stats = await apiGetPublicStats(); $('adm-users').textContent = formatNumber(stats.users || 0); $('adm-comments').textContent = formatNumber(stats.comments || 0); } catch (e) {}
 }
 function openAdminAddBalance() {
@@ -1983,18 +1979,6 @@ function openAdminGiftSubscription() {
     try {
       const data = await pubPost('/api/admin/gift_subscription', { admin_id: u.id, user_id: parseInt(id), days: parseInt(days) });
       if (data.success) { closeModal(); toast('✅ Подарена до ' + (data.end_date||'').slice(0,10), 'ok'); _meCache = { userId: null, data: null, ts: 0 }; } else toast('❌ ' + (data.error || 'Ошибка'), 'error');
-    } catch(e) { toast('Ошибка', 'error'); }
-  }), 50);
-}
-function openAdminGiftApi() {
-  showModal('<div class="modal-title">🔑 Подарить API</div><div class="field"><label class="field-label">ID</label><input type="number" class="field-input" id="adm-api-id" placeholder="123456789"></div><div class="field"><label class="field-label">План</label><select class="field-input" id="adm-api-plan"><option value="100">100</option><option value="500">500</option><option value="1000">1000</option><option value="5000">5000</option></select></div><button class="btn" id="adm-api-go">Подарить</button><button class="btn secondary" onclick="closeModal()">Отмена</button>');
-  setTimeout(() => document.getElementById('adm-api-go')?.addEventListener('click', async () => {
-    const id = document.getElementById('adm-api-id').value.trim(); const plan = document.getElementById('adm-api-plan').value;
-    if (!id || !/^\d+$/.test(id)) { toast('Введите ID', 'error'); return; }
-    const u = getTelegramUser();
-    try {
-      const data = await pubPost('/api/admin/gift_api', { admin_id: u.id, user_id: parseInt(id), plan_key: plan });
-      if (data.success) { closeModal(); toast('✅ Токен: ' + data.token.slice(0,20) + '...', 'ok'); } else toast('❌ ' + (data.error || 'Ошибка'), 'error');
     } catch(e) { toast('Ошибка', 'error'); }
   }), 50);
 }
@@ -2024,7 +2008,7 @@ async function openMyProfile() {
 }
 
 // ============================================================
-// 🔍 ГЛАВНЫЙ ПОИСК (улучшен: сначала локальная, потом apisearch)
+// 🔍 ГЛАВНЫЙ ПОИСК
 // ============================================================
 async function handleSearch() {
   const q = searchInput.value.trim();
@@ -2039,13 +2023,11 @@ async function handleSearch() {
     const isId = /^\d{5,15}$/.test(q);
     const isUsername = /^@?[a-zA-Z][a-zA-Z0-9_]{2,31}$/.test(q) && !q.includes(' ') && !/^\+?\d/.test(q);
 
-    // 1. Локальный поиск по ID
     if (isId) {
       const userId = parseInt(q);
       try { await apiGetUser(userId); renderScreen('profile', userId); return; } catch (e) {}
     }
 
-    // 2. Локальный поиск по username
     if (isUsername) {
       const clean = q.replace('@', '').toLowerCase();
       try {
@@ -2055,7 +2037,6 @@ async function handleSearch() {
       } catch (e) {}
     }
 
-    // 3. Общий поиск через apisearch
     contentWrap.innerHTML = `
       <div class="section-title">🔍 Поиск: ${esc(q)}</div>
       ${renderLoading('Ищем по всем базам...')}
@@ -2063,7 +2044,6 @@ async function handleSearch() {
 
     const u = getTelegramUser();
 
-    // 3a. Если @username — сначала tg_search
     if (isUsername) {
       try {
         const tgData = await pubPost('/api/apisearch/tg_search', {
@@ -2071,14 +2051,13 @@ async function handleSearch() {
           query: q.replace('@', '')
         });
         if (tgData.success && tgData.result && (tgData.result.telegram_id || tgData.result.username)) {
-          contentWrap.innerHTML = `<div class="section-title">🔍 Поиск: ${esc(q)}</div><div id="search-tg-result"></div>`;
+          contentWrap.innerHTML = `<div class="section-title">🔍 Поиск: ${esc(q)}</div><div id="search-tg-result"></div><button class="btn secondary" onclick="renderScreen('home')" style="margin-top:12px;">← На главную</button>`;
           renderTgProfile(tgData.result, q, 'search-tg-result');
           return;
         }
       } catch (e) {}
     }
 
-    // 3b. extended_search
     const data = await pubPost('/api/apisearch/search', {
       user_id: u.id,
       query: q,
@@ -2137,29 +2116,42 @@ document.getElementById('auth-identifier')?.addEventListener('keydown', e => { i
 document.getElementById('auth-code')?.addEventListener('keydown', e => { if (e.key === 'Enter') verifyAuthCode(); });
 
 // ============================================================
-// STARTUP
+// STARTUP — обёрнуто в try/catch чтобы при ошибке всегда показывался auth-экран
 // ============================================================
 window.addEventListener('load', () => {
   setTimeout(() => {
-    const el = document.getElementById('loading');
-    if (el) el.classList.add('hidden');
-    setTimeout(() => { const e = document.getElementById('loading'); if (e) e.remove(); }, 500);
+    try {
+      const el = document.getElementById('loading');
+      if (el) el.classList.add('hidden');
+      setTimeout(() => { const e = document.getElementById('loading'); if (e) e.remove(); }, 500);
 
-    const tgUser = getTelegramUser();
-    if (!tgUser) {
+      const tgUser = getTelegramUser();
+      if (!tgUser) {
+        showAuthScreen();
+        return;
+      }
+
+      hideAuthScreen();
+      getDailyUsage();
+      updateRequestsBadge();
+      updateNotifBadge();
+      renderScreen('home');
+      setInterval(updateNotifBadge, 30000);
+    } catch (err) {
+      console.error('STARTUP ERROR:', err);
+      try {
+        const el = document.getElementById('loading');
+        if (el) el.remove();
+      } catch(e) {}
       showAuthScreen();
-      return;
+      setAuthStatus('⚠️ Ошибка запуска: ' + (err.message || 'unknown'), 'err');
     }
-
-    hideAuthScreen();
-    getDailyUsage();
-    updateRequestsBadge();
-    updateNotifBadge();
-    renderScreen('home');
-    setInterval(updateNotifBadge, 30000);
   }, 800);
 });
 
+// ============================================================
+// EXPORTS
+// ============================================================
 window.renderScreen = renderScreen;
 window.openMyProfile = openMyProfile;
 window.openSettings = openSettings;
@@ -2177,7 +2169,6 @@ window.showPhoneMapCurrent = showPhoneMapCurrent;
 window.closePhoneMap = closePhoneMap;
 window.openAdminAddBalance = openAdminAddBalance;
 window.openAdminGiftSubscription = openAdminGiftSubscription;
-window.openAdminGiftApi = openAdminGiftApi;
 window.getRequestsLeft = getRequestsLeft;
 window.checkAndUseRequest = checkAndUseRequest;
 window.showLimitModal = showLimitModal;

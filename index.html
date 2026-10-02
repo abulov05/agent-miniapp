@@ -163,7 +163,6 @@ input, textarea { user-select: text; -webkit-user-select: text; }
 .vk-link { display: inline-block; font-size: 12px; color: var(--accent); text-decoration: none; background: rgba(0,122,255,0.1); padding: 5px 12px; border-radius: 8px; font-weight: 600; }
 .vk-link:active { background: rgba(0,122,255,0.25); }
 
-/* ============== AUTH SCREEN ============== */
 #auth-screen {
   position: fixed; inset: 0; z-index: 5000;
   background: var(--bg); overflow-y: auto;
@@ -187,54 +186,21 @@ input, textarea { user-select: text; -webkit-user-select: text; }
   animation: logoGlow 2.4s ease-in-out infinite;
 }
 .auth-logo svg { width: 48px; height: 48px; }
-.auth-title {
-  font-size: 26px; font-weight: 700;
-  text-align: center; margin-bottom: 8px;
-  color: var(--text); letter-spacing: -0.5px;
-}
-.auth-sub {
-  font-size: 14px; color: var(--text-mute);
-  text-align: center; margin-bottom: 32px;
-  line-height: 1.5;
-}
-.auth-card {
-  background: var(--bg-elev);
-  border-radius: 18px;
-  padding: 20px;
-}
+.auth-title { font-size: 26px; font-weight: 700; text-align: center; margin-bottom: 8px; color: var(--text); letter-spacing: -0.5px; }
+.auth-sub { font-size: 14px; color: var(--text-mute); text-align: center; margin-bottom: 32px; line-height: 1.5; }
+.auth-card { background: var(--bg-elev); border-radius: 18px; padding: 20px; }
 .auth-card .field { margin-bottom: 12px; }
 .auth-card .field:last-child { margin-bottom: 0; }
-.auth-code-input {
-  text-align: center !important;
-  font-size: 32px !important;
-  letter-spacing: 14px !important;
-  font-family: 'SF Mono', 'Menlo', monospace !important;
-  font-weight: 700 !important;
-  padding-left: 24px !important;
-  color: var(--accent) !important;
-}
-.auth-status {
-  margin-top: 16px;
-  font-size: 13px;
-  text-align: center;
-  min-height: 20px;
-  line-height: 1.4;
-}
+.auth-code-input { text-align: center !important; font-size: 32px !important; letter-spacing: 14px !important; font-family: 'SF Mono', 'Menlo', monospace !important; font-weight: 700 !important; padding-left: 24px !important; color: var(--accent) !important; }
+.auth-status { margin-top: 16px; font-size: 13px; text-align: center; min-height: 20px; line-height: 1.4; }
 .auth-status.ok { color: var(--green); }
 .auth-status.err { color: var(--red); }
-.auth-hint {
-  text-align: center;
-  font-size: 12px;
-  color: var(--text-mute);
-  margin-top: 20px;
-  line-height: 1.5;
-}
+.auth-hint { text-align: center; font-size: 12px; color: var(--text-mute); margin-top: 20px; line-height: 1.5; }
 .auth-hint a { color: var(--accent); text-decoration: none; font-weight: 600; }
 </style>
 </head>
 <body>
 
-<!-- ЭКРАН ВХОДА -->
 <div id="auth-screen">
   <div class="auth-wrap">
     <div class="auth-logo">
@@ -255,9 +221,7 @@ input, textarea { user-select: text; -webkit-user-select: text; }
         <div class="field">
           <label class="field-label">Telegram ID или @username</label>
           <input type="text" class="field-input" id="auth-identifier" placeholder="710278988 или @username" autocomplete="off" autocapitalize="off" spellcheck="false">
-          <div class="field-hint">
-            Узнать ID можно у <a href="https://t.me/userinfobot" target="_blank" style="color:var(--accent);text-decoration:none;font-weight:600;">@userinfobot</a>
-          </div>
+          <div class="field-hint">Узнать ID можно у <a href="https://t.me/userinfobot" target="_blank" style="color:var(--accent);text-decoration:none;font-weight:600;">@userinfobot</a></div>
         </div>
         <button class="btn" id="auth-get-code-btn" style="margin-top:4px;">📩 Получить код</button>
         <button class="btn secondary" id="auth-open-bot-btn">✈️ Открыть @dev1_robot</button>
@@ -411,11 +375,15 @@ function formatTime(iso) { if (!iso) return ''; try { const d = new Date(iso); r
 function toast(msg, type = '') { const el = document.createElement('div'); el.className = 'toast ' + type; el.textContent = msg; toasts.appendChild(el); requestAnimationFrame(() => el.classList.add('show')); setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 300); }, 3000); }
 function vibrate(ms = 10) { if (navigator.vibrate) try { navigator.vibrate(ms); } catch (e) {} }
 function formatNumber(n) { if (n == null) return '0'; return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' '); }
+
+// Безопасные функции работы с DOM
+function setText(id, value) { const el = document.getElementById(id); if (el) el.textContent = value; }
+function setHTML(id, html) { const el = document.getElementById(id); if (el) el.innerHTML = html; }
+
 function getTelegramUser() { try { const u = window.Telegram?.WebApp?.initDataUnsafe?.user; if (u) { localStorage.setItem('aa_tg_user', JSON.stringify(u)); return u; } const s = localStorage.getItem('aa_tg_user'); return s ? JSON.parse(s) : null; } catch (e) { return null; } }
 function isAdmin() { const u = getTelegramUser(); return u && u.id === CONFIG.ADMIN_ID; }
 function copyToClipboard(text) { try { navigator.clipboard.writeText(text).then(() => { toast('✅ Скопировано', 'ok'); vibrate(); }).catch(() => { const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); toast('✅ Скопировано', 'ok'); }); } catch (e) { toast('Не удалось скопировать', 'error'); } }
 
-// ⚡ ИСПРАВЛЕНО: безопасный парсинг JSON (ngrok может вернуть HTML)
 async function pubGet(path) {
   const r = await fetch(CONFIG.API_BASE + path, { headers: { 'ngrok-skip-browser-warning': 'true' } });
   if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -438,7 +406,14 @@ async function getMe(force = false) {
   if (!u) return { diamonds: 0, has_subscription: false, days_left: 0, subscription_end: null };
   const now = Date.now();
   if (!force && _meCache.userId === u.id && (now - _meCache.ts) < 5000 && _meCache.data) return _meCache.data;
-  try { const data = await pubGet('/api/me/' + u.id); _meCache = { userId: u.id, data, ts: now }; return data; } catch(e) { return { diamonds: 0, has_subscription: false, days_left: 0, subscription_end: null }; }
+  try {
+    const data = await pubGet('/api/me/' + u.id);
+    _meCache = { userId: u.id, data, ts: now };
+    return data;
+  } catch(e) {
+    console.warn('[getMe] error:', e);
+    return { diamonds: 0, has_subscription: false, days_left: 0, subscription_end: null };
+  }
 }
 
 // ============================================================
@@ -685,7 +660,7 @@ document.querySelectorAll('.tab').forEach(tab => {
 });
 
 // ============================================================
-// HOME
+// HOME — ИСПРАВЛЕНО
 // ============================================================
 async function renderHome() {
   const tgUser = getTelegramUser();
@@ -721,31 +696,19 @@ async function renderHome() {
     <div class="quick-grid">
       <button class="quick-card" onclick="renderScreen('phone-full')">
         <div class="quick-card-icon red">🔍</div>
-        <div>
-          <div class="quick-card-title">Полный пробив</div>
-          <div class="quick-card-sub">ФИО, ДР, телефон, email</div>
-        </div>
+        <div><div class="quick-card-title">Полный пробив</div><div class="quick-card-sub">ФИО, ДР, телефон, email</div></div>
       </button>
       <button class="quick-card" onclick="renderScreen('name-phone')">
         <div class="quick-card-icon green">📞</div>
-        <div>
-          <div class="quick-card-title">ФИО по номеру</div>
-          <div class="quick-card-sub">Полный пробив по телефону</div>
-        </div>
+        <div><div class="quick-card-title">ФИО по номеру</div><div class="quick-card-sub">Полный пробив по телефону</div></div>
       </button>
       <button class="quick-card" onclick="renderScreen('base-check')">
         <div class="quick-card-icon purple">📊</div>
-        <div>
-          <div class="quick-card-title">Чекер по базам</div>
-          <div class="quick-card-sub">В скольких базах есть</div>
-        </div>
+        <div><div class="quick-card-title">Чекер по базам</div><div class="quick-card-sub">В скольких базах есть</div></div>
       </button>
       <button class="quick-card" onclick="renderScreen('phone-check')">
         <div class="quick-card-icon green">📱</div>
-        <div>
-          <div class="quick-card-title">Проверка номера</div>
-          <div class="quick-card-sub">Страна, оператор, карта</div>
-        </div>
+        <div><div class="quick-card-title">Проверка номера</div><div class="quick-card-sub">Страна, оператор, карта</div></div>
       </button>
     </div>
 
@@ -753,31 +716,19 @@ async function renderHome() {
     <div class="quick-grid">
       <button class="quick-card" onclick="renderScreen('vk-search')">
         <div class="quick-card-icon">🔵</div>
-        <div>
-          <div class="quick-card-title">Поиск VK</div>
-          <div class="quick-card-sub">Профиль ВКонтакте</div>
-        </div>
+        <div><div class="quick-card-title">Поиск VK</div><div class="quick-card-sub">Профиль ВКонтакте</div></div>
       </button>
       <button class="quick-card" onclick="renderScreen('tg-search')">
         <div class="quick-card-icon">✈️</div>
-        <div>
-          <div class="quick-card-title">Поиск Telegram</div>
-          <div class="quick-card-sub">ID, username, чаты</div>
-        </div>
+        <div><div class="quick-card-title">Поиск Telegram</div><div class="quick-card-sub">ID, username, чаты</div></div>
       </button>
       <button class="quick-card" onclick="renderScreen('username-check')">
         <div class="quick-card-icon green">🌐</div>
-        <div>
-          <div class="quick-card-title">Проверка @username</div>
-          <div class="quick-card-sub">Все платформы</div>
-        </div>
+        <div><div class="quick-card-title">Проверка @username</div><div class="quick-card-sub">Все платформы</div></div>
       </button>
       <button class="quick-card" onclick="renderScreen('photo-search')">
         <div class="quick-card-icon pink">📸</div>
-        <div>
-          <div class="quick-card-title">Поиск по фото</div>
-          <div class="quick-card-sub">Google Lens</div>
-        </div>
+        <div><div class="quick-card-title">Поиск по фото</div><div class="quick-card-sub">Google Lens</div></div>
       </button>
     </div>
 
@@ -785,31 +736,19 @@ async function renderHome() {
     <div class="quick-grid">
       <button class="quick-card" onclick="renderScreen('notifications')">
         <div class="quick-card-icon orange">🔔</div>
-        <div>
-          <div class="quick-card-title">Уведомления</div>
-          <div class="quick-card-sub">Новые события</div>
-        </div>
+        <div><div class="quick-card-title">Уведомления</div><div class="quick-card-sub">Новые события</div></div>
       </button>
       <button class="quick-card" onclick="renderScreen('subscription')">
         <div class="quick-card-icon purple">⭐</div>
-        <div>
-          <div class="quick-card-title">Подписка</div>
-          <div class="quick-card-sub">Безлимитный доступ</div>
-        </div>
+        <div><div class="quick-card-title">Подписка</div><div class="quick-card-sub">Безлимитный доступ</div></div>
       </button>
       <button class="quick-card" onclick="renderScreen('api-tokens')">
         <div class="quick-card-icon green">🔑</div>
-        <div>
-          <div class="quick-card-title">API токены</div>
-          <div class="quick-card-sub">Управление токенами</div>
-        </div>
+        <div><div class="quick-card-title">API токены</div><div class="quick-card-sub">Управление токенами</div></div>
       </button>
       <button class="quick-card" onclick="renderScreen('history')">
         <div class="quick-card-icon pink">📜</div>
-        <div>
-          <div class="quick-card-title">История</div>
-          <div class="quick-card-sub">Последние запросы</div>
-        </div>
+        <div><div class="quick-card-title">История</div><div class="quick-card-sub">Последние запросы</div></div>
       </button>
     </div>
 
@@ -841,23 +780,45 @@ async function renderHome() {
   updateRequestsBadge();
   updateNotifBadge();
 
-  if (tgUser) {
-    try {
-      const me = await getMe(true);
-      const meBlock = document.getElementById('me-block');
-      if (meBlock) {
-        const subLine = me.has_subscription
-          ? `<div style="display:flex;justify-content:space-between;padding:10px 0;"><span style="color:var(--text-mute);">⭐ Подписка</span><span style="color:var(--green);font-weight:600;">активна до ${formatDate(me.subscription_end)}</span></div>`
-          : `<div style="display:flex;justify-content:space-between;padding:10px 0;"><span style="color:var(--text-mute);">⭐ Подписка</span><span style="color:var(--red);font-weight:600;">не активна</span></div>`;
-        meBlock.innerHTML = `<div style="background:var(--bg-elev);border-radius:14px;padding:12px 16px;margin-bottom:12px;">${subLine}<div style="display:flex;justify-content:space-between;padding:10px 0;border-top:0.5px solid var(--border-soft);"><span style="color:var(--text-mute);">💎 Баланс</span><span style="color:var(--orange);font-weight:600;">${me.diamonds} алмазов</span></div></div>`;
-      }
-    } catch(e) {}
+  if (!tgUser) return;
 
-    try {
-      const u = await apiGetUser(tgUser.id, 'all', 100).catch(() => null);
-      if (u && !u.error) { $('my-comments').textContent = formatNumber((u.comments || []).length); $('my-chats').textContent = formatNumber((u.chats || []).length); }
-      else { $('my-comments').textContent = '0'; $('my-chats').textContent = '0'; }
-    } catch (e) { $('my-comments').textContent = '—'; $('my-chats').textContent = '—'; }
+  // Блок с балансом и подпиской
+  try {
+    const me = await getMe(true);
+    if (currentScreen.name !== 'home') return;
+    const meBlock = document.getElementById('me-block');
+    if (meBlock) {
+      const subLine = me.has_subscription
+        ? `<div style="display:flex;justify-content:space-between;padding:10px 0;"><span style="color:var(--text-mute);">⭐ Подписка</span><span style="color:var(--green);font-weight:600;">активна до ${formatDate(me.subscription_end)}</span></div>`
+        : `<div style="display:flex;justify-content:space-between;padding:10px 0;"><span style="color:var(--text-mute);">⭐ Подписка</span><span style="color:var(--red);font-weight:600;">не активна</span></div>`;
+      meBlock.innerHTML = `<div style="background:var(--bg-elev);border-radius:14px;padding:12px 16px;margin-bottom:12px;">${subLine}<div style="display:flex;justify-content:space-between;padding:10px 0;border-top:0.5px solid var(--border-soft);"><span style="color:var(--text-mute);">💎 Баланс</span><span style="color:var(--orange);font-weight:600;">${me.diamonds} алмазов</span></div></div>`;
+    }
+  } catch (e) {
+    console.warn('[home] getMe error:', e);
+  }
+
+  // Счётчики сообщений и чатов
+  try {
+    const u = await apiGetUser(tgUser.id, 'all', 100).catch(() => null);
+    if (currentScreen.name !== 'home') return;
+
+    const elComments = document.getElementById('my-comments');
+    const elChats = document.getElementById('my-chats');
+    if (elComments && elChats) {
+      if (u && !u.error) {
+        elComments.textContent = formatNumber((u.comments || []).length);
+        elChats.textContent = formatNumber((u.chats || []).length);
+      } else {
+        elComments.textContent = '0';
+        elChats.textContent = '0';
+      }
+    }
+  } catch (e) {
+    console.warn('[home] apiGetUser error:', e);
+    const elComments = document.getElementById('my-comments');
+    const elChats = document.getElementById('my-chats');
+    if (elComments) elComments.textContent = '—';
+    if (elChats) elChats.textContent = '—';
   }
 }
 
@@ -1447,7 +1408,7 @@ function renderPhotoSearch() {
 }
 
 // ============================================================
-// 📱 ПРОВЕРКА НОМЕРА (локальная)
+// 📱 ПРОВЕРКА НОМЕРА
 // ============================================================
 function renderPhoneCheck() {
   contentWrap.innerHTML = `<div class="section-title">📱 Проверка номера</div><div class="chart-wrap"><div class="field"><label class="field-label">Номер</label><input type="tel" class="field-input" id="pc-phone" placeholder="+992901234567"><div class="field-hint">Страна, оператор, регион, карта</div></div><button class="btn" id="pc-check">📱 Проверить</button></div><div id="pc-result"></div><button class="btn secondary" onclick="renderScreen('home')">← Назад</button>`;
@@ -1530,11 +1491,13 @@ function initPhoneMap(lat, lon, info) {
   window._phoneMap = map;
   setTimeout(() => map.invalidateSize(), 250);
 }
+
 // ============================================================
 // 📜 ИСТОРИЯ ПОИСКОВ
 // ============================================================
 async function renderSearchHistory() {
   const u = getTelegramUser();
+  console.log('🔍 renderSearchHistory START, user =', u);
   if (!u) { toast('Откройте через Telegram', 'error'); return; }
 
   contentWrap.innerHTML = `
@@ -1547,10 +1510,15 @@ async function renderSearchHistory() {
   `;
 
   try {
+    console.log('📡 Запрос истории:', '/api/history/' + u.id);
     const data = await pubGet('/api/history/' + u.id);
+    console.log('✅ Ответ:', data);
+
     if (!data.success) { $('history-list').innerHTML = renderError(data.error || 'Ошибка'); return; }
 
     const items = data.items || [];
+    console.log('📊 Записей:', items.length);
+
     if (!items.length) {
       $('history-list').innerHTML = `
         <div class="chart-wrap" style="text-align:center;">
@@ -1576,10 +1544,7 @@ async function renderSearchHistory() {
 
       html += `
         <div class="hist-item" onclick="openHistoryItem(${item.id})" style="cursor:pointer;">
-          <div class="hist-top">
-            <span>${icon} ${esc(label)}</span>
-            <span>${esc(dateStr)}</span>
-          </div>
+          <div class="hist-top"><span>${icon} ${esc(label)}</span><span>${esc(dateStr)}</span></div>
           <div class="hist-target" style="font-size:15px;font-weight:600;color:var(--text);word-break:break-all;">${esc(q)}</div>
           <div style="margin-top:6px;display:flex;justify-content:space-between;align-items:center;">
             <span style="font-size:12px;color:${countColor};">📊 Найдено: <b>${count}</b> записей</span>
@@ -1591,6 +1556,7 @@ async function renderSearchHistory() {
 
     $('history-list').innerHTML = html;
   } catch (e) {
+    console.error('❌ Ошибка истории:', e);
     $('history-list').innerHTML = renderError('Ошибка загрузки: ' + e.message);
   }
 }
@@ -1627,15 +1593,13 @@ async function openHistoryItem(itemId) {
     `;
 
     if (type === 'tg' && results.length === 1 && results[0].telegram_id) {
-      const html = header + `<div id="history-tg-result"></div>`;
-      $('history-view').innerHTML = html;
+      $('history-view').innerHTML = header + `<div id="history-tg-result"></div>`;
       renderTgProfile(results[0], q, 'history-tg-result');
       return;
     }
 
     if (type === 'vk') {
-      const html = header + renderVkResults(results);
-      $('history-view').innerHTML = html;
+      $('history-view').innerHTML = header + renderVkResults(results);
       vibrate(50);
       return;
     }
@@ -1648,27 +1612,11 @@ async function openHistoryItem(itemId) {
 
       let html = header;
       if (r.found) {
-        html += `
-          <div class="chart-wrap" style="background:linear-gradient(135deg, rgba(52,199,89,0.15), rgba(0,0,0,0));border:1px solid rgba(52,199,89,0.3);text-align:center;">
-            <div style="font-size:48px;margin-bottom:8px;">✅</div>
-            <div style="font-size:20px;font-weight:700;color:var(--green);">Найдено в ${entries.length} базах</div>
-            <div style="font-size:13px;color:var(--text-mute);">Всего документов: ${formatNumber(totalDocs)}</div>
-          </div>
-        `;
+        html += `<div class="chart-wrap" style="background:linear-gradient(135deg, rgba(52,199,89,0.15), rgba(0,0,0,0));border:1px solid rgba(52,199,89,0.3);text-align:center;"><div style="font-size:48px;margin-bottom:8px;">✅</div><div style="font-size:20px;font-weight:700;color:var(--green);">Найдено в ${entries.length} базах</div><div style="font-size:13px;color:var(--text-mute);">Всего документов: ${formatNumber(totalDocs)}</div></div>`;
         entries.forEach(([name, count]) => {
           const maxCount = entries[0][1] || 1;
           const percent = Math.round((count / maxCount) * 100);
-          html += `
-            <div style="background:var(--bg-elev);border-radius:12px;padding:12px 14px;margin-bottom:8px;">
-              <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
-                <div style="font-size:13px;color:var(--text);flex:1;min-width:0;word-break:break-word;">${esc(name)}</div>
-                <div style="font-size:13px;color:var(--accent);font-weight:700;">${formatNumber(count)}</div>
-              </div>
-              <div style="height:6px;background:var(--bg);border-radius:3px;overflow:hidden;">
-                <div style="height:100%;width:${percent}%;background:linear-gradient(90deg,var(--accent),var(--purple));"></div>
-              </div>
-            </div>
-          `;
+          html += `<div style="background:var(--bg-elev);border-radius:12px;padding:12px 14px;margin-bottom:8px;"><div style="display:flex;justify-content:space-between;margin-bottom:8px;"><div style="font-size:13px;color:var(--text);flex:1;min-width:0;word-break:break-word;">${esc(name)}</div><div style="font-size:13px;color:var(--accent);font-weight:700;">${formatNumber(count)}</div></div><div style="height:6px;background:var(--bg);border-radius:3px;overflow:hidden;"><div style="height:100%;width:${percent}%;background:linear-gradient(90deg,var(--accent),var(--purple));"></div></div></div>`;
         });
       } else {
         html += `<div class="chart-wrap" style="text-align:center;"><div style="font-size:48px;">❌</div><div style="font-size:16px;font-weight:600;color:var(--red);">Не найдено</div></div>`;
@@ -1783,22 +1731,20 @@ function renderSearchTab() {
   setTimeout(() => searchInput.focus(), 100);
 }
 
-// ⚡ ИСПРАВЛЕНО: добавлена закрывающая скобка
 async function renderStats() {
   contentWrap.innerHTML = `<div class="section-title">📊 Статистика</div><div class="stats-row"><div class="stat-card"><div class="stat-value" id="bs-users">—</div><div class="stat-label">Пользователей</div></div><div class="stat-card"><div class="stat-value" id="bs-comments">—</div><div class="stat-label">Сообщений</div></div><div class="stat-card"><div class="stat-value" id="bs-chats">—</div><div class="stat-label">Чатов</div></div><div class="stat-card"><div class="stat-value" id="bs-active">—</div><div class="stat-label">Активных</div></div></div><div class="section-title">📈 Активность (30 дней)</div><div class="chart-wrap"><div class="chart-canvas-wrap"><canvas id="activityChart"></canvas></div></div><div class="section-title">💬 Топ чатов</div><ul class="list" id="top-chats"><li class="list-item"><div class="list-content"><div class="list-sub">Загрузка...</div></div></li></ul><div class="section-title">🔤 Популярные слова</div><ul class="list" id="top-words"><li class="list-item"><div class="list-content"><div class="list-sub">Загрузка...</div></div></li></ul>`;
   try {
     const [stats, activity, chats, words] = await Promise.all([apiGetPublicStats().catch(() => ({})), apiGetActivity().catch(() => []), apiGetTopInterlocutors().catch(() => []), apiGetWords().catch(() => [])]);
-    $('bs-users').textContent = formatNumber(stats.users || 0);
-    $('bs-comments').textContent = formatNumber(stats.comments || 0);
-    $('bs-chats').textContent = formatNumber(stats.chats || 0);
-    $('bs-active').textContent = formatNumber(stats.started_bot || 0);
-    $('top-chats').innerHTML = chats.length ? chats.slice(0, 10).map(c => '<li class="list-item"><div class="list-icon">' + I.msg + '</div><div class="list-content"><div class="list-title">' + esc((c.chat || '').slice(0, 28)) + '</div><div class="list-sub">' + formatNumber(c.messages) + ' сообщений</div></div></li>').join('') : '<li class="list-item"><div class="list-content"><div class="list-sub">Нет данных</div></div></li>';
-    $('top-words').innerHTML = words.length ? words.slice(0, 15).map(w => '<li class="list-item"><div class="list-icon purple">#</div><div class="list-content"><div class="list-title">' + esc(w.word) + '</div></div><div class="list-chevron">' + formatNumber(w.count) + '</div></li>').join('') : '<li class="list-item"><div class="list-content"><div class="list-sub">Нет данных</div></div></li>';
+    setText('bs-users', formatNumber(stats.users || 0));
+    setText('bs-comments', formatNumber(stats.comments || 0));
+    setText('bs-chats', formatNumber(stats.chats || 0));
+    setText('bs-active', formatNumber(stats.started_bot || 0));
+    setHTML('top-chats', chats.length ? chats.slice(0, 10).map(c => '<li class="list-item"><div class="list-icon">' + I.msg + '</div><div class="list-content"><div class="list-title">' + esc((c.chat || '').slice(0, 28)) + '</div><div class="list-sub">' + formatNumber(c.messages) + ' сообщений</div></div></li>').join('') : '<li class="list-item"><div class="list-content"><div class="list-sub">Нет данных</div></div></li>');
+    setHTML('top-words', words.length ? words.slice(0, 15).map(w => '<li class="list-item"><div class="list-icon purple">#</div><div class="list-content"><div class="list-title">' + esc(w.word) + '</div></div><div class="list-chevron">' + formatNumber(w.count) + '</div></li>').join('') : '<li class="list-item"><div class="list-content"><div class="list-sub">Нет данных</div></div></li>');
     renderChart(activity);
-  } catch (e) { toast(e.message, 'error'); }
-}  // ← ДОБАВЛЕНА ЗАКРЫВАЮЩАЯ СКОБКА
+  } catch (e) { console.warn('renderStats error:', e); }
+}
 
-// ⚡ ИСПРАВЛЕНО: добавлена закрывающая скобка
 function renderChart(activity) {
   const canvas = $('activityChart');
   if (!canvas || !activity || !activity.length || typeof Chart === 'undefined') return;
@@ -1806,7 +1752,7 @@ function renderChart(activity) {
   const isDark = currentTheme === 'dark';
   const gridColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
   window._currentChart = new Chart(canvas, { type: 'bar', data: { labels: activity.map(x => (x.date || '').slice(5)), datasets: [{ data: activity.map(x => x.count), backgroundColor: isDark ? 'rgba(10,132,255,0.6)' : 'rgba(0,122,255,0.6)', borderColor: isDark ? '#0a84ff' : '#007aff', borderWidth: 0, borderRadius: 4, barThickness: 8 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: '#8e8e93', font: { size: 10 }, maxTicksLimit: 5 } }, x: { grid: { display: false }, ticks: { color: '#8e8e93', font: { size: 9 }, maxTicksLimit: 8 } } } } });
-}  // ← ДОБАВЛЕНА ЗАКРЫВАЮЩАЯ СКОБКА
+}
 
 async function renderApiTokens() {
   const u = getTelegramUser();
@@ -1844,15 +1790,28 @@ async function renderProfile(userId) {
     contentWrap.innerHTML = '<div style="padding-top:40px;text-align:center;"><div style="font-size:36px;">⚠️</div><div style="font-size:18px;font-weight:600;margin:12px 0 6px;">Не найдено</div><div style="font-size:14px;color:var(--text-mute);margin-bottom:24px;">' + esc(e.message) + '</div><button class="btn secondary" onclick="renderScreen(\'home\')">← На главную</button></div>';
   }
 }
+
 function loadProfileAvatar(userId) {
   const img = document.getElementById('profile-avatar-img');
   const initials = document.getElementById('profile-avatar-initials');
   if (!img) return;
   const url = CONFIG.API_BASE + '/api/user_avatar/' + userId + '?t=' + Date.now();
   const test = new Image();
-  test.crossOrigin = 'anonymous';
-  test.onload = () => { if (test.naturalWidth > 1 && test.naturalHeight > 1) { img.src = url; img.style.opacity = '1'; if (initials) initials.style.display = 'none'; } };
-  test.onerror = () => { img.style.opacity = '0'; if (initials) initials.style.display = 'flex'; };
+  // НЕ ставим crossOrigin — иначе CORS блокирует ngrok
+  test.onload = () => {
+    if (test.naturalWidth > 1 && test.naturalHeight > 1) {
+      img.src = url;
+      img.style.opacity = '1';
+      if (initials) initials.style.display = 'none';
+    } else {
+      img.style.opacity = '0';
+      if (initials) initials.style.display = 'flex';
+    }
+  };
+  test.onerror = () => {
+    img.style.opacity = '0';
+    if (initials) initials.style.display = 'flex';
+  };
   test.src = url;
 }
 
@@ -1901,7 +1860,8 @@ async function renderTracking() {
   try { if (u) me = await getMe(true); } catch(e) {}
   try { if (u) trackList = await pubGet('/api/tracking/' + u.id); } catch(e) {}
   contentWrap.innerHTML = `<div class="section-title">👀 Отслеживание</div><div class="result-card"><div class="result-row"><div class="result-icon">${I.gem}</div><div class="result-content"><div class="result-label">Баланс</div><div class="result-value accent">${me.diamonds ?? '—'} алмазов</div></div></div></div><div class="chart-wrap"><div class="field"><label class="field-label">ID</label><input type="number" class="field-input" id="tr-id" placeholder="123456789"></div><button class="btn" id="tr-btn">👀 Активировать</button></div><div class="section-title">📋 Активные</div><ul class="list">${trackList && trackList.length ? trackList.map(t => `<li class="list-item"><div class="list-icon purple">👤</div><div class="list-content"><div class="list-title">${t.target_user_id}</div><div class="list-sub">до ${(t.end_date||'').slice(0,10)}</div></div><button class="icon-btn" onclick="removeTracking(${t.target_user_id})" style="color:var(--red);">✕</button></li>`).join('') : '<li class="list-item"><div class="list-content"><div class="list-sub">Нет активных</div></div></li>'}</ul><button class="btn secondary" onclick="renderScreen('home')">← Назад</button>`;
-  $('tr-btn').addEventListener('click', activateTracking);
+  const trBtn = $('tr-btn');
+  if (trBtn) trBtn.addEventListener('click', activateTracking);
 }
 async function activateTracking() {
   const u = getTelegramUser(); const id = $('tr-id').value.trim();
@@ -1921,7 +1881,8 @@ async function removeTracking(targetId) {
 }
 function renderDeleteData() {
   contentWrap.innerHTML = `<div class="section-title">🗑️ Удаление данных</div><div class="result-card"><div class="result-row"><div class="result-icon">${I.gem}</div><div class="result-content"><div class="result-label">Стоимость</div><div class="result-value accent">200 алмазов</div></div></div></div><div class="chart-wrap" style="background:rgba(255,59,48,0.08);border:1px solid rgba(255,59,48,0.2);"><div style="color:var(--red);font-weight:600;margin-bottom:12px;">⚠️ ВНИМАНИЕ</div><div style="color:var(--text-dim);font-size:14px;line-height:1.6;">• Удаляет ВСЕ данные<br>• Очищает историю имён<br>• Удаляет список чатов</div></div><button class="btn danger" id="del-btn">🗑️ Удалить (200 💎)</button><button class="btn secondary" onclick="renderScreen('home')">← Назад</button>`;
-  $('del-btn').addEventListener('click', confirmDelete);
+  const delBtn = $('del-btn');
+  if (delBtn) delBtn.addEventListener('click', confirmDelete);
 }
 function confirmDelete() {
   vibrate();
@@ -1956,7 +1917,7 @@ async function renderNotifications() {
 async function renderAdminPanel() {
   if (!isAdmin()) { toast('❌ Доступ запрещён', 'error'); return renderHome(); }
   contentWrap.innerHTML = '<div style="padding-top:20px;text-align:center;"><div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#ff9500,#ff3b30);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:36px;">👑</div><div style="font-size:22px;font-weight:700;color:var(--text);">АДМИН ПАНЕЛЬ</div></div><div class="section-title">📊 Статистика</div><div class="stats-row"><div class="stat-card"><div class="stat-value" id="adm-users">—</div><div class="stat-label">Пользователей</div></div><div class="stat-card"><div class="stat-value" id="adm-comments">—</div><div class="stat-label">Сообщений</div></div></div><div class="section-title">🛠 Управление</div><ul class="list"><li class="list-item" onclick="openAdminAddBalance()"><div class="list-icon orange">💰</div><div class="list-content"><div class="list-title">Пополнить баланс</div></div><div class="list-chevron">' + I.search + '</div></li><li class="list-item" onclick="openAdminGiftSubscription()"><div class="list-icon purple">🎁</div><div class="list-content"><div class="list-title">Подарить подписку</div></div><div class="list-chevron">' + I.search + '</div></li></ul><button class="btn secondary" onclick="renderScreen(\'home\')">← На главную</button>';
-  try { const stats = await apiGetPublicStats(); $('adm-users').textContent = formatNumber(stats.users || 0); $('adm-comments').textContent = formatNumber(stats.comments || 0); } catch (e) {}
+  try { const stats = await apiGetPublicStats(); setText('adm-users', formatNumber(stats.users || 0)); setText('adm-comments', formatNumber(stats.comments || 0)); } catch (e) {}
 }
 function openAdminAddBalance() {
   showModal('<div class="modal-title">💰 Пополнить</div><div class="field"><label class="field-label">ID</label><input type="number" class="field-input" id="adm-bal-id" placeholder="123456789"></div><div class="field"><label class="field-label">Сумма</label><input type="number" class="field-input" id="adm-bal-sum" placeholder="50"></div><button class="btn" id="adm-bal-go">Начислить</button><button class="btn secondary" onclick="closeModal()">Отмена</button>');
@@ -2099,9 +2060,7 @@ $('refresh-btn').addEventListener('click', () => { vibrate(); _meCache = { userI
 $('settings-btn').addEventListener('click', openSettings);
 $('notif-btn').addEventListener('click', () => renderScreen('notifications'));
 
-// ============================================================
 // AUTH EVENT LISTENERS
-// ============================================================
 document.getElementById('auth-get-code-btn')?.addEventListener('click', requestAuthCode);
 document.getElementById('auth-verify-btn')?.addEventListener('click', verifyAuthCode);
 document.getElementById('auth-back-btn')?.addEventListener('click', () => {
@@ -2116,7 +2075,7 @@ document.getElementById('auth-identifier')?.addEventListener('keydown', e => { i
 document.getElementById('auth-code')?.addEventListener('keydown', e => { if (e.key === 'Enter') verifyAuthCode(); });
 
 // ============================================================
-// STARTUP — обёрнуто в try/catch чтобы при ошибке всегда показывался auth-экран
+// STARTUP
 // ============================================================
 window.addEventListener('load', () => {
   setTimeout(() => {
@@ -2139,19 +2098,14 @@ window.addEventListener('load', () => {
       setInterval(updateNotifBadge, 30000);
     } catch (err) {
       console.error('STARTUP ERROR:', err);
-      try {
-        const el = document.getElementById('loading');
-        if (el) el.remove();
-      } catch(e) {}
+      try { const e = document.getElementById('loading'); if (e) e.remove(); } catch(e) {}
       showAuthScreen();
       setAuthStatus('⚠️ Ошибка запуска: ' + (err.message || 'unknown'), 'err');
     }
   }, 800);
 });
 
-// ============================================================
 // EXPORTS
-// ============================================================
 window.renderScreen = renderScreen;
 window.openMyProfile = openMyProfile;
 window.openSettings = openSettings;

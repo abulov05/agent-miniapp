@@ -1321,19 +1321,115 @@ function renderNameByPhone() {
 }
 
 function renderExtendedResults(items, query, targetId) {
-  const grouped = {};
-  items.forEach(item => { Object.entries(item).forEach(([k, v]) => { if (v === null || v === undefined || v === '' || k === 'database') return; const key = String(k).trim(); if (!grouped[key]) grouped[key] = new Set(); grouped[key].add(String(v)); }); });
-  const databases = new Set(); items.forEach(it => { if (it.database) databases.add(it.database); });
-  let html = `<div class="section-title" style="color:var(--green);">✅ Найдено записей: ${items.length}</div>`;
-  if (databases.size) html += `<div style="background:var(--bg-elev);border-radius:12px;padding:12px 16px;margin-bottom:12px;font-size:13px;color:var(--text-mute);">📊 Найдено в <b style="color:var(--accent);">${databases.size}</b> базах</div>`;
-  const fieldOrder = ['ФИО','ИМЯ','ДАТА РОЖДЕНИЯ','ТЕЛЕФОН','ПОЧТА','EMAIL','ПАСПОРТ','АДРЕС','ИНН','СНИЛС'];
-  const sortedKeys = Object.keys(grouped).sort((a, b) => { const ia = fieldOrder.findIndex(x => a.toUpperCase().includes(x)); const ib = fieldOrder.findIndex(x => b.toUpperCase().includes(x)); if (ia === -1 && ib === -1) return a.localeCompare(b); if (ia === -1) return 1; if (ib === -1) return -1; return ia - ib; });
-  sortedKeys.forEach(field => {
-    const arr = Array.from(grouped[field]);
-    html += `<div class="result-card" style="margin-bottom:12px;"><div style="padding:12px 16px;background:var(--bg-elev);border-bottom:0.5px solid var(--border-soft);display:flex;align-items:center;gap:10px;"><span style="font-size:18px;">${fieldIcon(field)}</span><span style="font-size:13px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:0.5px;">${esc(field)}</span><span style="margin-left:auto;font-size:11px;color:var(--text-mute);background:var(--bg);padding:2px 8px;border-radius:8px;">${arr.length}</span></div>${arr.slice(0, 50).map(v => `<div class="result-row" style="border-bottom:0.5px solid var(--border-soft);"><div class="result-content"><div class="result-value" style="font-size:15px;word-break:break-word;">${esc(v)}</div></div></div>`).join('')}</div>`;
+  let html = `
+    <div class="section-title" style="color:var(--green);">✅ Найдено записей: ${items.length}</div>
+  `;
+  
+  const databases = new Set();
+  items.forEach(it => { if (it.database) databases.add(it.database); });
+  if (databases.size) {
+    html += `<div style="background:var(--bg-elev);border-radius:12px;padding:12px 16px;margin-bottom:12px;font-size:13px;color:var(--text-mute);">📊 Найдено в <b style="color:var(--accent);">${databases.size}</b> базах</div>`;
+  }
+
+  // Порядок полей для красивого отображения
+  const fieldOrder = ['ФИО', 'ИМЯ', 'ДАТА РОЖДЕНИЯ', 'ДР', 'ТЕЛЕФОН', 'ПОЧТА', 'EMAIL', 'ПАСПОРТ', 'АДРЕС', 'ИНН', 'СНИЛС', 'VK', 'FB', 'TG', 'OK', 'INSTAGRAM', 'БАНК', 'КАРТА'];
+  
+  // Функция для сортировки ключей в записи
+  function sortKeys(obj) {
+    return Object.keys(obj).sort((a, b) => {
+      const ia = fieldOrder.findIndex(x => String(a).toUpperCase().includes(x));
+      const ib = fieldOrder.findIndex(x => String(b).toUpperCase().includes(x));
+      if (ia === -1 && ib === -1) return String(a).localeCompare(String(b));
+      if (ia === -1) return 1;
+      if (ib === -1) return -1;
+      return ia - ib;
+    });
+  }
+
+  // Рендерим каждую запись отдельной карточкой
+  items.forEach((item, idx) => {
+    // Фильтруем служебные поля
+    const cleanItem = {};
+    Object.entries(item).forEach(([k, v]) => {
+      if (v === null || v === undefined || v === '') return;
+      if (k === 'database') return;
+      cleanItem[k] = v;
+    });
+
+    if (Object.keys(cleanItem).length === 0) return;
+
+    // Определяем основное имя для заголовка (ФИО или ИМЯ)
+    let mainName = cleanItem['ФИО'] || cleanItem['ИМЯ'] || cleanItem['ФИО '] || '';
+    if (!mainName) {
+      // Ищем любое поле с "имя" или "фио"
+      for (const [k, v] of Object.entries(cleanItem)) {
+        const kl = String(k).toLowerCase();
+        if (kl.includes('фио') || kl.includes('имя') || kl.includes('name')) {
+          mainName = v;
+          break;
+        }
+      }
+    }
+    if (!mainName) mainName = `Запись #${idx + 1}`;
+
+    const dbSource = item.database || '—';
+
+    html += `
+      <div class="result-card" style="margin-bottom:14px; overflow:hidden;">
+        <div style="padding:12px 16px;background:linear-gradient(135deg, rgba(52,199,89,0.15), rgba(0,122,255,0.1));border-bottom:0.5px solid var(--border-soft);display:flex;align-items:center;gap:10px;">
+          <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#34c759,#30b14e);color:white;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;">
+            ${idx + 1}
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:15px;font-weight:700;color:var(--text);">👤 ${esc(mainName)}</div>
+            <div style="font-size:11px;color:var(--text-mute);margin-top:2px;">🗄 ${esc(String(dbSource).slice(0, 60))}</div>
+          </div>
+        </div>
+        <div style="padding:0;">
+    `;
+
+    // Сортируем и выводим все поля
+    const sortedFields = sortKeys(cleanItem);
+    sortedFields.forEach(field => {
+      const value = cleanItem[field];
+      if (String(field).toLowerCase() === 'database') return;
+
+      let display = esc(String(value));
+      
+      // Кликабельные ссылки
+      if (/^https?:\/\//.test(String(value))) {
+        display = `<a href="${esc(value)}" target="_blank" style="color:var(--accent);text-decoration:none;word-break:break-all;">${esc(value)}</a>`;
+      } else if (/^[\w.+-]+@[\w.-]+\.\w+$/.test(String(value))) {
+        display = `<a href="mailto:${esc(value)}" style="color:var(--accent);text-decoration:none;">${esc(value)}</a>`;
+      } else if (/^\+?\d{10,15}$/.test(String(value).replace(/\D/g, '')) && String(value).replace(/\D/g, '').length >= 10) {
+        const digits = String(value).replace(/\D/g, '');
+        display = `<a href="tel:+${esc(digits)}" style="color:var(--accent);text-decoration:none;">${esc(value)}</a>`;
+      }
+
+      const icon = fieldIcon(field);
+
+      html += `
+        <div style="display:flex;padding:10px 16px;border-bottom:0.5px solid var(--border-soft);gap:12px;align-items:flex-start;">
+          <div style="font-size:16px;flex-shrink:0;width:22px;text-align:center;">${icon}</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:11px;color:var(--text-mute);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;margin-bottom:3px;">${esc(field)}</div>
+            <div style="font-size:14px;color:var(--text);word-break:break-word;line-height:1.4;">${display}</div>
+          </div>
+        </div>
+      `;
+    });
+
+    html += `</div></div>`;
   });
-  const el = document.getElementById(targetId); if (el) { el.innerHTML = html; vibrate(50); toast('✅ Найдено: ' + items.length + ' записей', 'ok'); }
+
+  const el = document.getElementById(targetId);
+  if (el) {
+    el.innerHTML = html;
+    vibrate(50);
+    toast('✅ Найдено: ' + items.length + ' записей', 'ok');
+  }
 }
+
 
 function renderTgProfile(r, query, targetId) {
   const groups = r.groups_info || {};

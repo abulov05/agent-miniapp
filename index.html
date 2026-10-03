@@ -149,18 +149,12 @@ input, textarea { user-select: text; -webkit-user-select: text; }
 #phone-map .leaflet-popup-content-wrapper { background: var(--bg) !important; color: var(--text) !important; border-radius: 12px !important; box-shadow: 0 8px 24px rgba(0,0,0,0.15) !important; }
 #phone-map .leaflet-popup-tip { background: var(--bg) !important; }
 #phone-map .leaflet-control-attribution { display: none !important; }
-.chat-messages { display: flex; flex-direction: column; gap: 12px; }
-.chat-msg { max-width: 80%; padding: 10px 14px; border-radius: 14px; font-size: 14px; line-height: 1.4; word-break: break-word; }
-.chat-msg.user { align-self: flex-end; background: var(--accent); color: white; border-bottom-right-radius: 4px; }
-.chat-msg.admin { align-self: flex-start; background: var(--bg-elev); color: var(--text); border-bottom-left-radius: 4px; }
-.chat-msg-time { font-size: 10px; opacity: 0.7; margin-top: 4px; text-align: right; }
 .vk-card { background: var(--bg-elev); border-radius: 16px; padding: 14px; display: flex; gap: 14px; align-items: center; border: 1px solid var(--border-soft); margin-bottom: 10px; }
 .vk-avatar { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent); flex-shrink: 0; background: linear-gradient(135deg, var(--accent), var(--purple)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 26px; }
 .vk-info { flex: 1; min-width: 0; }
 .vk-name { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
 .vk-meta { font-size: 12px; color: var(--text-mute); margin-bottom: 4px; }
 .vk-link { display: inline-block; font-size: 12px; color: var(--accent); text-decoration: none; background: rgba(0,122,255,0.1); padding: 5px 12px; border-radius: 8px; font-weight: 600; }
-.vk-link:active { background: rgba(0,122,255,0.25); }
 
 #auth-screen { position: fixed; inset: 0; z-index: 5000; background: var(--bg); overflow-y: auto; display: none; animation: fadeIn 0.3s ease; }
 .auth-wrap { max-width: 420px; margin: 0 auto; padding: calc(env(safe-area-inset-top, 0px) + 40px) 24px 40px; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; }
@@ -303,7 +297,7 @@ input, textarea { user-select: text; -webkit-user-select: text; }
 const CONFIG = {
   API_BASE: "https://precise-subject-makeshift.ngrok-free.dev",
   API_KEY: "BHf4kSVv1MgHdAGYM3_JbU50UwkYJ1BB",
-  API_KEY_VERSION: "v4",
+  API_KEY_VERSION: "v5",
   BOT_USERNAME: "dev1_robot",
   ADMIN_ID: 8682108827,
   DAILY_LIMIT: 5
@@ -525,28 +519,29 @@ function renderScreen(name, data) {
   currentScreen = { name, data };
   contentWrap.scrollTop = 0;
   switch (name) {
-    case 'home':          return renderHome();
-    case 'search':        return renderSearchTab();
-    case 'stats':         return renderStats();
-    case 'me':            return renderMe();
-    case 'profile':       return renderProfile(data);
-    case 'phone-check':   return renderPhoneCheck();
-    case 'phone-full':    return renderPhoneFull();
-    case 'vk-search':     return renderVkSearch();
-    case 'tg-search':     return renderTgSearch();
-    case 'base-check':    return renderBaseChecker();
-    case 'name-phone':    return renderNameByPhone();
-    case 'subscription':  return renderSubscription();
-    case 'tracking':      return renderTracking();
-    case 'delete-data':   return renderDeleteData();
-    case 'about':         return renderAbout();
-    case 'history':       return renderSearchHistory();
-    case 'api-tokens':    return renderApiTokens();
-    case 'notifications': return renderNotifications();
-    case 'username-check':return renderUsernameCheck();
-    case 'photo-search':  return renderPhotoSearch();
-    case 'admin':         return renderAdminPanel();
-    default:              return renderHome();
+    case 'home':            return renderHome();
+    case 'search':          return renderSearchTab();
+    case 'stats':           return renderStats();
+    case 'me':              return renderMe();
+    case 'profile':         return renderProfile(data);
+    case 'phone-check':     return renderPhoneCheck();
+    case 'phone-full':      return renderPhoneFull();
+    case 'vk-search':       return renderVkSearch();
+    case 'tg-search':       return renderTgSearch();
+    case 'base-check':      return renderBaseChecker();
+    case 'name-phone':      return renderNameByPhone();
+    case 'subscription':    return renderSubscription();
+    case 'tracking':        return renderTracking();
+    case 'delete-data':     return renderDeleteData();
+    case 'about':           return renderAbout();
+    case 'history':         return renderSearchHistory();
+    case 'api-tokens':      return renderApiTokens();
+    case 'notifications':   return renderNotifications();
+    case 'username-check':  return renderUsernameCheck();
+    case 'photo-search':    return renderPhotoSearch();
+    case 'comments-search': return renderCommentsSearch();
+    case 'admin':           return renderAdminPanel();
+    default:                return renderHome();
   }
 }
 
@@ -585,6 +580,17 @@ async function renderHome() {
     <div class="stats-row">
       <div class="stat-card"><div class="stat-value" id="my-comments">—</div><div class="stat-label">Моих сообщений</div></div>
       <div class="stat-card"><div class="stat-value" id="my-chats">—</div><div class="stat-label">Моих чатов</div></div>
+    </div>
+
+    <div class="section-title">🔎 Поиск по словам</div>
+    <div class="quick-grid">
+      <button class="quick-card" onclick="renderScreen('comments-search')" style="grid-column: 1 / -1; background:linear-gradient(135deg, rgba(255,149,0,0.1), rgba(255,45,85,0.1)); border:1px solid rgba(255,149,0,0.25);">
+        <div class="quick-card-icon" style="background:linear-gradient(135deg,#ff9500,#ff2d55);color:white;">🔎</div>
+        <div>
+          <div class="quick-card-title">Поиск по ключевому слову</div>
+          <div class="quick-card-sub">Ищем в комментариях базы бота · миллионы сообщений</div>
+        </div>
+      </button>
     </div>
 
     <div class="section-title">🔍 Пробив по базам</div>
@@ -819,10 +825,163 @@ function loadProfileAvatar(userId) {
 }
 
 // ============================================================
+// 🔎 ПОИСК ПО КЛЮЧЕВЫМ СЛОВАМ В КОММЕНТАРИЯХ
+// ============================================================
+function renderCommentsSearch() {
+  const u = getTelegramUser();
+  if (!u) { toast('Откройте через Telegram', 'error'); return; }
+
+  contentWrap.innerHTML = `
+    <div class="section-title">🔎 Поиск по ключевому слову</div>
+    <div class="chart-wrap" style="background:linear-gradient(135deg, rgba(255,149,0,0.08), rgba(255,45,85,0.08)); border:1px solid rgba(255,149,0,0.2);">
+      <div class="field">
+        <label class="field-label">Слово или фраза</label>
+        <input type="text" class="field-input" id="cs-query" placeholder="Например: Москва, привет, работа" autocomplete="off">
+        <div class="field-hint">Ищем в миллионах сообщений базы бота</div>
+      </div>
+      <button class="btn" id="cs-btn" style="background:linear-gradient(135deg,#ff9500,#ff2d55);">🔎 Искать в комментариях</button>
+    </div>
+    <div id="cs-result"></div>
+    <button class="btn secondary" onclick="renderScreen('home')">← На главную</button>
+  `;
+
+  const input = $('cs-query');
+  const btn = $('cs-btn');
+  setTimeout(() => input.focus(), 100);
+
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); doCommentsSearch(); }
+  });
+  btn.addEventListener('click', doCommentsSearch);
+
+  async function doCommentsSearch() {
+    const query = (input.value || '').trim();
+    if (query.length < 2) { toast('Минимум 2 символа', 'error'); return; }
+
+    const limitCheck = await checkAndUseRequest();
+    if (!limitCheck.ok) { showLimitModal(); return; }
+
+    btn.disabled = true;
+    btn.textContent = '⏳ Ищем...';
+    $('cs-result').innerHTML = renderLoading(`Ищем "${query}" в комментариях...`);
+
+    try {
+      const data = await pubPost('/api/search_comments', {
+        user_id: u.id,
+        query: query,
+        limit: 100
+      });
+
+      if (!data.success) {
+        $('cs-result').innerHTML = renderError(data.error || 'Ошибка');
+        return;
+      }
+
+      const items = data.results || [];
+      if (!items.length) {
+        $('cs-result').innerHTML = renderEmpty(`По слову "${query}" ничего не найдено`);
+        return;
+      }
+
+      let html = `
+        <div class="section-title" style="color:var(--green);">
+          ✅ Найдено сообщений: ${data.count}
+        </div>
+        <div style="background:var(--bg-elev);border-radius:12px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:var(--text-mute);">
+          🔍 Запрос: <b style="color:var(--text);">${esc(query)}</b> · показано ${items.length} из ${data.count}
+        </div>
+      `;
+
+      // Группируем по пользователям
+      const byUser = {};
+      items.forEach(item => {
+        const uid = item.user_id;
+        if (!byUser[uid]) {
+          byUser[uid] = {
+            user_id: uid,
+            first_name: item.first_name,
+            last_name: item.last_name,
+            username: item.username,
+            messages: []
+          };
+        }
+        byUser[uid].messages.push(item);
+      });
+
+      Object.values(byUser).forEach(user => {
+        const name = `${user.first_name} ${user.last_name}`.trim() || `Пользователь ${user.user_id}`;
+        const uname = user.username ? `@${user.username}` : null;
+        const profileLink = uname ? `https://t.me/${uname}` : `tg://user?id=${user.user_id}`;
+
+        html += `
+          <div class="result-card" style="margin-bottom:14px;">
+            <div style="padding:12px 14px;background:var(--bg-elev);border-bottom:0.5px solid var(--border-soft);display:flex;align-items:center;gap:10px;">
+              <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#0a84ff,#bf5af2);color:white;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;flex-shrink:0;">
+                ${esc((name[0] || '?').toUpperCase())}
+              </div>
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:14px;font-weight:600;color:var(--text);">${esc(name)}</div>
+                <div style="font-size:12px;color:var(--text-mute);">
+                  ${uname ? esc(uname) + ' · ' : ''}ID: ${user.user_id} · 💬 ${user.messages.length}
+                </div>
+              </div>
+              <button class="icon-btn" onclick="event.stopPropagation(); window.open('${profileLink}','_blank')" style="color:var(--accent);" title="Открыть профиль">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:20px;height:20px;">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+              </button>
+            </div>
+            <div style="padding:8px 0;">
+        `;
+
+        user.messages.slice(0, 10).forEach(msg => {
+          const chatTitle = esc(msg.chat_title || '—');
+          const text = esc(msg.message_text || '');
+          const date = esc((msg.message_date || '').slice(0, 16));
+          const link = msg.message_link || '';
+
+          html += `
+            <div style="padding:10px 14px;border-bottom:0.5px solid var(--border-soft);">
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px;">
+                <div style="font-size:12px;color:var(--accent);font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">📌 ${chatTitle}</div>
+                <div style="font-size:11px;color:var(--text-mute);flex-shrink:0;">${date}</div>
+              </div>
+              <div style="font-size:13px;color:var(--text);line-height:1.5;word-break:break-word;">${text}</div>
+              ${link ? `<a href="${esc(link)}" target="_blank" style="display:inline-block;margin-top:6px;font-size:11px;color:var(--accent);text-decoration:none;background:rgba(0,122,255,0.1);padding:3px 8px;border-radius:6px;">🔗 Открыть сообщение</a>` : ''}
+            </div>
+          `;
+        });
+
+        if (user.messages.length > 10) {
+          html += `<div style="padding:8px 14px;text-align:center;font-size:12px;color:var(--text-mute);">... и ещё ${user.messages.length - 10} сообщений</div>`;
+        }
+
+        html += `</div></div>`;
+      });
+
+      if (items.length >= 100) {
+        html += `<div style="text-align:center;color:var(--text-mute);font-size:12px;padding:8px;">Показаны первые 100 результатов. Уточните запрос.</div>`;
+      }
+
+      $('cs-result').innerHTML = html;
+      vibrate(50);
+      toast(`✅ Найдено: ${data.count}`, 'ok');
+
+    } catch (e) {
+      $('cs-result').innerHTML = renderError('Ошибка: ' + e.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '🔎 Искать в комментариях';
+    }
+  }
+}
+
+// ============================================================
 // ПРОЧИЕ ЭКРАНЫ
 // ============================================================
 function renderSearchTab() {
-  contentWrap.innerHTML = `<div class="section-title">Поиск</div><ul class="list"><li class="list-item" onclick="searchInput.focus()"><div class="list-icon">${I.search}</div><div class="list-content"><div class="list-title">Введите запрос в поле выше</div><div class="list-sub">ID, @username или телефон</div></div></li><li class="list-item" onclick="openMyProfile()"><div class="list-icon green">${I.user}</div><div class="list-content"><div class="list-title">Мой профиль</div><div class="list-sub">Найти себя</div></div><div class="list-chevron">${I.search}</div></li></ul>`;
+  contentWrap.innerHTML = `<div class="section-title">Поиск</div><ul class="list"><li class="list-item" onclick="searchInput.focus()"><div class="list-icon">${I.search}</div><div class="list-content"><div class="list-title">Введите запрос в поле выше</div><div class="list-sub">ID, @username или телефон</div></div></li><li class="list-item" onclick="renderScreen('comments-search')"><div class="list-icon orange">🔎</div><div class="list-content"><div class="list-title">Поиск по слову</div><div class="list-sub">Ищем в комментариях базы</div></div><div class="list-chevron">${I.search}</div></li><li class="list-item" onclick="openMyProfile()"><div class="list-icon green">${I.user}</div><div class="list-content"><div class="list-title">Мой профиль</div><div class="list-sub">Найти себя</div></div><div class="list-chevron">${I.search}</div></li></ul>`;
   setTimeout(() => searchInput.focus(), 100);
 }
 
@@ -1016,7 +1175,7 @@ async function openMyProfile() {
 }
 
 // ============================================================
-// ГЛАВНЫЙ ПОИСК (ИСПРАВЛЕННЫЙ — ИЩЕТ В БАЗЕ БОТА)
+// ГЛАВНЫЙ ПОИСК
 // ============================================================
 async function handleSearch() {
   const q = searchInput.value.trim();
@@ -1041,7 +1200,6 @@ async function handleSearch() {
         const localData = await pubPost('/api/search_local', { query: q });
         if (localData.success && localData.user) {
           renderScreen('profile', localData.user.user_id);
-          // 🔥 СОХРАНЯЕМ В ИСТОРИЮ
           if (currentUser) {
             pubPost('/api/save_local_search', {
               user_id: currentUser.id,
@@ -1383,8 +1541,8 @@ async function renderSearchHistory() {
       setHTML('history-list', `<div class="chart-wrap" style="text-align:center;"><div style="font-size:48px;margin-bottom:12px;">📭</div><div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px;">История пуста</div><div style="font-size:13px;color:var(--text-mute);">Записи появятся после первого поиска</div></div>`);
       return;
     }
-    const typeIcons = { 'extended': '🔍', 'vk': '🔵', 'tg': '✈️', 'base': '📊', 'phone': '📞', 'local': '🏠' };
-    const typeLabels = { 'extended': 'Полный пробив', 'vk': 'Поиск VK', 'tg': 'Поиск Telegram', 'base': 'Чекер по базам', 'phone': 'Поиск по номеру', 'local': 'Поиск в базе бота' };
+    const typeIcons = { 'extended': '🔍', 'vk': '🔵', 'tg': '✈️', 'base': '📊', 'phone': '📞', 'local': '🏠', 'comments': '🔎' };
+    const typeLabels = { 'extended': 'Полный пробив', 'vk': 'Поиск VK', 'tg': 'Поиск Telegram', 'base': 'Чекер по базам', 'phone': 'Поиск по номеру', 'local': 'Поиск в базе бота', 'comments': 'Поиск по словам' };
     let html = '';
     items.forEach(item => {
       const icon = typeIcons[item.search_type] || '🔍';
@@ -1412,6 +1570,31 @@ async function openHistoryItem(itemId) {
     const q = item.query || '';
     let header = `<div style="background:var(--bg-elev);border-radius:12px;padding:12px 16px;margin-bottom:12px;font-size:13px;color:var(--text-mute);">📅 ${esc(formatTime(item.created_at))}<br>🔍 Запрос: <b style="color:var(--text);">${esc(q)}</b><br>📊 Найдено: <b style="color:var(--green);">${results.length}</b> записей</div>`;
     if (!results.length) { setHTML('history-view', header + renderEmpty('Результатов нет')); return; }
+
+    // Для поиска по комментариям — специальный рендер
+    if (item.search_type === 'comments') {
+      const byUser = {};
+      results.forEach(r => {
+        const uid = r.user_id;
+        if (!byUser[uid]) byUser[uid] = { user_id: uid, first_name: r.first_name, last_name: r.last_name, username: r.username, messages: [] };
+        byUser[uid].messages.push(r);
+      });
+      let html = header;
+      Object.values(byUser).forEach(user => {
+        const name = `${user.first_name} ${user.last_name}`.trim() || `Пользователь ${user.user_id}`;
+        const uname = user.username ? `@${user.username}` : null;
+        const profileLink = uname ? `https://t.me/${uname}` : `tg://user?id=${user.user_id}`;
+        html += `<div class="result-card" style="margin-bottom:14px;"><div style="padding:12px 14px;background:var(--bg-elev);border-bottom:0.5px solid var(--border-soft);display:flex;align-items:center;gap:10px;"><div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#ff9500,#ff2d55);color:white;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;flex-shrink:0;">${esc((name[0] || '?').toUpperCase())}</div><div style="flex:1;min-width:0;"><div style="font-size:14px;font-weight:600;color:var(--text);">${esc(name)}</div><div style="font-size:12px;color:var(--text-mute);">${uname ? esc(uname) + ' · ' : ''}ID: ${user.user_id} · 💬 ${user.messages.length}</div></div><button class="icon-btn" onclick="event.stopPropagation(); window.open('${profileLink}','_blank')" style="color:var(--accent);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:20px;height:20px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></button></div><div style="padding:8px 0;">`;
+        user.messages.slice(0, 10).forEach(msg => {
+          html += `<div style="padding:10px 14px;border-bottom:0.5px solid var(--border-soft);"><div style="font-size:12px;color:var(--accent);font-weight:600;margin-bottom:6px;">📌 ${esc(msg.chat_title || '—')}</div><div style="font-size:13px;color:var(--text);line-height:1.5;">${esc(msg.message_text || '')}</div>${msg.message_link ? `<a href="${esc(msg.message_link)}" target="_blank" style="display:inline-block;margin-top:6px;font-size:11px;color:var(--accent);text-decoration:none;background:rgba(0,122,255,0.1);padding:3px 8px;border-radius:6px;">🔗 Открыть</a>` : ''}</div>`;
+        });
+        html += `</div></div>`;
+      });
+      setHTML('history-view', html);
+      return;
+    }
+
+    // Стандартный рендер
     const grouped = {};
     results.forEach(item => { Object.entries(item).forEach(([k, v]) => { if (v === null || v === undefined || v === '' || k === 'database') return; const key = String(k).trim(); if (!grouped[key]) grouped[key] = new Set(); grouped[key].add(String(v)); }); });
     let html = header;

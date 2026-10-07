@@ -266,6 +266,54 @@ input, textarea { user-select: text; -webkit-user-select: text; }
   0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(175,82,222,0.5); }
   50% { transform: scale(1.05); box-shadow: 0 0 0 20px rgba(175,82,222,0); }
 }
+
+  /* 🎨 Кнопки в стиле референса — 2 в ряд */
+.btn-pair {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+  transition: transform 0.15s, box-shadow 0.15s;
+  line-height: 1.2;
+  width: 100%;
+  min-height: 56px;
+}
+
+.btn-pair:active {
+  transform: scale(0.96);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+}
+
+.btn-pair .icon-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+/* Градиенты — как на референсе */
+.btn-pair.profile  { background: linear-gradient(135deg, #af52de, #0a84ff); }
+.btn-pair.sentiment { background: linear-gradient(135deg, #ff9500, #ff2d55); }
+.btn-pair.language { background: linear-gradient(135deg, #34c759, #00c6ff); }
+.btn-pair.similar  { background: linear-gradient(135deg, #0a84ff, #bf5af2); }
+.btn-pair.refresh  { background: linear-gradient(135deg, #0a84ff, #00c6ff); }
+.btn-pair.translate { background: linear-gradient(135deg, #34c759, #00b894); }
 </style>
 </head>
 <body>
@@ -2215,7 +2263,8 @@ async function renderProfile(userId) {
       </div>
     `;
 
-      const balanceBlock = `
+     // ========== Баланс + 6 кнопок в сетке 2×3 ==========
+    const balanceBlock = `
       <div style="background:var(--bg-elev);border-radius:14px;padding:12px 16px;margin-bottom:12px;display:flex;align-items:center;gap:12px;">
         <div style="font-size:24px;">💎</div>
         <div style="flex:1;">
@@ -2224,26 +2273,30 @@ async function renderProfile(userId) {
         </div>
       </div>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:3px;margin-bottom:16px;">
-        <button onclick="showAiProfileSummary(${u.user_id})" style="background:linear-gradient(135deg,#af52de,#0a84ff);border:none;border-radius:10px;color:white;padding:8px 2px;font-size:8px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(175,82,222,0.3);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;line-height:1.2;" type="button">
-          <span style="font-size:14px;">🧠</span>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+        <button class="btn-pair profile" onclick="showAiProfileSummary(${u.user_id})" type="button">
           <span>ПРОФИЛЬ</span>
+          <span class="icon-circle">🧠</span>
         </button>
-        <button onclick="showAiProfileSentiment(${u.user_id})" style="background:linear-gradient(135deg,#ff9500,#ff2d55);border:none;border-radius:10px;color:white;padding:8px 2px;font-size:8px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(255,149,0,0.3);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;line-height:1.2;" type="button">
-          <span style="font-size:14px;">😊</span>
+        <button class="btn-pair sentiment" onclick="showAiProfileSentiment(${u.user_id})" type="button">
           <span>ЭМОЦИИ</span>
+          <span class="icon-circle">😊</span>
         </button>
-        <button onclick="showAiProfileLanguage(${u.user_id})" style="background:linear-gradient(135deg,#34c759,#00c6ff);border:none;border-radius:10px;color:white;padding:8px 2px;font-size:8px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(52,199,89,0.3);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;line-height:1.2;" type="button">
-          <span style="font-size:14px;">🌐</span>
+        <button class="btn-pair language" onclick="showAiProfileLanguage(${u.user_id})" type="button">
           <span>ЯЗЫК</span>
+          <span class="icon-circle">🌐</span>
         </button>
-        <button onclick="showSimilarUsers(${u.user_id})" style="background:linear-gradient(135deg,#0a84ff,#bf5af2);border:none;border-radius:10px;color:white;padding:8px 2px;font-size:8px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(10,132,255,0.3);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;line-height:1.2;" type="button">
-          <span style="font-size:14px;">👥</span>
+        <button class="btn-pair similar" onclick="showSimilarUsers(${u.user_id})" type="button">
           <span>ПОХОЖИЕ</span>
+          <span class="icon-circle">👥</span>
         </button>
-        <button onclick="refreshUserProfile(${u.user_id})" style="background:linear-gradient(135deg,#0a84ff,#00c6ff);border:none;border-radius:10px;color:white;padding:8px 2px;font-size:8px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(10,132,255,0.3);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;line-height:1.2;" type="button">
-          <span style="font-size:14px;">🔄</span>
+        <button class="btn-pair refresh" onclick="refreshUserProfile(${u.user_id})" type="button">
           <span>ОБНОВИТЬ</span>
+          <span class="icon-circle">🔄</span>
+        </button>
+        <button class="btn-pair translate" onclick="showTranslateMenu(${u.user_id})" type="button">
+          <span>ПЕРЕВОД</span>
+          <span class="icon-circle">🌍</span>
         </button>
       </div>
     `;
@@ -2928,6 +2981,66 @@ function showSimilarUsersModal(users, targetId) {
     <button class="btn secondary" onclick="closeModal()">Закрыть</button>
   `);
 }
+  // ============================================================
+// 🌍 МЕНЮ ПЕРЕВОДА
+// ============================================================
+async function showTranslateMenu(userId) {
+  const u = getTelegramUser();
+  if (!u) { toast('Откройте через Telegram', 'error'); return; }
+
+  vibrate();
+
+  // Загружаем сообщения пользователя
+  try {
+    const data = await apiGetUser(userId, 'all', 30);
+    const comments = data.comments || [];
+
+    if (!comments.length) {
+      showModal(`
+        <div class="modal-title">🌍 Перевод</div>
+        <div class="modal-desc">У пользователя нет сообщений для перевода</div>
+        <button class="btn secondary" onclick="closeModal()">Закрыть</button>
+      `);
+      return;
+    }
+
+    // Показываем первые 10 сообщений с кнопками перевода
+    const rows = comments.slice(0, 10).map((c, idx) => {
+      const msgId = 'tr_' + idx;
+      const textForAttr = esc(c.text || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+      const text = esc((c.text || '').substring(0, 150));
+      const date = (c.date || '').slice(0, 16);
+      return `
+        <div style="background:var(--bg-elev);border-radius:12px;padding:10px 12px;margin-bottom:8px;">
+          <div style="font-size:11px;color:var(--text-mute);margin-bottom:6px;">
+            ${esc(c.chat || '—')} · ${esc(date)}
+          </div>
+          <div id="${msgId}" style="font-size:13px;color:var(--text);line-height:1.4;margin-bottom:8px;">
+            ${text}
+          </div>
+          <div id="${msgId}_translated" style="display:none;margin-bottom:8px;padding:8px 10px;background:rgba(52,199,89,0.1);border-left:3px solid var(--green);border-radius:6px;font-size:13px;color:var(--text);"></div>
+          <button onclick="translateMessage('${msgId}', this)" data-text="${textForAttr}" style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--green);background:rgba(52,199,89,0.12);border:1px solid rgba(52,199,89,0.3);padding:5px 12px;border-radius:8px;cursor:pointer;font-weight:600;">🌍 Перевести</button>
+        </div>
+      `;
+    }).join('');
+
+    showModal(`
+      <div class="modal-title">🌍 Перевод сообщений</div>
+      <div class="modal-desc" style="margin-bottom:16px;">Нажмите «🌍 Перевести» под сообщением</div>
+      <div style="max-height:60vh;overflow-y:auto;margin-bottom:12px;">
+        ${rows}
+      </div>
+      <button class="btn secondary" onclick="closeModal()">Закрыть</button>
+    `);
+
+  } catch (e) {
+    showModal(`
+      <div class="modal-title">❌ Ошибка</div>
+      <div class="modal-desc">${esc(e.message)}</div>
+      <button class="btn secondary" onclick="closeModal()">Закрыть</button>
+    `);
+  }
+}
 window.translateMessage = translateMessage;
 window.refreshUserProfile = refreshUserProfile;
 window.renderScreen = renderScreen;
@@ -2974,6 +3087,7 @@ window.showSentimentModal = showSentimentModal;
 window.showLanguageModal = showLanguageModal;
   window.showSimilarUsers = showSimilarUsers;
 window.showSimilarUsersModal = showSimilarUsersModal;
+  window.showTranslateMenu = showTranslateMenu;
 </script>
 </body>
 </html>

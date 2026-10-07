@@ -2987,32 +2987,29 @@ function showSimilarUsersModal(users, targetId) {
 }
 
 // ============================================================
-// 🌍 МЕНЮ ПЕРЕВОДА — выбор языка
+// 🌍 ПЕРЕВОД — выбор языка
 // ============================================================
-let _translateTargetLang = 'ru'; // по умолчанию русский
-
 async function showTranslateMenu(userId) {
   const u = getTelegramUser();
   if (!u) { toast('Откройте через Telegram', 'error'); return; }
 
   vibrate();
 
-  // Показываем выбор языка
   showModal(`
     <div class="modal-title">🌍 Язык перевода</div>
-    <div class="modal-desc" style="margin-bottom:16px;">Выберите, на какой язык перевести</div>
+    <div class="modal-desc" style="margin-bottom:16px;">Выберите язык, на который нужно перевести</div>
 
-    <button onclick="selectTranslateLang('ru', ${userId})" style="width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 18px;margin-bottom:10px;border-radius:14px;border:none;background:linear-gradient(135deg,#0a84ff,#00c6ff);color:white;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 6px 18px rgba(10,132,255,0.3);" type="button">
+    <button onclick="closeModal(); translateToLang('ru', ${userId});" style="width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:16px 18px;margin-bottom:10px;border-radius:14px;border:none;background:linear-gradient(135deg,#0a84ff,#00c6ff);color:white;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 6px 18px rgba(10,132,255,0.3);" type="button">
       <span>🇷🇺 РУССКИЙ</span>
       <span style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.22);display:flex;align-items:center;justify-content:center;font-size:18px;">→</span>
     </button>
 
-    <button onclick="selectTranslateLang('tj', ${userId})" style="width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 18px;margin-bottom:10px;border-radius:14px;border:none;background:linear-gradient(135deg,#34c759,#00b894);color:white;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 6px 18px rgba(52,199,89,0.3);" type="button">
+    <button onclick="closeModal(); translateToLang('tj', ${userId});" style="width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:16px 18px;margin-bottom:10px;border-radius:14px;border:none;background:linear-gradient(135deg,#34c759,#00b894);color:white;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 6px 18px rgba(52,199,89,0.3);" type="button">
       <span>🇹🇯 ТАДЖИКСКИЙ</span>
       <span style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.22);display:flex;align-items:center;justify-content:center;font-size:18px;">→</span>
     </button>
 
-    <button onclick="selectTranslateLang('en', ${userId})" style="width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 18px;margin-bottom:10px;border-radius:14px;border:none;background:linear-gradient(135deg,#af52de,#ff2d55);color:white;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 6px 18px rgba(175,82,222,0.3);" type="button">
+    <button onclick="closeModal(); translateToLang('en', ${userId});" style="width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:16px 18px;margin-bottom:10px;border-radius:14px;border:none;background:linear-gradient(135deg,#af52de,#ff2d55);color:white;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 6px 18px rgba(175,82,222,0.3);" type="button">
       <span>🇬🇧 ENGLISH</span>
       <span style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.22);display:flex;align-items:center;justify-content:center;font-size:18px;">→</span>
     </button>
@@ -3021,16 +3018,19 @@ async function showTranslateMenu(userId) {
   `);
 }
 
-async function selectTranslateLang(lang, userId) {
-  _translateTargetLang = lang;
 
-  const langNames = { 'ru': '🇷🇺 Русский', 'tj': '🇹🇯 Таджикский', 'en': '🇬🇧 English' };
+// ============================================================
+// 🌍 ПЕРЕВОД НА ВЫБРАННЫЙ ЯЗЫК
+// ============================================================
+async function translateToLang(lang, userId) {
   vibrate(30);
 
+  const langNames = { 'ru': 'РУССКИЙ', 'tj': 'ТАДЖИКСКИЙ', 'en': 'ENGLISH' };
+  const langFlags = { 'ru': '🇷🇺', 'tj': '🇹🇯', 'en': '🇬🇧' };
+
   // Загружаем сообщения
-  closeModal();
   showModal(`
-    <div class="modal-title">${langNames[lang]}</div>
+    <div class="modal-title">${langFlags[lang]} ${langNames[lang]}</div>
     <div class="modal-desc">Загружаю сообщения...</div>
     <div style="text-align:center;padding:20px 0;">
       <div class="loading-bar" style="margin:0 auto;"></div>
@@ -3044,41 +3044,46 @@ async function selectTranslateLang(lang, userId) {
     if (!comments.length) {
       closeModal();
       showModal(`
-        <div class="modal-title">🌍 Перевод</div>
+        <div class="modal-title">${langFlags[lang]} ${langNames[lang]}</div>
         <div class="modal-desc">У пользователя нет сообщений для перевода</div>
         <button class="btn secondary" onclick="closeModal()">Закрыть</button>
       `);
       return;
     }
 
-    // Показываем сообщения с кнопками перевода
-    const rows = comments.slice(0, 10).map((c, idx) => {
+    // Формируем список сообщений
+    const rows = comments.slice(0, 15).map((c, idx) => {
       const msgId = 'tr_' + idx + '_' + Date.now();
       const textForAttr = esc(c.text || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-      const text = esc((c.text || '').substring(0, 150));
+      const text = esc((c.text || '').substring(0, 200));
       const date = (c.date || '').slice(0, 16);
+      const chat = esc(c.chat || '—');
+
       return `
-        <div style="background:var(--bg-elev);border-radius:12px;padding:10px 12px;margin-bottom:8px;">
+        <div style="background:var(--bg-elev);border-radius:12px;padding:12px 14px;margin-bottom:8px;">
           <div style="font-size:11px;color:var(--text-mute);margin-bottom:6px;">
-            ${esc(c.chat || '—')} · ${esc(date)}
+            📌 ${chat} · ${esc(date)}
           </div>
-          <div id="${msgId}" style="font-size:13px;color:var(--text);line-height:1.4;margin-bottom:8px;">
+          <div id="${msgId}" style="font-size:13px;color:var(--text);line-height:1.5;margin-bottom:10px;word-break:break-word;">
             ${text}
           </div>
-          <div id="${msgId}_translated" style="display:none;margin-bottom:8px;padding:8px 10px;background:rgba(52,199,89,0.1);border-left:3px solid var(--green);border-radius:6px;font-size:13px;color:var(--text);"></div>
-          <button onclick="translateMessage('${msgId}', this)" data-text="${textForAttr}" data-lang="${lang}" style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--green);background:rgba(52,199,89,0.12);border:1px solid rgba(52,199,89,0.3);padding:5px 12px;border-radius:8px;cursor:pointer;font-weight:600;">🌍 Перевести на ${langNames[lang].split(' ')[1]}</button>
+          <div id="${msgId}_translated" style="display:none;margin-bottom:10px;padding:10px 12px;background:rgba(52,199,89,0.08);border-left:3px solid var(--green);border-radius:6px;font-size:13px;color:var(--text);line-height:1.5;word-break:break-word;"></div>
+          <button onclick="translateMessage('${msgId}', this)" data-text="${textForAttr}" data-lang="${lang}" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--green);background:rgba(52,199,89,0.12);border:1px solid rgba(52,199,89,0.3);padding:8px 14px;border-radius:8px;cursor:pointer;font-weight:600;font-family:inherit;" type="button">
+            ${langFlags[lang]} Перевести на ${langNames[lang]}
+          </button>
         </div>
       `;
     }).join('');
 
     closeModal();
     showModal(`
-      <div class="modal-title">🌍 ${langNames[lang]}</div>
-      <div class="modal-desc" style="margin-bottom:16px;">Нажмите кнопку под сообщением</div>
-      <div style="max-height:60vh;overflow-y:auto;margin-bottom:12px;">
+      <div class="modal-title">${langFlags[lang]} ${langNames[lang]}</div>
+      <div class="modal-desc" style="margin-bottom:16px;">Нажмите кнопку под сообщением для перевода</div>
+      <div style="max-height:55vh;overflow-y:auto;margin-bottom:12px;">
         ${rows}
       </div>
-      <button class="btn secondary" onclick="closeModal()">Закрыть</button>
+      <button class="btn secondary" onclick="closeModal()" style="margin-bottom:8px;">Закрыть</button>
+      <button class="btn secondary" onclick="closeModal(); showTranslateMenu(${userId});" style="background:var(--bg-elev);color:var(--accent);">← Назад к языкам</button>
     `);
 
   } catch (e) {
@@ -3090,6 +3095,8 @@ async function selectTranslateLang(lang, userId) {
     `);
   }
 }
+  window.showTranslateMenu = showTranslateMenu;
+window.translateToLang = translateToLang;
 window.translateMessage = translateMessage;
 window.refreshUserProfile = refreshUserProfile;
 window.renderScreen = renderScreen;

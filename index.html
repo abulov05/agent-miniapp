@@ -314,6 +314,100 @@ input, textarea { user-select: text; -webkit-user-select: text; }
 .btn-pair.similar  { background: linear-gradient(135deg, #0a84ff, #bf5af2); }
 .btn-pair.refresh  { background: linear-gradient(135deg, #0a84ff, #00c6ff); }
 .btn-pair.translate { background: linear-gradient(135deg, #34c759, #00b894); }
+  /* 🎨 Сетка карточек 2 в ряд */
+.card-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.card-tile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border-soft);
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--text);
+  text-align: left;
+  transition: transform 0.15s, background 0.15s, box-shadow 0.15s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  min-height: 60px;
+  overflow: hidden;
+}
+
+.card-tile:active {
+  transform: scale(0.97);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+.card-tile .tile-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.card-tile .tile-avatar.blue   { background: linear-gradient(135deg, #0a84ff, #00c6ff); }
+.card-tile .tile-avatar.purple { background: linear-gradient(135deg, #af52de, #bf5af2); }
+.card-tile .tile-avatar.green  { background: linear-gradient(135deg, #34c759, #00b894); }
+.card-tile .tile-avatar.orange { background: linear-gradient(135deg, #ff9500, #ff3b30); }
+.card-tile .tile-avatar.pink   { background: linear-gradient(135deg, #ff2d55, #ff9500); }
+
+.card-tile .tile-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.card-tile .tile-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-tile .tile-sub {
+  font-size: 10px;
+  color: var(--text-mute);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.btn-show-all {
+  width: 100%;
+  padding: 12px 18px;
+  border-radius: 14px;
+  border: none;
+  background: linear-gradient(135deg, #0a84ff, #bf5af2);
+  color: white;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(10, 132, 255, 0.3);
+  margin-bottom: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: transform 0.15s;
+}
+
+.btn-show-all:active {
+  transform: scale(0.97);
+}
 </style>
 </head>
 <body>
@@ -2240,18 +2334,58 @@ async function renderProfile(userId) {
       `;
     };
 
+      // ========== Группы и каналы — сетка ==========
     const chatsBlock = (groups.length || channels.length) ? `
       ${groups.length ? `
         <div class="section-title">👥 Группы (${groups.length})</div>
-        <ul class="list">
-          ${groups.slice(0, 50).map(c => renderChatItem(c, '💬')).join('')}
-        </ul>
+        <div class="card-grid">
+          ${groups.slice(0, 4).map((c, idx) => {
+            let link = c.link || '';
+            if (!link && c.chat_id) link = chatLinkFromId(c.chat_id) || '';
+            const colors = ['blue', 'purple', 'green', 'orange'];
+            const color = colors[idx % colors.length];
+            const initial = (c.title || '?')[0].toUpperCase();
+            return `
+              <div class="card-tile" ${link ? `onclick="window.open('${esc(link)}','_blank')"` : ''}>
+                <div class="tile-avatar ${color}">💬</div>
+                <div class="tile-info">
+                  <div class="tile-name">${esc(c.title || '—')}</div>
+                  <div class="tile-sub">${link ? '🔗 Открыть' : '🔒 Приватный'}</div>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+        ${groups.length > 4 ? `
+          <button class="btn-show-all" onclick="showAllGroups(${u.user_id})">
+            👥 Показать все группы (${groups.length})
+          </button>
+        ` : ''}
       ` : ''}
       ${channels.length ? `
         <div class="section-title">📢 Каналы (${channels.length})</div>
-        <ul class="list">
-          ${channels.slice(0, 50).map(c => renderChatItem(c, '📢')).join('')}
-        </ul>
+        <div class="card-grid">
+          ${channels.slice(0, 4).map((c, idx) => {
+            let link = c.link || '';
+            if (!link && c.chat_id) link = chatLinkFromId(c.chat_id) || '';
+            const colors = ['blue', 'purple', 'green', 'orange'];
+            const color = colors[idx % colors.length];
+            return `
+              <div class="card-tile" ${link ? `onclick="window.open('${esc(link)}','_blank')"` : ''}>
+                <div class="tile-avatar ${color}">📢</div>
+                <div class="tile-info">
+                  <div class="tile-name">${esc(c.title || '—')}</div>
+                  <div class="tile-sub">${link ? '🔗 Открыть' : '🔒 Приватный'}</div>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+        ${channels.length > 4 ? `
+          <button class="btn-show-all" onclick="showAllChannels(${u.user_id})">
+            📢 Показать все каналы (${channels.length})
+          </button>
+        ` : ''}
       ` : ''}
     ` : '';
 
@@ -2334,26 +2468,33 @@ async function renderProfile(userId) {
       </ul>
     ` : '';
 
-    // ========== Знакомые ==========
+     // ========== Знакомые — сетка 2×3 ==========
     const friendsBlock = (u.friends && u.friends.length) ? `
       <div class="section-title">👥 Знакомые (${friendsCount})</div>
-      <ul class="list">
-        ${u.friends.slice(0, 50).map(f => {
+      <div class="card-grid">
+        ${u.friends.slice(0, 6).map((f, idx) => {
           const fname = f.name || `Пользователь ${f.id}`;
+          const fusername = f.username ? `@${f.username}` : `ID: ${f.id}`;
           const flink = f.username ? `https://t.me/${f.username}` : `tg://user?id=${f.id}`;
-          const fuser = f.username ? `@${f.username}` : `ID: ${f.id}`;
+          const colors = ['blue', 'purple', 'green', 'orange', 'pink'];
+          const color = colors[idx % colors.length];
+          const initial = (fname[0] || '?').toUpperCase();
           return `
-            <li class="list-item" onclick="window.open('${esc(flink)}','_blank')">
-              <div class="list-icon green">👤</div>
-              <div class="list-content">
-                <div class="list-title">${esc(fname)}</div>
-                <div class="list-sub">${esc(fuser)}</div>
+            <div class="card-tile" onclick="window.open('${esc(flink)}','_blank')">
+              <div class="tile-avatar ${color}">${esc(initial)}</div>
+              <div class="tile-info">
+                <div class="tile-name">${esc(fname)}</div>
+                <div class="tile-sub">${esc(fusername)}</div>
               </div>
-              <div class="list-chevron">→</div>
-            </li>
+            </div>
           `;
         }).join('')}
-      </ul>
+      </div>
+      ${u.friends.length > 6 ? `
+        <button class="btn-show-all" onclick="showAllFriends(${u.user_id})">
+          👥 Показать все (${u.friends.length})
+        </button>
+      ` : ''}
     ` : '';
 
     // ========== Частые слова ==========
@@ -3095,6 +3236,106 @@ async function translateToLang(lang, userId) {
     `);
   }
 }
+  // ============================================================
+// 👥 ПОКАЗАТЬ ВСЕ ЗНАКОМЫЕ / ГРУППЫ / КАНАЛЫ
+// ============================================================
+async function showAllFriends(userId) {
+  const data = await apiGetUser(userId, 'all', 100);
+  const friends = data.friends || [];
+
+  const rows = friends.map((f, idx) => {
+    const fname = f.name || `Пользователь ${f.id}`;
+    const fusername = f.username ? `@${f.username}` : `ID: ${f.id}`;
+    const flink = f.username ? `https://t.me/${f.username}` : `tg://user?id=${f.id}`;
+    const colors = ['blue', 'purple', 'green', 'orange', 'pink'];
+    const color = colors[idx % colors.length];
+    const initial = (fname[0] || '?').toUpperCase();
+    return `
+      <div class="card-tile" onclick="window.open('${esc(flink)}','_blank')">
+        <div class="tile-avatar ${color}">${esc(initial)}</div>
+        <div class="tile-info">
+          <div class="tile-name">${esc(fname)}</div>
+          <div class="tile-sub">${esc(fusername)}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  showModal(`
+    <div class="modal-title">👥 Знакомые (${friends.length})</div>
+    <div class="modal-desc" style="margin-bottom:16px;">Все общие чаты</div>
+    <div class="card-grid" style="max-height:60vh;overflow-y:auto;margin-bottom:12px;">
+      ${rows}
+    </div>
+    <button class="btn secondary" onclick="closeModal()">Закрыть</button>
+  `);
+}
+
+async function showAllGroups(userId) {
+  const data = await apiGetUser(userId, 'all', 100);
+  const chats = data.chats || [];
+  const groups = chats.filter(c => c.type === 'group' || c.type === 'supergroup');
+
+  const rows = groups.map((c, idx) => {
+    let link = c.link || '';
+    if (!link && c.chat_id) link = chatLinkFromId(c.chat_id) || '';
+    const colors = ['blue', 'purple', 'green', 'orange'];
+    const color = colors[idx % colors.length];
+    return `
+      <div class="card-tile" ${link ? `onclick="window.open('${esc(link)}','_blank')"` : ''}>
+        <div class="tile-avatar ${color}">💬</div>
+        <div class="tile-info">
+          <div class="tile-name">${esc(c.title || '—')}</div>
+          <div class="tile-sub">${link ? '🔗 Открыть' : '🔒 Приватный'}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  showModal(`
+    <div class="modal-title">👥 Группы (${groups.length})</div>
+    <div class="modal-desc" style="margin-bottom:16px;">Все группы пользователя</div>
+    <div class="card-grid" style="max-height:60vh;overflow-y:auto;margin-bottom:12px;">
+      ${rows}
+    </div>
+    <button class="btn secondary" onclick="closeModal()">Закрыть</button>
+  `);
+}
+
+async function showAllChannels(userId) {
+  const data = await apiGetUser(userId, 'all', 100);
+  const chats = data.chats || [];
+  const channels = chats.filter(c => c.type === 'channel');
+
+  const rows = channels.map((c, idx) => {
+    let link = c.link || '';
+    if (!link && c.chat_id) link = chatLinkFromId(c.chat_id) || '';
+    const colors = ['blue', 'purple', 'green', 'orange'];
+    const color = colors[idx % colors.length];
+    return `
+      <div class="card-tile" ${link ? `onclick="window.open('${esc(link)}','_blank')"` : ''}>
+        <div class="tile-avatar ${color}">📢</div>
+        <div class="tile-info">
+          <div class="tile-name">${esc(c.title || '—')}</div>
+          <div class="tile-sub">${link ? '🔗 Открыть' : '🔒 Приватный'}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  showModal(`
+    <div class="modal-title">📢 Каналы (${channels.length})</div>
+    <div class="modal-desc" style="margin-bottom:16px;">Все каналы пользователя</div>
+    <div class="card-grid" style="max-height:60vh;overflow-y:auto;margin-bottom:12px;">
+      ${rows}
+    </div>
+    <button class="btn secondary" onclick="closeModal()">Закрыть</button>
+  `);
+}
+
+window.showAllFriends = showAllFriends;
+window.showAllGroups = showAllGroups;
+window.showAllChannels = showAllChannels;
   window.showTranslateMenu = showTranslateMenu;
 window.translateToLang = translateToLang;
 window.translateMessage = translateMessage;

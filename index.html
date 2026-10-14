@@ -408,6 +408,46 @@ input, textarea { user-select: text; -webkit-user-select: text; }
 .btn-show-all:active {
   transform: scale(0.97);
 }
+  /* 🎨 Кнопки перевода в модалке */
+.translate-bar {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+  justify-content: center;
+}
+
+.translate-btn {
+  flex: 1;
+  padding: 10px 6px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: transform 0.15s, opacity 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.translate-btn:active {
+  transform: scale(0.95);
+}
+
+.translate-btn.ru { background: linear-gradient(135deg, #0a84ff, #00c6ff); }
+.translate-btn.tj { background: linear-gradient(135deg, #34c759, #00b894); }
+.translate-btn.en { background: linear-gradient(135deg, #af52de, #ff2d55); }
+.translate-btn.active { opacity: 0.5; }
+
+.translate-content {
+  transition: opacity 0.3s;
+}
 </style>
 </head>
 <body>
@@ -2660,31 +2700,106 @@ async function showAiProfileSummary(userId) {
 }
 
 function showAiSummaryModal(summary, userId) {
-  let html = esc(summary);
-  html = html.replace(/\n/g, '<br>');
-  html = html.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
-  html = html.replace(/`(.+?)`/g, '<code style="background:rgba(0,0,0,0.15);padding:1px 5px;border-radius:4px;font-family:monospace;font-size:12px;">$1</code>');
-
   window._lastAiSummary = summary;
+  window._aiSummaryOriginal = summary;
+
+  const renderContent = (text) => {
+    let html = esc(text);
+    html = html.replace(/\n/g, '<br>');
+    html = html.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+    html = html.replace(/`(.+?)`/g, '<code style="background:rgba(0,0,0,0.15);padding:1px 5px;border-radius:4px;font-family:monospace;font-size:12px;">$1</code>');
+    return html;
+  };
 
   showModal(`
     <div class="modal-title">🤖 AI-резюме профиля</div>
-    <div class="modal-desc" style="margin-bottom:16px;">Анализ от Марыям на основе сообщений пользователя</div>
-    <div style="background:var(--bg-elev);border-radius:14px;padding:16px;font-size:14px;line-height:1.6;color:var(--text);max-height:60vh;overflow-y:auto;margin-bottom:12px;">
-      ${html}
+    <div class="modal-desc" style="margin-bottom:12px;">Анализ от Марыям на основе сообщений пользователя</div>
+
+    <div class="translate-bar">
+      <button class="translate-btn ru" onclick="translateSummary('ru', this)" type="button">🇷🇺 РУС</button>
+      <button class="translate-btn tj" onclick="translateSummary('tj', this)" type="button">🇹🇯 ТАДЖ</button>
+      <button class="translate-btn en" onclick="translateSummary('en', this)" type="button">🇬🇧 ENG</button>
     </div>
-    <button class="btn" onclick="copyLastAiSummary()" style="margin-bottom:8px;">📋 Скопировать резюме О ЧЕЛОВЕКЕ</button>
+
+    <div id="summary-content" class="translate-content" style="background:var(--bg-elev);border-radius:14px;padding:16px;font-size:14px;line-height:1.6;color:var(--text);max-height:50vh;overflow-y:auto;margin-bottom:12px;">
+      ${renderContent(summary)}
+    </div>
+
+    <button class="btn" onclick="copyLastAiSummary()" style="margin-bottom:8px;">📋 Скопировать резюме</button>
     <button class="btn secondary" onclick="closeModal()">Закрыть</button>
   `);
 }
 
-function copyLastAiSummary() {
-  if (window._lastAiSummary) {
-    copyToClipboard(window._lastAiSummary);
-  } else {
-    toast('❌ Нет данных', 'error');
+
+// ============================================================
+// 🌍 ПЕРЕВОД AI-РЕЗЮМЕ
+// ============================================================
+async function translateSummary(lang, btn) {
+  const contentEl = document.getElementById('summary-content');
+  if (!contentEl) return;
+
+  // Если уже на этом языке — ничего не делаем
+  if (btn.classList.contains('active')) return;
+
+  vibrate(20);
+
+  // Убираем active со всех кнопок
+  document.querySelectorAll('.translate-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  // Показываем загрузку
+  const originalText = contentEl.innerHTML;
+  contentEl.innerHTML = '<div style="text-align:center;padding:20px 0;"><div class="loading-bar" style="margin:0 auto;"></div><div style="font-size:12px;color:var(--text-mute);margin-top:10px;">Перевожу...</div></div>';
+
+  try {
+    // Если русский — показываем оригинал (AI отвечает на русском)
+    if (lang === 'ru') {
+      const renderContent = (text) => {
+        let html = esc(text);
+        html = html.replace(/\n/g, '<br>');
+        html = html.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+        html = html.replace(/`(.+?)`/g, '<code style="background:rgba(0,0,0,0.15);padding:1px 5px;border-radius:4px;font-family:monospace;font-size:12px;">$1</code>');
+        return html;
+      };
+      contentEl.innerHTML = renderContent(window._aiSummaryOriginal);
+      window._lastAiSummary = window._aiSummaryOriginal;
+      return;
+    }
+
+    // Иначе — переводим через API
+    const data = await pubPost('/api/ai/translate', {
+      text: window._aiSummaryOriginal,
+      target_lang: lang
+    });
+
+    if (!data.success || !data.translated) {
+      contentEl.innerHTML = originalText;
+      btn.classList.remove('active');
+      toast('❌ ' + (data.error || 'Не удалось перевести'), 'error');
+      return;
+    }
+
+    const renderContent = (text) => {
+      let html = esc(text);
+      html = html.replace(/\n/g, '<br>');
+      html = html.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+      html = html.replace(/`(.+?)`/g, '<code style="background:rgba(0,0,0,0.15);padding:1px 5px;border-radius:4px;font-family:monospace;font-size:12px;">$1</code>');
+      return html;
+    };
+
+    contentEl.innerHTML = renderContent(data.translated);
+    window._lastAiSummary = data.translated;
+
+    vibrate(30);
+    toast('✅ Переведено', 'ok');
+
+  } catch (e) {
+    contentEl.innerHTML = originalText;
+    btn.classList.remove('active');
+    toast('❌ Ошибка: ' + e.message, 'error');
   }
 }
+
   // ============================================================
 // 😊 AI ТОНАЛЬНОСТЬ СООБЩЕНИЙ
 // ============================================================
@@ -3496,6 +3611,7 @@ window.showSimilarUsersModal = showSimilarUsersModal;
   window.showTranslateMenu = showTranslateMenu;
   window.showTranslateMenu = showTranslateMenu;
 window.selectTranslateLang = selectTranslateLang;
+window.translateSummary = translateSummary;
 </script>
 </body>
 </html>

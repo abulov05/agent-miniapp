@@ -2397,8 +2397,17 @@ async function renderProfile(userId) {
       </div>
     `;
 
-     // ========== Баланс + 7 кнопок в сетке 2×3 ==========
-         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+        // ========== Баланс + 7 кнопок в сетке 2×3 ==========
+    const balanceBlock = `
+      <div style="background:var(--bg-elev);border-radius:14px;padding:12px 16px;margin-bottom:12px;display:flex;align-items:center;gap:12px;">
+        <div style="font-size:24px;">💎</div>
+        <div style="flex:1;">
+          <div style="font-size:13px;color:var(--text-mute);text-transform:uppercase;font-weight:600;">Баланс</div>
+          <div style="font-size:18px;color:var(--orange);font-weight:700;margin-top:2px;">${me.diamonds} алмазов</div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
         <button class="btn-pair profile" onclick="showAiProfileSummary(${u.user_id})" type="button">
           <span>ПРОФИЛЬ</span>
           <span class="icon-circle">🧠</span>
@@ -2424,24 +2433,7 @@ async function renderProfile(userId) {
           <span class="icon-circle">🔄</span>
         </button>
       </div>
-    // ========== Статистика ==========
-    const statsBlock = `
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:20px 0;">
-        <div style="background:var(--bg-elev);border-radius:14px;padding:16px 8px;text-align:center;">
-          <div style="font-size:22px;font-weight:700;color:var(--text);">${formatNumber(commentsCount)}</div>
-          <div style="font-size:10px;color:var(--text-mute);text-transform:uppercase;font-weight:600;">Сообщений</div>
-        </div>
-        <div style="background:var(--bg-elev);border-radius:14px;padding:16px 8px;text-align:center;">
-          <div style="font-size:22px;font-weight:700;color:var(--text);">${formatNumber(chatsCount)}</div>
-          <div style="font-size:10px;color:var(--text-mute);text-transform:uppercase;font-weight:600;">Чатов</div>
-        </div>
-        <div style="background:var(--bg-elev);border-radius:14px;padding:16px 8px;text-align:center;">
-          <div style="font-size:22px;font-weight:700;color:var(--text);">${formatNumber(wordsCount)}</div>
-          <div style="font-size:10px;color:var(--text-mute);text-transform:uppercase;font-weight:600;">Слов</div>
-        </div>
-      </div>
     `;
-
     // ========== История имён ==========
     const namesBlock = (u.name_history && u.name_history.length) ? `
       <div class="section-title">📜 История имён (${namesCount})</div>

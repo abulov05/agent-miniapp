@@ -3120,7 +3120,7 @@ function showLanguageModal(lang) {
   `);
 }
 // ============================================================
-// 🌍 ПЕРЕВОД СООБЩЕНИЙ — с поддержкой языков
+// 🌍 ПЕРЕВОД — с выбором языка
 // ============================================================
 async function translateMessage(msgId, btn) {
   const msgEl = document.getElementById(msgId);
@@ -3128,23 +3128,66 @@ async function translateMessage(msgId, btn) {
 
   if (!msgEl || !transEl) return;
 
+  // Если уже открыт выбор языка — закрываем
+  if (document.getElementById('lang-picker-' + msgId)) {
+    document.getElementById('lang-picker-' + msgId).remove();
+    return;
+  }
+
   // Если уже переведено — скрываем
   if (transEl.style.display === 'block') {
     transEl.style.display = 'none';
-    btn.textContent = btn.textContent.replace('Скрыть', 'Перевести');
+    btn.textContent = '🌍 Перевести';
     return;
   }
 
-  // Если уже есть текст перевода — просто показываем
-  if (transEl.dataset.loaded === '1') {
-    transEl.style.display = 'block';
-    btn.textContent = btn.textContent.replace('Перевести', 'Скрыть');
-    return;
-  }
+  // Показываем выбор языка
+  showLanguagePicker(msgId, btn, transEl);
+}
+
+
+// ============================================================
+// 🌍 ВЫБОР ЯЗЫКА ДЛЯ ПЕРЕВОДА
+// ============================================================
+function showLanguagePicker(msgId, btn, transEl) {
+  // Удаляем старый пикер, если есть
+  const old = document.getElementById('lang-picker-' + msgId);
+  if (old) old.remove();
+
+  const picker = document.createElement('div');
+  picker.id = 'lang-picker-' + msgId;
+  picker.style.cssText = 'display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;';
+
+  const langs = [
+    { code: 'ru', flag: '🇷🇺', name: 'РУС', color: 'linear-gradient(135deg,#0a84ff,#00c6ff)' },
+    { code: 'tj', flag: '🇹🇯', name: 'ТАДЖ', color: 'linear-gradient(135deg,#34c759,#00b894)' },
+    { code: 'en', flag: '🇬🇧', name: 'ENG', color: 'linear-gradient(135deg,#af52de,#ff2d55)' }
+  ];
+
+  langs.forEach(l => {
+    const langBtn = document.createElement('button');
+    langBtn.textContent = l.flag + ' ' + l.name;
+    langBtn.style.cssText = 'padding:6px 12px;border-radius:8px;border:none;color:white;font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;background:' + l.color + ';box-shadow:0 3px 10px rgba(0,0,0,0.2);';
+    langBtn.addEventListener('click', async () => {
+      picker.remove();
+      await doTranslate(msgId, btn, transEl, l.code);
+    });
+    picker.appendChild(langBtn);
+  });
+
+  // Вставляем после кнопки "Перевести"
+  btn.parentNode.appendChild(picker);
+}
+
+
+// ============================================================
+// 🌍 САМ ПЕРЕВОД
+// ============================================================
+async function doTranslate(msgId, btn, transEl, targetLang) {
+  const msgEl = document.getElementById(msgId);
+  if (!msgEl) return;
 
   const text = btn.dataset.text || msgEl.textContent;
-  const targetLang = btn.dataset.lang || 'ru';
-
   if (!text.trim()) {
     toast('❌ Пустое сообщение', 'error');
     return;
@@ -3169,9 +3212,8 @@ async function translateMessage(msgId, btn) {
       return;
     }
 
-    transEl.innerHTML = `🌍 <b>${langNames[targetLang]}:</b><br>` + esc(data.translated).replace(/\n/g, '<br>');
+    transEl.innerHTML = '🌍 <b>' + langNames[targetLang] + ':</b><br>' + esc(data.translated).replace(/\n/g, '<br>');
     transEl.style.display = 'block';
-    transEl.dataset.loaded = '1';
     btn.textContent = '🌍 Скрыть перевод';
     btn.disabled = false;
     vibrate(20);
@@ -3658,7 +3700,9 @@ window.selectTranslateLang = selectTranslateLang;
 window.translateSummary = translateSummary;
   window.toggleTranslateBar = toggleTranslateBar;
 window.translateSummary = translateSummary;
-
+window.translateMessage = translateMessage;
+window.showLanguagePicker = showLanguagePicker;
+window.doTranslate = doTranslate;
 </script>
 </body>
 </html>

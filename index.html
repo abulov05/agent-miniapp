@@ -1502,7 +1502,166 @@ function confirmDelete() {
   vibrate(); showModal('<div class="modal-title">⚠️ Удалить данные?</div><div class="modal-desc">Необратимо. Спишется 200 алмазов.</div><button class="btn danger" id="del-confirm">🗑️ Да, удалить</button><button class="btn secondary" onclick="closeModal()">Отмена</button>');
   setTimeout(() => { document.getElementById('del-confirm')?.addEventListener('click', async () => { const u = getTelegramUser(); if (!u) return; closeModal(); try { const data = await pubPost('/api/delete_data', { user_id: u.id }); if (data.success) { toast('✅ Удалено!', 'ok'); _meCache = { userId: null, data: null, ts: 0 }; renderScreen('home'); } else toast('❌ ' + (data.error || 'Ошибка'), 'error'); } catch(e) { toast('Ошибка', 'error'); } }); }, 50);
 }
-function renderAbout() { contentWrap.innerHTML = '<div style="padding-top:20px;text-align:center;"><div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#60a5fa,#007aff);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:36px;">🤖</div><div style="font-size:22px;font-weight:700;color:var(--text);">AGENT ANALYTICS</div><div style="font-size:14px;color:var(--text-mute);margin-top:4px;">Версия 2.0</div></div><div class="section-title">📊 О проекте</div><div class="chart-wrap"><div style="color:var(--text-dim);font-size:14px;line-height:1.6;">Многофункциональный бот для анализа Telegram + поиск по базам данных.</div></div><button class="btn secondary" onclick="renderScreen(\'home\')">← На главную</button>'; }
+function renderAbout() {
+  contentWrap.innerHTML = `
+    <!-- Заголовок -->
+    <div style="padding-top:20px;text-align:center;">
+      <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#60a5fa,#007aff);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:36px;">🤖</div>
+      <div style="font-size:22px;font-weight:700;color:var(--text);">AGENT ANALYTICS</div>
+      <div style="font-size:14px;color:var(--text-mute);margin-top:4px;">Версия 2.0</div>
+    </div>
+
+    <!-- О проекте -->
+    <div class="section-title">📊 О ПРОЕКТЕ</div>
+    <div class="chart-wrap">
+      <div style="color:var(--text-dim);font-size:14px;line-height:1.6;">
+        Многофункциональный бот для <b>анализа Telegram</b> и <b>поиска по базам данных</b>. Работает в личных чатах и группах.
+      </div>
+    </div>
+
+    <!-- Для пользователей -->
+    <div class="section-title">🛡️ ДЛЯ ПОЛЬЗОВАТЕЛЕЙ</div>
+    <ul class="list">
+      <li class="list-item">
+        <div class="list-icon">🔍</div>
+        <div class="list-content">
+          <div class="list-title">Поиск людей</div>
+          <div class="list-sub">По ID, @username, номеру телефона</div>
+        </div>
+      </li>
+      <li class="list-item">
+        <div class="list-icon purple">📊</div>
+        <div class="list-content">
+          <div class="list-title">HTML-отчёты</div>
+          <div class="list-sub">С диаграммами и историей сообщений</div>
+        </div>
+      </li>
+      <li class="list-item">
+        <div class="list-icon green">📱</div>
+        <div class="list-content">
+          <div class="list-title">Проверка номера</div>
+          <div class="list-sub">Страна, оператор, Telegram, WhatsApp</div>
+        </div>
+      </li>
+      <li class="list-item">
+        <div class="list-icon orange">👥</div>
+        <div class="list-content">
+          <div class="list-title">Анализ профиля</div>
+          <div class="list-sub">Чаты, группы, каналы, знакомые</div>
+        </div>
+      </li>
+      <li class="list-item">
+        <div class="list-icon pink">📜</div>
+        <div class="list-content">
+          <div class="list-title">История имён</div>
+          <div class="list-sub">Как менял имя, username, bio</div>
+        </div>
+      </li>
+      <li class="list-item">
+        <div class="list-icon">🤖</div>
+        <div class="list-content">
+          <div class="list-title">AI Помощник «Марыям»</div>
+          <div class="list-sub">Отвечает на вопросы, помогает в поиске</div>
+        </div>
+      </li>
+    </ul>
+
+    <!-- Для групп -->
+    <div class="section-title">🛡️ ДЛЯ ГРУПП</div>
+    <ul class="list">
+      <li class="list-item">
+        <div class="list-icon red">🚫</div>
+        <div class="list-content">
+          <div class="list-title">Автомодерация</div>
+          <div class="list-sub">Анти-спам, анти-оскорбления</div>
+        </div>
+      </li>
+      <li class="list-item">
+        <div class="list-icon orange">⚠️</div>
+        <div class="list-content">
+          <div class="list-title">Блокировка нарушителей</div>
+          <div class="list-sub">После 3 предупреждений — блок на 1 час</div>
+        </div>
+      </li>
+      <li class="list-item">
+        <div class="list-icon green">👋</div>
+        <div class="list-content">
+          <div class="list-title">Приветствие новых</div>
+          <div class="list-sub">Правила группы для участников</div>
+        </div>
+      </li>
+      <li class="list-item">
+        <div class="list-icon purple">🤖</div>
+        <div class="list-content">
+          <div class="list-title">AI Помощник в группах</div>
+          <div class="list-sub">Отвечает, если написать «Маям»</div>
+        </div>
+      </li>
+    </ul>
+
+    <!-- Валюта -->
+    <div class="section-title">💎 ВАЛЮТА — АЛМАЗЫ</div>
+    <div class="chart-wrap">
+      <div style="color:var(--text-dim);font-size:14px;line-height:1.8;">
+        💎 <b>150 алмазов = 1 USD</b><br>
+        💰 Пополнение: <b>CryptoCloud, CryptoBot, OxaPay</b><br>
+        🎁 Ежедневный бонус: <b>+10 алмазов</b><br>
+        🤝 Реферал: <b>50 алмазов</b> за 1-го друга
+      </div>
+    </div>
+
+    <!-- Подписка -->
+    <div class="section-title">⭐ ПОДПИСКА</div>
+    <ul class="list">
+      <li class="list-item">
+        <div class="list-icon orange">⭐</div>
+        <div class="list-content">
+          <div class="list-title">1 месяц — 5 USD</div>
+          <div class="list-sub">Безлимитные запросы</div>
+        </div>
+      </li>
+      <li class="list-item">
+        <div class="list-icon orange">⭐</div>
+        <div class="list-content">
+          <div class="list-title">6 месяцев — 20 USD</div>
+          <div class="list-sub">Выгода 33%</div>
+        </div>
+      </li>
+      <li class="list-item">
+        <div class="list-icon orange">⭐</div>
+        <div class="list-content">
+          <div class="list-title">1 год — 45 USD</div>
+          <div class="list-sub">Выгода 40%</div>
+        </div>
+      </li>
+    </ul>
+
+    <!-- Как добавить в группу -->
+    <div class="section-title">📋 КАК ДОБАВИТЬ В ГРУППУ</div>
+    <div class="chart-wrap" style="background:linear-gradient(135deg,rgba(52,199,89,0.1),rgba(0,122,255,0.1));border:1px solid rgba(52,199,89,0.3);">
+      <div style="color:var(--text);font-size:14px;line-height:1.8;">
+        <b>1.</b> Добавьте бота в группу<br>
+        <b>2.</b> Назначьте <b>администратором</b><br>
+        <b>3.</b> Включите права: <i>Удаление сообщений</i> и <i>Блокировка</i><br>
+        <b>4.</b> Готово — бот следит за порядком ✅<br>
+        <br>
+        💡 Напишите в группе <b>/grup</b> — бот покажет статистику защиты.
+      </div>
+    </div>
+
+    <!-- Админ -->
+    <div class="section-title">👑 КОНТАКТЫ</div>
+    <div class="chart-wrap">
+      <div style="color:var(--text-dim);font-size:14px;line-height:1.6;">
+        👑 <b>Админ:</b> @shrlok_analytics<br>
+        📢 <b>Канал:</b> @shrlok_analytics
+      </div>
+    </div>
+
+    <!-- Кнопки -->
+    <button class="btn secondary" onclick="renderScreen('home')" style="margin-top:16px;">← На главную</button>
+  `;
+}
 async function renderNotifications() {
   const u = getTelegramUser(); if (!u) { toast('Откройте через Telegram', 'error'); return; }
   contentWrap.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-mute);">Загрузка...</div>';
@@ -3641,6 +3800,206 @@ function showActivityModal(data) {
   `);
 }
 
+  // ============================================================
+// 📜 ОТКРЫТИЕ ЗАПИСИ ИЗ ИСТОРИИ
+// ============================================================
+async function openHistoryItem(itemId) {
+  const u = getTelegramUser();
+  if (!u) { toast('Откройте через Telegram', 'error'); return; }
+
+  vibrate();
+
+  showModal(`
+    <div class="modal-title">📜 Загрузка...</div>
+    <div class="modal-desc">Загружаю результат из истории</div>
+    <div style="text-align:center;padding:20px 0;">
+      <div class="loading-bar" style="margin:0 auto;"></div>
+    </div>
+  `);
+
+  try {
+    const data = await pubGet('/api/history/' + u.id + '/' + itemId);
+
+    if (!data.success || !data.item) {
+      closeModal();
+      showModal(`
+        <div class="modal-title">❌ Ошибка</div>
+        <div class="modal-desc">${esc(data.error || 'Запись не найдена')}</div>
+        <button class="btn secondary" onclick="closeModal()">Закрыть</button>
+      `);
+      return;
+    }
+
+    const item = data.item;
+    const results = item.results || [];
+    const query = item.query || '';
+
+    if (!results.length) {
+      closeModal();
+      showModal(`
+        <div class="modal-title">📜 ${esc(query)}</div>
+        <div class="modal-desc">Результатов нет</div>
+        <button class="btn secondary" onclick="closeModal()">Закрыть</button>
+      `);
+      return;
+    }
+
+    // Определяем тип поиска
+    const searchType = item.search_type || 'extended';
+
+    closeModal();
+
+    // Если поиск в базе бота — показываем профиль
+    if (searchType === 'local' && results[0] && results[0].user_id) {
+      const userId = results[0].user_id;
+      closeModal();
+      renderScreen('profile', userId);
+      return;
+    }
+
+    // Если поиск по комментариям
+    if (searchType === 'comments') {
+      showCommentsHistory(results, query);
+      return;
+    }
+
+    // Иначе — стандартный пробив (extended)
+    showExtendedHistory(results, query);
+
+  } catch (e) {
+    closeModal();
+    showModal(`
+      <div class="modal-title">❌ Ошибка</div>
+      <div class="modal-desc">${esc(e.message)}</div>
+      <button class="btn secondary" onclick="closeModal()">Закрыть</button>
+    `);
+  }
+}
+
+
+// ============================================================
+// 📜 ПОКАЗ РЕЗУЛЬТАТОВ ПРОБИВА ИЗ ИСТОРИИ
+// ============================================================
+function showExtendedHistory(results, query) {
+  let html = `<div class="section-title" style="color:var(--green);">✅ Найдено: ${results.length}</div>`;
+
+  results.forEach((item, idx) => {
+    const cleanItem = {};
+    Object.entries(item).forEach(([k, v]) => {
+      if (v === null || v === undefined || v === '') return;
+      if (k === 'database') return;
+      cleanItem[k] = v;
+    });
+    if (Object.keys(cleanItem).length === 0) return;
+
+    let mainName = cleanItem['ФИО'] || cleanItem['ИМЯ'] || '';
+    if (!mainName) {
+      for (const [k, v] of Object.entries(cleanItem)) {
+        const kl = String(k).toLowerCase();
+        if (kl.includes('фио') || kl.includes('имя')) {
+          mainName = v;
+          break;
+        }
+      }
+    }
+    if (!mainName) mainName = `Запись #${idx + 1}`;
+
+    html += `<div class="result-card" style="margin-bottom:14px;">
+      <div style="padding:12px 16px;background:linear-gradient(135deg, rgba(52,199,89,0.15), rgba(0,122,255,0.1));border-bottom:0.5px solid var(--border-soft);">
+        <div style="font-size:15px;font-weight:700;color:var(--text);">👤 ${esc(mainName)}</div>
+      </div>
+      <div style="padding:0;">`;
+
+    Object.entries(cleanItem).forEach(([field, value]) => {
+      let display = esc(String(value));
+      if (/^https?:\/\//.test(String(value))) {
+        display = `<a href="${esc(value)}" target="_blank" style="color:var(--accent);text-decoration:none;word-break:break-all;">${esc(value)}</a>`;
+      }
+      html += `<div style="display:flex;padding:10px 16px;border-bottom:0.5px solid var(--border-soft);gap:12px;">
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:11px;color:var(--text-mute);text-transform:uppercase;font-weight:600;margin-bottom:3px;">${esc(field)}</div>
+          <div style="font-size:14px;color:var(--text);word-break:break-word;">${display}</div>
+        </div>
+      </div>`;
+    });
+
+    html += `</div></div>`;
+  });
+
+  showModal(`
+    <div class="modal-title">📜 ${esc(query)}</div>
+    <div class="modal-desc" style="margin-bottom:16px;">Результат из истории</div>
+    <div style="max-height:60vh;overflow-y:auto;margin-bottom:12px;">${html}</div>
+    <button class="btn secondary" onclick="closeModal()">Закрыть</button>
+  `);
+}
+
+
+// ============================================================
+// 📜 ПОКАЗ КОММЕНТАРИЕВ ИЗ ИСТОРИИ
+// ============================================================
+function showCommentsHistory(results, query) {
+  const byUser = {};
+  results.forEach(item => {
+    const uid = item.user_id;
+    if (!byUser[uid]) byUser[uid] = {
+      user_id: uid,
+      first_name: item.first_name,
+      last_name: item.last_name,
+      username: item.username,
+      messages: []
+    };
+    byUser[uid].messages.push(item);
+  });
+
+  let html = `<div class="section-title" style="color:var(--green);">✅ Найдено: ${results.length}</div>`;
+
+  Object.values(byUser).forEach(user => {
+    const name = `${user.first_name || ''} ${user.last_name || ''}`.trim() || `Пользователь ${user.user_id}`;
+    const uname = user.username ? '@' + user.username : null;
+
+    html += `<div class="result-card" style="margin-bottom:14px;">
+      <div style="padding:12px 14px;background:var(--bg-elev);border-bottom:0.5px solid var(--border-soft);">
+        <div style="font-size:14px;font-weight:600;color:var(--text);">${esc(name)}</div>
+        <div style="font-size:12px;color:var(--text-mute);margin-top:2px;">
+          ${uname ? esc(uname) + ' · ' : ''}ID: ${user.user_id}
+        </div>
+      </div>`;
+
+    user.messages.slice(0, 10).forEach(msg => {
+      const chatTitle = esc(msg.chat_title || '—');
+      const text = esc(msg.message_text || '');
+      const date = esc((msg.message_date || '').slice(0, 16));
+      const link = msg.message_link || '';
+
+      let linkHtml = '';
+      if (link && !link.includes('/c/')) {
+        linkHtml = `<a href="${esc(link)}" target="_blank" style="display:inline-block;margin-top:6px;font-size:11px;color:var(--accent);text-decoration:none;background:rgba(0,122,255,0.1);padding:3px 10px;border-radius:6px;">🔗 Открыть</a>`;
+      }
+
+      html += `<div style="padding:10px 14px;border-bottom:0.5px solid var(--border-soft);">
+        <div style="font-size:12px;color:var(--accent);font-weight:600;margin-bottom:6px;">📌 ${chatTitle}</div>
+        <div style="font-size:13px;color:var(--text);line-height:1.5;">${text}</div>
+        <div style="font-size:11px;color:var(--text-mute);margin-top:4px;">${date}</div>
+        ${linkHtml}
+      </div>`;
+    });
+
+    html += `</div>`;
+  });
+
+  showModal(`
+    <div class="modal-title">📜 ${esc(query)}</div>
+    <div class="modal-desc" style="margin-bottom:16px;">Результат из истории</div>
+    <div style="max-height:60vh;overflow-y:auto;margin-bottom:12px;">${html}</div>
+    <button class="btn secondary" onclick="closeModal()">Закрыть</button>
+  `);
+}
+
+
+window.openHistoryItem = openHistoryItem;
+window.showExtendedHistory = showExtendedHistory;
+window.showCommentsHistory = showCommentsHistory;
 window.showActivityChart = showActivityChart;
 
 window.showAllFriends = showAllFriends;

@@ -1,5 +1,7 @@
+<img width="644" height="547" alt="image" src="https://github.com/user-attachments/assets/4b790d5a-84c1-4764-b397-2707ad4a0d6b" />
 🤖 AGENT ANALYTICS
-AGENT ANALYTICS — это мощный Telegram-бот и Telegram Mini App (WebApp) для OSINT-анализа, пробива по базам данных и глубокой аналитики Telegram-аккаунтов с использованием искусственного интеллекта.
+
+— это мощный Telegram-бот и Telegram Mini App (WebApp) для OSINT-анализа, пробива по базам данных и глубокой аналитики Telegram-аккаунтов с использованием искусственного интеллекта.
 
 Проект объединяет в себе сканер Telegram-чатов, локальную базу данных (SQLite), интеграцию с внешними сервисами пробива и современный AI-помощник.
 

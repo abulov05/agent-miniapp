@@ -994,6 +994,7 @@ function renderScreen(name, data) {
     case 'phone-full':      return renderPhoneFull();
     case 'vk-search':       return renderVkSearch();
     case 'tg-search':       return renderTgSearch();
+    case 'instagram-search': return renderInstagramSearch();
     case 'base-check':      return renderBaseChecker();
     case 'name-phone':      return renderNameByPhone();
     case 'subscription':    return renderSubscription();
@@ -1075,6 +1076,29 @@ async function renderHome() {
       <button class="quick-card" onclick="renderScreen('username-check')"><div class="quick-card-icon green">🌐</div><div><div class="quick-card-title">Проверка @username</div><div class="quick-card-sub">Все платформы</div></div></button>
     </div>
 
+<div class="section-title">📸 Соцсети</div>
+<div class="quick-grid">
+  <button class="quick-card" onclick="renderScreen('vk-search')">
+    <div class="quick-card-icon">🔵</div>
+    <div><div class="quick-card-title">Поиск VK</div><div class="quick-card-sub">Профиль ВКонтакте</div></div>
+  </button>
+  <button class="quick-card" onclick="renderScreen('tg-search')">
+    <div class="quick-card-icon">✈️</div>
+    <div><div class="quick-card-title">Поиск Telegram</div><div class="quick-card-sub">ID, username, чаты</div></div>
+  </button>
+  <!-- ✅ НОВАЯ КНОПКА -->
+  <button class="quick-card" onclick="renderScreen('instagram-search')" style="background:linear-gradient(135deg, rgba(225,48,108,0.1), rgba(253,203,110,0.1)); border:1px solid rgba(225,48,108,0.25);">
+    <div class="quick-card-icon" style="background:linear-gradient(135deg,#e1306c,#fd1d1d,#fcb045);color:white;">📸</div>
+    <div><div class="quick-card-title">Осинг Instagram</div><div class="quick-card-sub">Профиль по @username / ID / телефону</div></div>
+  </button>
+  <button class="quick-card" onclick="renderScreen('username-check')">
+    <div class="quick-card-icon green">🌐</div>
+    <div><div class="quick-card-title">Проверка @username</div><div class="quick-card-sub">Все платформы</div></div>
+  </button>
+</div>
+
+
+
     <div class="section-title">🎁 Бонусы и связь</div>
     <div class="quick-grid">
       <button class="quick-card" onclick="renderScreen('notifications')"><div class="quick-card-icon orange">🔔</div><div><div class="quick-card-title">Уведомления</div><div class="quick-card-sub">Новые события</div></div></button>
@@ -1151,7 +1175,7 @@ async function loadProfileAvatar(userId) {
   }
 }
 // ============================================================
-// 📸 ПОИСК ЛИЦА (FACE SEARCH) С АНИМАЦИЕЙ СКАНЕРА
+// 📸 renderInstagramSearch() ЛИЦА (FACE SEARCH) С АНИМАЦИЕЙ СКАНЕРА
 // ============================================================
 function renderPhotoSearch() {
   contentWrap.innerHTML = `
@@ -2006,7 +2030,129 @@ function renderTgProfile(r, query, targetId) {
 function renderPhoneFull() { const u = getTelegramUser(); if (!u) { toast('Откройте через Telegram', 'error'); return; } contentWrap.innerHTML = `<div class="section-title">🔍 Полный пробив</div><div class="chart-wrap"><div class="field"><label class="field-label">Телефон, ФИО, email, паспорт</label><input type="text" class="field-input" id="pf-query" placeholder="79939999985"></div><button class="btn" id="pf-btn">🔍 Пробить</button></div><div id="pf-result"></div><button class="btn secondary" onclick="renderScreen('home')">← На главную</button>`; $('pf-btn').addEventListener('click', async () => { const query = ($('pf-query').value || '').trim(); if (query.length < 3) { toast('Минимум 3 символа', 'error'); return; } const limitCheck = await checkAndUseRequest(); if (!limitCheck.ok) { showLimitModal(); return; } const btn = $('pf-btn'); btn.disabled = true; btn.textContent = '⏳ Пробиваем...'; $('pf-result').innerHTML = renderLoading(); try { const data = await pubPost('/api/apisearch/search', { user_id: u.id, query, type: 'extended' }); if (!data.success) { $('pf-result').innerHTML = renderError(data.error || 'Ошибка'); return; } const items = data.results || []; if (!items.length) { $('pf-result').innerHTML = renderEmpty(`По запросу "${query}"`); return; } renderExtendedResults(items, query, 'pf-result'); } catch(e) { $('pf-result').innerHTML = renderError('Ошибка: ' + e.message); } finally { btn.disabled = false; btn.textContent = '🔍 Пробить'; } }); }
 function renderNameByPhone() { const u = getTelegramUser(); if (!u) { toast('Откройте через Telegram', 'error'); return; } contentWrap.innerHTML = `<div class="section-title">📞 Поиск по номеру</div><div class="chart-wrap"><div class="field"><label class="field-label">Номер телефона</label><input type="tel" class="field-input" id="np-phone" placeholder="+79939999985"></div><button class="btn" id="np-btn" style="background:linear-gradient(135deg,#34c759,#30b14e);">📞 Узнать всё</button></div><div id="np-result"></div><button class="btn secondary" onclick="renderScreen('home')">← На главную</button>`; $('np-btn').addEventListener('click', async () => { const phone = ($('np-phone').value || '').trim(); if (phone.replace(/\D/g, '').length < 10) { toast('Введите корректный номер', 'error'); return; } const limitCheck = await checkAndUseRequest(); if (!limitCheck.ok) { showLimitModal(); return; } const btn = $('np-btn'); btn.disabled = true; btn.textContent = '⏳...'; $('np-result').innerHTML = renderLoading(); try { let clean = phone.replace(/\D/g, ''); if (clean.startsWith('8') && clean.length === 11) clean = '7' + clean.slice(1); const data = await pubPost('/api/apisearch/search', { user_id: u.id, query: clean, type: 'extended' }); if (!data.success) { $('np-result').innerHTML = renderError(data.error || 'Ошибка'); return; } const items = data.results || []; if (!items.length) { $('np-result').innerHTML = renderEmpty(`По номеру ${clean}`); return; } renderExtendedResults(items, clean, 'np-result'); } catch(e) { $('np-result').innerHTML = renderError('Ошибка: ' + e.message); } finally { btn.disabled = false; btn.textContent = '📞 Узнать всё'; } }); }
 function renderVkSearch() { const u = getTelegramUser(); if (!u) { toast('Откройте через Telegram', 'error'); return; } contentWrap.innerHTML = `<div class="section-title">🔵 Поиск ВКонтакте</div><div class="chart-wrap"><div class="field"><label class="field-label">VK ID, username или телефон</label><input type="text" class="field-input" id="vk-query" placeholder="durov"></div><button class="btn" id="vk-btn" style="background:linear-gradient(135deg,#0077FF,#00A3FF);">🔵 Найти</button></div><div id="vk-result"></div><button class="btn secondary" onclick="renderScreen('home')">← На главную</button>`; $('vk-btn').addEventListener('click', async () => { const query = ($('vk-query').value || '').trim(); if (!query) { toast('Введите запрос', 'error'); return; } const limitCheck = await checkAndUseRequest(); if (!limitCheck.ok) { showLimitModal(); return; } const btn = $('vk-btn'); btn.disabled = true; btn.textContent = '⏳...'; $('vk-result').innerHTML = renderLoading('Ищем во ВКонтакте...'); try { const data = await pubPost('/api/apisearch/vk_search', { user_id: u.id, query }); if (!data.success) { $('vk-result').innerHTML = renderError(data.error || 'Ошибка'); return; } const items = data.results || []; if (!items.length) { $('vk-result').innerHTML = renderEmpty('Не найдено в VK'); return; } let html = `<div class="section-title" style="color:var(--green);">✅ Найдено: ${items.length}</div>`; items.forEach((p, idx) => { const fields = Object.entries(p).filter(([k, v]) => v && !['photo', 'avatar', 'photo_url'].includes(k.toLowerCase())); const photo = p.photo || p.avatar || p.photo_url || ''; const vkId = p['VK ID'] || p.vk_id || p.id || ''; const vkUrl = vkId ? (String(vkId).startsWith('id') ? `https://vk.com/${vkId}` : `https://vk.com/id${vkId}`) : ''; html += `<div class="result-card" style="margin-bottom:12px;"><div style="padding:16px;display:flex;gap:12px;">${photo ? `<img src="${esc(photo)}" style="width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid #0077FF;" onerror="this.style.display='none';">` : `<div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#0077FF,#00A3FF);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:26px;">${idx+1}</div>`}<div style="flex:1;min-width:0;">${vkUrl ? `<a href="${esc(vkUrl)}" target="_blank" style="display:inline-block;font-size:13px;color:#0077FF;text-decoration:none;background:rgba(0,119,255,0.1);padding:4px 10px;border-radius:8px;font-weight:600;margin-bottom:8px;">🔗 Открыть VK</a>` : ''}${fields.map(([k, v]) => `<div style="display:flex;gap:8px;padding:4px 0;font-size:13px;border-bottom:0.5px solid var(--border-soft);"><span style="color:var(--text-mute);min-width:110px;flex-shrink:0;">${esc(k)}:</span><span style="color:var(--text);word-break:break-word;">${esc(v)}</span></div>`).join('')}</div></div></div>`; }); $('vk-result').innerHTML = html; vibrate(50); toast('✅ Найдено: ' + items.length, 'ok'); } catch(e) { $('vk-result').innerHTML = renderError('Ошибка: ' + e.message); } finally { btn.disabled = false; btn.textContent = '🔵 Найти'; } }); }
-function renderTgSearch() { const u = getTelegramUser(); if (!u) { toast('Откройте через Telegram', 'error'); return; } contentWrap.innerHTML = `<div class="section-title">✈️ Поиск Telegram</div><div class="chart-wrap"><div class="field"><label class="field-label">ID, @username или телефон</label><input type="text" class="field-input" id="tg-query" placeholder="123456789"></div><button class="btn" id="tg-btn" style="background:linear-gradient(135deg,#0088cc,#00aaff);">✈️ Найти</button></div><div id="tg-result"></div><button class="btn secondary" onclick="renderScreen('home')">← На главную</button>`; $('tg-btn').addEventListener('click', async () => { const query = ($('tg-query').value || '').trim(); if (query.length < 2) { toast('Введите запрос', 'error'); return; } const limitCheck = await checkAndUseRequest(); if (!limitCheck.ok) { showLimitModal(); return; } const btn = $('tg-btn'); btn.disabled = true; btn.textContent = '⏳...'; $('tg-result').innerHTML = renderLoading('Ищем в Telegram...'); try { const data = await pubPost('/api/apisearch/tg_search', { user_id: u.id, query: query.replace('@','') }); if (!data.success) { $('tg-result').innerHTML = renderError(data.error || 'Ошибка'); return; } const r = data.result || {}; if (!r.telegram_id && !r.username) { $('tg-result').innerHTML = renderEmpty('Не найдено'); return; } renderTgProfile(r, query, 'tg-result'); } catch(e) { $('tg-result').innerHTML = renderError('Ошибка: ' + e.message); } finally { btn.disabled = false; btn.textContent = '✈️ Найти'; } }); }
+function renderInstagramSearch() {
+  const u = getTelegramUser();
+  if (!u) { toast('Откройте через Telegram', 'error'); return; }
+  
+  contentWrap.innerHTML = `
+    <div class="section-title">📸 OSINT Instagram</div>
+    <div class="chart-wrap" style="background:linear-gradient(135deg, rgba(225,48,108,0.08), rgba(253,203,110,0.08)); border:1px solid rgba(225,48,108,0.2);">
+      <div class="field">
+        <label class="field-label">Instagram username, ID или телефон</label>
+        <input type="text" class="field-input" id="ig-query" placeholder="username или +79991234567" autocomplete="off">
+        <div class="field-hint">Без @. Можно ввести телефон — попробуем найти связанный аккаунт</div>
+      </div>
+      <button class="btn" id="ig-btn" style="background:linear-gradient(135deg,#e1306c,#fd1d1d,#fcb045);">📸 Найти</button>
+    </div>
+    <div id="ig-result"></div>
+    <button class="btn secondary" onclick="renderScreen('home')">← На главную</button>
+  `;
+  
+  $('ig-btn').addEventListener('click', async () => {
+    const query = ($('ig-query').value || '').trim().replace('@', '');
+    if (!query) { toast('Введите запрос', 'error'); return; }
+    
+    const limitCheck = await checkAndUseRequest();
+    if (!limitCheck.ok) { showLimitModal(); return; }
+    
+    const btn = $('ig-btn');
+    btn.disabled = true;
+    btn.textContent = '⏳ Ищем...';
+    $('ig-result').innerHTML = renderLoading('Собираем данные из Instagram...');
+    
+    try {
+      const data = await pubPost('/api/instagram/search', { user_id: u.id, query });
+      
+      if (!data.success) {
+        $('ig-result').innerHTML = renderError(data.error || 'Не найдено');
+        return;
+      }
+      
+      const r = data.result || {};
+      
+      // Профиль
+      let html = `<div class="section-title" style="color:var(--green);">✅ Найдено</div>`;
+      
+      if (r.avatar) {
+        html += `
+          <div class="vk-card">
+            <img class="vk-avatar" src="${esc(r.avatar)}" onerror="this.style.display='none';" />
+            <div class="vk-info">
+              <div class="vk-name">${esc(r.full_name || r.username || '—')}</div>
+              <div class="vk-meta">@${esc(r.username || '—')}</div>
+              ${r.is_private ? '<div class="vk-meta" style="color:var(--orange);">🔒 Закрытый профиль</div>' : ''}
+              ${r.is_verified ? '<div class="vk-meta" style="color:var(--accent);">✅ Верифицирован</div>' : ''}
+              <a class="vk-link" href="https://instagram.com/${esc(r.username)}" target="_blank">🔗 Открыть Instagram</a>
+            </div>
+          </div>
+        `;
+      }
+      
+      // Основные поля
+      const fields = [
+        ['📝 Имя', r.full_name],
+        ['🔗 Username', r.username ? '@' + r.username : null],
+        ['🆔 ID', r.user_id],
+        ['📱 Телефон', r.phone],
+        ['📧 Email', r.email],
+        ['📊 Подписчики', r.followers ? formatNumber(r.followers) : null],
+        ['📊 Подписки', r.following ? formatNumber(r.following) : null],
+        ['📸 Публикаций', r.posts ? formatNumber(r.posts) : null],
+        ['📝 Bio', r.bio],
+        ['🌐 Сайт', r.website],
+        ['📍 Геолокация', r.location],
+        ['🔒 Тип профиля', r.is_private ? 'Закрытый' : 'Публичный'],
+        ['✅ Верификация', r.is_verified ? 'Да' : null],
+        ['📅 Дата регистрации', r.joined_date],
+      ].filter(([_, v]) => v);
+      
+      if (fields.length) {
+        html += `<div class="result-card">`;
+        fields.forEach(([label, value]) => {
+          let display = esc(String(value));
+          if (label.includes('Сайт') && String(value).startsWith('http')) {
+            display = `<a href="${esc(value)}" target="_blank" style="color:var(--accent);">${esc(value)}</a>`;
+          }
+          html += `
+            <div class="result-row">
+              <div class="result-content">
+                <div class="result-label">${label}</div>
+                <div class="result-value">${display}</div>
+              </div>
+            </div>
+          `;
+        });
+        html += `</div>`;
+      }
+      
+      // Связанные аккаунты
+      if (r.related_accounts && r.related_accounts.length) {
+        html += `<div class="section-title">👥 Связанные аккаунты</div><ul class="list">`;
+        r.related_accounts.forEach(acc => {
+          html += `<li class="list-item" onclick="window.open('${esc(acc.url)}','_blank')">
+            <div class="list-icon">${esc(acc.icon || '👤')}</div>
+            <div class="list-content">
+              <div class="list-title">${esc(acc.platform)}</div>
+              <div class="list-sub">${esc(acc.username || acc.url)}</div>
+            </div>
+            <div class="list-chevron">🔗</div>
+          </li>`;
+        });
+        html += `</ul>`;
+      }
+      
+      $('ig-result').innerHTML = html;
+      vibrate(50);
+      toast('✅ Найдено', 'ok');
+    } catch(e) {
+      $('ig-result').innerHTML = renderError('Ошибка: ' + e.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '📸 Найти';
+    }
+  });
+}
+  function renderTgSearch() { const u = getTelegramUser(); if (!u) { toast('Откройте через Telegram', 'error'); return; } contentWrap.innerHTML = `<div class="section-title">✈️ Поиск Telegram</div><div class="chart-wrap"><div class="field"><label class="field-label">ID, @username или телефон</label><input type="text" class="field-input" id="tg-query" placeholder="123456789"></div><button class="btn" id="tg-btn" style="background:linear-gradient(135deg,#0088cc,#00aaff);">✈️ Найти</button></div><div id="tg-result"></div><button class="btn secondary" onclick="renderScreen('home')">← На главную</button>`; $('tg-btn').addEventListener('click', async () => { const query = ($('tg-query').value || '').trim(); if (query.length < 2) { toast('Введите запрос', 'error'); return; } const limitCheck = await checkAndUseRequest(); if (!limitCheck.ok) { showLimitModal(); return; } const btn = $('tg-btn'); btn.disabled = true; btn.textContent = '⏳...'; $('tg-result').innerHTML = renderLoading('Ищем в Telegram...'); try { const data = await pubPost('/api/apisearch/tg_search', { user_id: u.id, query: query.replace('@','') }); if (!data.success) { $('tg-result').innerHTML = renderError(data.error || 'Ошибка'); return; } const r = data.result || {}; if (!r.telegram_id && !r.username) { $('tg-result').innerHTML = renderEmpty('Не найдено'); return; } renderTgProfile(r, query, 'tg-result'); } catch(e) { $('tg-result').innerHTML = renderError('Ошибка: ' + e.message); } finally { btn.disabled = false; btn.textContent = '✈️ Найти'; } }); }
 function renderBaseChecker() { const u = getTelegramUser(); if (!u) { toast('Откройте через Telegram', 'error'); return; } contentWrap.innerHTML = `<div class="section-title">📊 Чекер по базам</div><div class="chart-wrap"><div class="field"><label class="field-label">Запрос</label><input type="text" class="field-input" id="bc-query" placeholder="79939999985"></div><button class="btn" id="bc-btn" style="background:linear-gradient(135deg,#af52de,#ff2d55);">📊 Проверить</button></div><div id="bc-result"></div><button class="btn secondary" onclick="renderScreen('home')">← На главную</button>`; $('bc-btn').addEventListener('click', async () => { const query = ($('bc-query').value || '').trim(); if (query.length < 3) { toast('Введите запрос', 'error'); return; } const limitCheck = await checkAndUseRequest(); if (!limitCheck.ok) { showLimitModal(); return; } const btn = $('bc-btn'); btn.disabled = true; btn.textContent = '⏳...'; $('bc-result').innerHTML = renderLoading('Сканируем базы...'); try { const data = await pubPost('/api/apisearch/base_checker', { user_id: u.id, query }); if (!data.success) { $('bc-result').innerHTML = renderError(data.error || 'Ошибка'); return; } const r = data.result || {}; const stats = r.stats || {}; if (!r.found) { $('bc-result').innerHTML = `<div class="chart-wrap" style="text-align:center;"><div style="font-size:48px;margin-bottom:12px;">❌</div><div style="font-size:18px;font-weight:700;color:var(--red);">Не найдено</div></div>`; return; } const entries = Object.entries(stats).sort((a, b) => b[1] - a[1]); let html = `<div class="chart-wrap" style="background:linear-gradient(135deg, rgba(52,199,89,0.15), rgba(0,0,0,0));border:1px solid rgba(52,199,89,0.3);text-align:center;"><div style="font-size:48px;">✅</div><div style="font-size:22px;font-weight:700;color:var(--green);">Найдено в ${entries.length} базах</div></div>`; entries.forEach(([name, count]) => { const percent = Math.round((count / entries[0][1]) * 100); html += `<div style="background:var(--bg-elev);border-radius:12px;padding:12px 14px;margin-bottom:8px;"><div style="display:flex;justify-content:space-between;margin-bottom:8px;"><div style="font-size:13px;">${esc(name)}</div><div style="font-size:13px;color:var(--accent);font-weight:700;">${count}</div></div><div style="height:6px;background:var(--bg);border-radius:3px;overflow:hidden;"><div style="height:100%;width:${percent}%;background:linear-gradient(90deg,var(--accent),var(--purple));"></div></div></div>`; }); $('bc-result').innerHTML = html; vibrate(50); } catch(e) { $('bc-result').innerHTML = renderError('Ошибка: ' + e.message); } finally { btn.disabled = false; btn.textContent = '📊 Проверить'; } }); }
 function renderUsernameCheck() { contentWrap.innerHTML = `<div class="section-title">🌐 Проверка @username</div><div class="chart-wrap"><div class="field"><label class="field-label">Username (без @)</label><input type="text" class="field-input" id="uc-input" placeholder="username"></div><button class="btn" id="uc-btn">🌐 Проверить</button></div><div id="uc-results"></div><button class="btn secondary" onclick="renderScreen('home')">← На главную</button>`; $('uc-btn').addEventListener('click', async () => { const username = $('uc-input').value.trim().replace('@', ''); if (username.length < 2) { toast('Введите username', 'error'); return; } const btn = $('uc-btn'); btn.disabled = true; btn.textContent = '⏳...'; try { const data = await pubPost('/api/check_username', { username }); if (!data.success) { toast('❌ ' + (data.error || 'Ошибка'), 'error'); return; } const results = data.results || []; $('uc-results').innerHTML = `<div class="section-title">Результаты</div><ul class="list">${results.map(r => { const icon = r.exists === true ? '✅' : (r.exists === false ? '❌' : '⚠️'); const statusText = r.exists === true ? 'Занят' : (r.exists === false ? 'Свободен' : 'Неизвестно'); return `<li class="list-item" onclick="window.open('${esc(r.url)}','_blank')"><div class="list-icon">${icon}</div><div class="list-content"><div class="list-title">${esc(r.name)}</div><div class="list-sub">${statusText}</div></div></li>`; }).join('')}</ul>`; } catch(e) { toast('Ошибка', 'error'); } finally { btn.disabled = false; btn.textContent = '🌐 Проверить'; } }); }
 function renderPhoneCheck() { contentWrap.innerHTML = `<div class="section-title">📱 Проверка номера</div><div class="chart-wrap"><div class="field"><label class="field-label">Номер</label><input type="tel" class="field-input" id="pc-phone" placeholder="+992901234567"></div><button class="btn" id="pc-check">📱 Проверить</button></div><div id="pc-result"></div><button class="btn secondary" onclick="renderScreen('home')">← Назад</button>`; $('pc-check').addEventListener('click', async () => { const phone = $('pc-phone').value.trim(); if (!phone) { toast('Введите номер', 'error'); return; } const limitCheck = await checkAndUseRequest(); if (!limitCheck.ok) { showLimitModal(); return; } const btn = $('pc-check'); btn.disabled = true; btn.textContent = '⏳...'; try { const info = analyzePhoneNumber(phone); renderPhoneInfo(info); } catch(e) {} finally { btn.disabled = false; btn.textContent = '📱 Проверить'; } }); }
@@ -4204,6 +4350,7 @@ window.translateSummary = translateSummary;
 window.translateMessage = translateMessage;
 window.showLanguagePicker = showLanguagePicker;
 window.doTranslate = doTranslate;
+ window.renderInstagramSearch = renderInstagramSearch;
 </script>
 </body>
 </html>

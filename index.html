@@ -2155,10 +2155,121 @@ function renderInstagramSearch() {
   function renderTgSearch() { const u = getTelegramUser(); if (!u) { toast('Откройте через Telegram', 'error'); return; } contentWrap.innerHTML = `<div class="section-title">✈️ Поиск Telegram</div><div class="chart-wrap"><div class="field"><label class="field-label">ID, @username или телефон</label><input type="text" class="field-input" id="tg-query" placeholder="123456789"></div><button class="btn" id="tg-btn" style="background:linear-gradient(135deg,#0088cc,#00aaff);">✈️ Найти</button></div><div id="tg-result"></div><button class="btn secondary" onclick="renderScreen('home')">← На главную</button>`; $('tg-btn').addEventListener('click', async () => { const query = ($('tg-query').value || '').trim(); if (query.length < 2) { toast('Введите запрос', 'error'); return; } const limitCheck = await checkAndUseRequest(); if (!limitCheck.ok) { showLimitModal(); return; } const btn = $('tg-btn'); btn.disabled = true; btn.textContent = '⏳...'; $('tg-result').innerHTML = renderLoading('Ищем в Telegram...'); try { const data = await pubPost('/api/apisearch/tg_search', { user_id: u.id, query: query.replace('@','') }); if (!data.success) { $('tg-result').innerHTML = renderError(data.error || 'Ошибка'); return; } const r = data.result || {}; if (!r.telegram_id && !r.username) { $('tg-result').innerHTML = renderEmpty('Не найдено'); return; } renderTgProfile(r, query, 'tg-result'); } catch(e) { $('tg-result').innerHTML = renderError('Ошибка: ' + e.message); } finally { btn.disabled = false; btn.textContent = '✈️ Найти'; } }); }
 function renderBaseChecker() { const u = getTelegramUser(); if (!u) { toast('Откройте через Telegram', 'error'); return; } contentWrap.innerHTML = `<div class="section-title">📊 Чекер по базам</div><div class="chart-wrap"><div class="field"><label class="field-label">Запрос</label><input type="text" class="field-input" id="bc-query" placeholder="79939999985"></div><button class="btn" id="bc-btn" style="background:linear-gradient(135deg,#af52de,#ff2d55);">📊 Проверить</button></div><div id="bc-result"></div><button class="btn secondary" onclick="renderScreen('home')">← На главную</button>`; $('bc-btn').addEventListener('click', async () => { const query = ($('bc-query').value || '').trim(); if (query.length < 3) { toast('Введите запрос', 'error'); return; } const limitCheck = await checkAndUseRequest(); if (!limitCheck.ok) { showLimitModal(); return; } const btn = $('bc-btn'); btn.disabled = true; btn.textContent = '⏳...'; $('bc-result').innerHTML = renderLoading('Сканируем базы...'); try { const data = await pubPost('/api/apisearch/base_checker', { user_id: u.id, query }); if (!data.success) { $('bc-result').innerHTML = renderError(data.error || 'Ошибка'); return; } const r = data.result || {}; const stats = r.stats || {}; if (!r.found) { $('bc-result').innerHTML = `<div class="chart-wrap" style="text-align:center;"><div style="font-size:48px;margin-bottom:12px;">❌</div><div style="font-size:18px;font-weight:700;color:var(--red);">Не найдено</div></div>`; return; } const entries = Object.entries(stats).sort((a, b) => b[1] - a[1]); let html = `<div class="chart-wrap" style="background:linear-gradient(135deg, rgba(52,199,89,0.15), rgba(0,0,0,0));border:1px solid rgba(52,199,89,0.3);text-align:center;"><div style="font-size:48px;">✅</div><div style="font-size:22px;font-weight:700;color:var(--green);">Найдено в ${entries.length} базах</div></div>`; entries.forEach(([name, count]) => { const percent = Math.round((count / entries[0][1]) * 100); html += `<div style="background:var(--bg-elev);border-radius:12px;padding:12px 14px;margin-bottom:8px;"><div style="display:flex;justify-content:space-between;margin-bottom:8px;"><div style="font-size:13px;">${esc(name)}</div><div style="font-size:13px;color:var(--accent);font-weight:700;">${count}</div></div><div style="height:6px;background:var(--bg);border-radius:3px;overflow:hidden;"><div style="height:100%;width:${percent}%;background:linear-gradient(90deg,var(--accent),var(--purple));"></div></div></div>`; }); $('bc-result').innerHTML = html; vibrate(50); } catch(e) { $('bc-result').innerHTML = renderError('Ошибка: ' + e.message); } finally { btn.disabled = false; btn.textContent = '📊 Проверить'; } }); }
 function renderUsernameCheck() { contentWrap.innerHTML = `<div class="section-title">🌐 Проверка @username</div><div class="chart-wrap"><div class="field"><label class="field-label">Username (без @)</label><input type="text" class="field-input" id="uc-input" placeholder="username"></div><button class="btn" id="uc-btn">🌐 Проверить</button></div><div id="uc-results"></div><button class="btn secondary" onclick="renderScreen('home')">← На главную</button>`; $('uc-btn').addEventListener('click', async () => { const username = $('uc-input').value.trim().replace('@', ''); if (username.length < 2) { toast('Введите username', 'error'); return; } const btn = $('uc-btn'); btn.disabled = true; btn.textContent = '⏳...'; try { const data = await pubPost('/api/check_username', { username }); if (!data.success) { toast('❌ ' + (data.error || 'Ошибка'), 'error'); return; } const results = data.results || []; $('uc-results').innerHTML = `<div class="section-title">Результаты</div><ul class="list">${results.map(r => { const icon = r.exists === true ? '✅' : (r.exists === false ? '❌' : '⚠️'); const statusText = r.exists === true ? 'Занят' : (r.exists === false ? 'Свободен' : 'Неизвестно'); return `<li class="list-item" onclick="window.open('${esc(r.url)}','_blank')"><div class="list-icon">${icon}</div><div class="list-content"><div class="list-title">${esc(r.name)}</div><div class="list-sub">${statusText}</div></div></li>`; }).join('')}</ul>`; } catch(e) { toast('Ошибка', 'error'); } finally { btn.disabled = false; btn.textContent = '🌐 Проверить'; } }); }
-function renderPhoneCheck() { contentWrap.innerHTML = `<div class="section-title">📱 Проверка номера</div><div class="chart-wrap"><div class="field"><label class="field-label">Номер</label><input type="tel" class="field-input" id="pc-phone" placeholder="+992901234567"></div><button class="btn" id="pc-check">📱 Проверить</button></div><div id="pc-result"></div><button class="btn secondary" onclick="renderScreen('home')">← Назад</button>`; $('pc-check').addEventListener('click', async () => { const phone = $('pc-phone').value.trim(); if (!phone) { toast('Введите номер', 'error'); return; } const limitCheck = await checkAndUseRequest(); if (!limitCheck.ok) { showLimitModal(); return; } const btn = $('pc-check'); btn.disabled = true; btn.textContent = '⏳...'; try { const info = analyzePhoneNumber(phone); renderPhoneInfo(info); } catch(e) {} finally { btn.disabled = false; btn.textContent = '📱 Проверить'; } }); }
+function renderPhoneCheck() { 
+  contentWrap.innerHTML = `
+    <div class="section-title">📱 Проверка номера</div>
+    <div class="chart-wrap">
+      <div class="field">
+        <label class="field-label">Номер</label>
+        <input type="tel" class="field-input" id="pc-phone" placeholder="+37379055862">
+      </div>
+      <button class="btn" id="pc-check">📱 Проверить</button>
+    </div>
+    <div id="pc-result"></div>
+    <button class="btn secondary" onclick="renderScreen('home')">← Назад</button>
+  `; 
+
+  $('pc-check').addEventListener('click', async () => { 
+    const phone = $('pc-phone').value.trim(); 
+    if (!phone) { toast('Введите номер', 'error'); return; } 
+    
+    // Проверяем лимиты
+    const limitCheck = await checkAndUseRequest(); 
+    if (!limitCheck.ok) { showLimitModal(); return; } 
+    
+    const btn = $('pc-check'); 
+    btn.disabled = true; 
+    btn.textContent = '⏳...'; 
+    
+    try { 
+      // ОТПРАВЛЯЕМ ЗАПРОС НА СЕРВЕР PYTHON
+      const data = await pubPost('/api/check_phone', { phone: phone });
+      
+      if (!data.success) {
+        toast(data.error || 'Ошибка', 'error');
+        return;
+      }
+
+      // Рендерим ответ (структура ответа совпадает с тем, что мы получали раньше)
+      renderPhoneInfo(data.result); 
+    } catch(e) { 
+      toast('Ошибка сети', 'error'); 
+    } finally { 
+      btn.disabled = false; 
+      btn.textContent = '📱 Проверить'; 
+    } 
+  }); 
+}
 function analyzePhoneNumber(phone) { let clean = phone.replace(/[\s\-\(\)\.]/g, ''); if (clean.startsWith('+')) clean = clean.slice(1); if (clean.length === 11 && clean.startsWith('8')) clean = '7' + clean.slice(1); const countries = { '992': { country: 'Таджикистан', flag: '🇹🇯', region: 'Таджикистан', tz: 'UTC+5', type: 'Мобильный', lat: 38.8610, lon: 71.2761, operators: { '90': 'Beeline TJ', '91': 'Beeline TJ', '92': 'Megafon TJ', '50': 'Tcell', '55': 'Tcell', '77': 'Tcell', '88': 'Tcell', '98': 'Babilon', '99': 'Babilon' } }, '998': { country: 'Узбекистан', flag: '🇺🇿', region: 'Узбекистан', tz: 'UTC+5', type: 'Мобильный', lat: 41.3775, lon: 64.5853, operators: {} }, '7': { country: 'Россия', flag: '🇷🇺', region: 'Россия', tz: 'UTC+3', type: 'Мобильный', lat: 55.7558, lon: 37.6173, operators: { '900': 'Beeline', '901': 'Beeline', '902': 'MegaFon', '903': 'Beeline', '905': 'Beeline', '906': 'Beeline', '909': 'MegaFon', '910': 'MegaFon', '911': 'MegaFon', '912': 'MegaFon', '913': 'MegaFon', '914': 'MegaFon', '915': 'MegaFon', '916': 'MegaFon', '917': 'MegaFon', '918': 'MegaFon', '919': 'MegaFon', '950': 'Tele2', '951': 'Tele2', '952': 'Tele2', '958': 'Tele2', '960': 'Beeline', '961': 'Beeline', '962': 'Beeline', '963': 'Beeline', '964': 'Beeline', '965': 'Beeline', '966': 'Beeline', '967': 'Beeline', '968': 'Beeline', '969': 'Beeline', '980': 'MTS', '981': 'MTS', '982': 'MTS', '983': 'MTS', '984': 'MTS', '985': 'MTS', '986': 'MTS', '987': 'MTS', '988': 'MTS', '989': 'MTS', '995': 'MTS', '996': 'MTS', '997': 'MTS', '999': 'MTS' } } }; let countryInfo = null, len = 0; for (let l = 3; l >= 1; l--) { const prefix = clean.slice(0, l); if (countries[prefix]) { countryInfo = countries[prefix]; len = l; break; } } if (!countryInfo) return { phone, country: 'Неизвестно', flag: '🏴', region: '—', operator: '—', tz: '—', type: 'Неизвестно' }; let operator = '—'; if (countryInfo.operators) { const after = clean.slice(len); for (let o = 3; o >= 2; o--) { if (countryInfo.operators[after.slice(0, o)]) { operator = countryInfo.operators[after.slice(0, o)]; break; } } } return { phone, country: countryInfo.country, flag: countryInfo.flag, region: countryInfo.region, operator, tz: countryInfo.tz, type: countryInfo.type, lat: countryInfo.lat, lon: countryInfo.lon }; }
-function renderPhoneInfo(info) { const phone = info.phone || ''; const clean = phone.replace(/\D/g, ''); const waLink = 'https://wa.me/' + clean; const tgLink = info.telegram_username ? 'https://t.me/' + info.telegram_username.replace('@', '') : 'https://t.me/+' + clean; const result = $('pc-result'); if (!result) return; const hasCoords = info.lat && info.lon; const mapButton = hasCoords ? `<button class="btn" onclick="showPhoneMapCurrent()" style="margin-bottom:8px;">🗺 Показать на карте</button>` : ''; result.innerHTML = `<div class="section-title">📱 Информация</div><div class="result-card"><div class="result-row"><div class="result-icon">${I.phone}</div><div class="result-content"><div class="result-label">Номер</div><div class="result-value mono accent">${esc(phone)}</div></div></div><div class="result-row"><div class="result-icon">${I.globe}</div><div class="result-content"><div class="result-label">Страна</div><div class="result-value">${esc(info.flag || '')} ${esc(info.country || '—')}</div></div></div><div class="result-row"><div class="result-icon">${I.signal}</div><div class="result-content"><div class="result-label">Оператор</div><div class="result-value">${esc(info.operator || '—')}</div></div></div><div class="result-row"><div class="result-icon">${I.clock}</div><div class="result-content"><div class="result-label">Часовой пояс</div><div class="result-value">${esc(info.tz || '—')}</div></div></div></div>${mapButton}`; window._lastPhoneInfo = info; }
-function showPhoneMapCurrent() { if (window._lastPhoneInfo) showPhoneMap(window._lastPhoneInfo); }
+function renderPhoneInfo(info) { 
+  const phone = info.phone || ''; 
+  const clean = phone.replace(/\D/g, ''); 
+  const result = $('pc-result'); 
+  if (!result) return; 
+  
+  const hasCoords = info.lat && info.lon && info.lat !== 0; 
+  const mapButton = hasCoords ? `<button class="btn" onclick="showPhoneMapCurrent()" style="margin-bottom:8px;">🗺 Показать на карте</button>` : ''; 
+  
+  // Ссылки на соцсети
+  const tgLink = info.telegram_link || (info.telegram_username ? `https://t.me/${info.telegram_username.replace('@', '')}` : `https://t.me/+${clean}`);
+  const waLink = info.whatsapp_link || `https://wa.me/${clean}`;
+
+  result.innerHTML = `
+    <div class="section-title">📱 Информация</div>
+    <div class="result-card">
+      <div class="result-row">
+        <div class="result-icon">${I.phone}</div>
+        <div class="result-content">
+          <div class="result-label">Номер</div>
+          <div class="result-value mono accent">${esc(phone)}</div>
+        </div>
+      </div>
+      <div class="result-row">
+        <div class="result-icon">${I.globe}</div>
+        <div class="result-content">
+          <div class="result-label">Страна</div>
+          <div class="result-value">${esc(info.flag || '')} ${esc(info.country || '—')}</div>
+        </div>
+      </div>
+      <div class="result-row">
+        <div class="result-icon">${I.signal}</div>
+        <div class="result-content">
+          <div class="result-label">Оператор</div>
+          <div class="result-value">${esc(info.operator || '—')}</div>
+        </div>
+      </div>
+      <div class="result-row">
+        <div class="result-icon">${I.clock}</div>
+        <div class="result-content">
+          <div class="result-label">Часовой пояс</div>
+          <div class="result-value">${esc(info.tz || '—')}</div>
+        </div>
+      </div>
+      
+      <!-- ДОБАВЛЯЕМ ССЫЛКИ НА СОЦСЕТИ -->
+      <div class="result-row">
+        <div class="result-icon">✈️</div>
+        <div class="result-content">
+          <div class="result-label">Telegram</div>
+          <div class="result-value">
+            ${info.telegram_exists ? `✅ <a href="${tgLink}" target="_blank" style="color:var(--accent);">Открыть профиль</a>` : `⚠️ Наличие не подтверждено`}
+          </div>
+        </div>
+      </div>
+      <div class="result-row">
+        <div class="result-icon">💬</div>
+        <div class="result-content">
+          <div class="result-label">WhatsApp</div>
+          <div class="result-value">
+            ${info.whatsapp_exists ? `✅ <a href="${waLink}" target="_blank" style="color:var(--accent);">Открыть чат</a>` : `❌ Не найден`}
+          </div>
+        </div>
+      </div>
+    </div>
+    ${mapButton}
+  `; 
+  window._lastPhoneInfo = info; 
+}
 function showPhoneMap(info) { document.querySelectorAll('.modal-overlay').forEach(m => m.remove()); if (window._phoneMap) { window._phoneMap.remove(); window._phoneMap = null; } const overlay = document.createElement('div'); overlay.className = 'modal-overlay'; overlay.id = 'phone-map-modal'; overlay.style.padding = '0'; overlay.style.alignItems = 'flex-end'; overlay.innerHTML = '<div style="background:var(--bg);width:100%;max-width:600px;border-radius:20px 20px 0 0;overflow:hidden;max-height:95vh;display:flex;flex-direction:column;"><div style="padding:16px 20px;border-bottom:0.5px solid var(--border-soft);"><div style="font-size:17px;font-weight:700;">' + esc(info.flag || '') + ' ' + esc(info.phone || '') + '</div><div style="font-size:13px;color:var(--text-mute);">' + esc(info.country || '') + '</div></div><div id="phone-map" style="height:340px;background:var(--bg-elev);"></div><div style="padding:16px 20px;"><button class="btn secondary" onclick="closePhoneMap()">Закрыть</button></div></div>'; document.body.appendChild(overlay); setTimeout(() => initPhoneMap(info.lat, info.lon, info), 150); }
 function closePhoneMap() { const m = document.getElementById('phone-map-modal'); if (m) m.remove(); if (window._phoneMap) { window._phoneMap.remove(); window._phoneMap = null; } }
 function initPhoneMap(lat, lon, info) { if (typeof L === 'undefined') return; const isDark = currentTheme === 'dark'; const mapEl = document.getElementById('phone-map'); if (!mapEl) return; const map = L.map('phone-map', { zoomControl: false, attributionControl: false, center: [lat, lon], zoom: 6, minZoom: 2, maxZoom: 18 }); const tileUrl = isDark ? 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}' : 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'; L.tileLayer(tileUrl, { maxZoom: 19 }).addTo(map); L.control.zoom({ position: 'bottomright' }).addTo(map); const icon = L.divIcon({ className: '', html: '<div style="width:28px;height:28px;border-radius:50%;background:#007aff;border:3px solid white;box-shadow:0 3px 12px rgba(0,122,255,0.6);"></div>', iconSize: [28, 28], iconAnchor: [14, 14] }); L.marker([lat, lon], { icon }).addTo(map).bindPopup('<b>' + esc(info.country || '') + '</b>').openPopup(); window._phoneMap = map; setTimeout(() => map.invalidateSize(), 250); }

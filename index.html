@@ -2954,17 +2954,15 @@ async function renderProfile(userId) {
     const username = u.username ? '@' + u.username : null;
     const tier = (u.started_bot || me.has_subscription) ? 'PREMIUM' : 'USER';
     const tierColor = (u.started_bot || me.has_subscription) ? 'var(--orange)' : 'var(--accent)';
-    const chatsCount = (u.chats || []).length;
-    const commentsCount = (u.comments || []).length;
-    const wordsCount = (u.words || []).length;
-    const namesCount = (u.name_history || []).length;
-    const friendsCount = (u.friends || []).length;
-    const changesCount = (u.profile_changes || []).length;
-
-    // ========== Группы и каналы ==========
+    
+    // Считаем статистику
     const allChats = u.chats || [];
     const groups = allChats.filter(c => c.type === 'group' || c.type === 'supergroup');
     const channels = allChats.filter(c => c.type === 'channel');
+    const friends = u.friends || [];
+    const commentsCount = (u.comments || []).length;
+    const chatsCount = allChats.length;
+    const wordsCount = (u.words || []).length;
 
     // ========== Аватарка ==========
     const avatarBlock = `
@@ -3006,23 +3004,7 @@ async function renderProfile(userId) {
       </div>
     `;
 
-    // ========== История имён ==========
-    const namesBlock = (u.name_history && u.name_history.length) ? `
-      <div class="section-title">📜 История имён (${namesCount})</div>
-      <ul class="list">
-        ${u.name_history.slice(0, 30).map(n => `
-          <li class="list-item">
-            <div class="list-icon purple">👤</div>
-            <div class="list-content">
-              <div class="list-title">${esc(n.name || '—')}</div>
-              <div class="list-sub">${esc(n.date || '')}</div>
-            </div>
-          </li>
-        `).join('')}
-      </ul>
-    ` : '';
-
-    // ========== Статистика ==========
+    // ========== Статистика (3 карточки) ==========
     const statsBlock = `
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:20px 0;">
         <div style="background:var(--bg-elev);border-radius:14px;padding:16px 8px;text-align:center;">
@@ -3040,6 +3022,90 @@ async function renderProfile(userId) {
       </div>
     `;
 
+    // ========== История имён ==========
+    const namesBlock = (u.name_history && u.name_history.length) ? `
+      <div class="section-title">📜 История имён (${u.name_history.length})</div>
+      <ul class="list">
+        ${u.name_history.slice(0, 30).map(n => `
+          <li class="list-item">
+            <div class="list-icon purple">👤</div>
+            <div class="list-content">
+              <div class="list-title">${esc(n.name || '—')}</div>
+              <div class="list-sub">${esc(n.date || '')}</div>
+            </div>
+          </li>
+        `).join('')}
+      </ul>
+    ` : '';
+
+    // ========== Группы (сетка 2 в ряд) ==========
+    const groupsBlock = groups.length ? `
+      <div class="section-title">👥 Группы (${groups.length})</div>
+      <div class="card-grid">
+        ${groups.slice(0, 6).map((c, idx) => {
+          let link = c.link || '';
+          if (!link && c.chat_id) link = chatLinkFromId(c.chat_id) || '';
+          const colors = ['blue', 'purple', 'green', 'orange', 'pink'];
+          const color = colors[idx % colors.length];
+          return `
+            <div class="card-tile" ${link ? `onclick="window.open('${esc(link)}','_blank')"` : ''}>
+              <div class="tile-avatar ${color}">💬</div>
+              <div class="tile-info">
+                <div class="tile-name">${esc(c.title || '—')}</div>
+                <div class="tile-sub">${link ? '🔗 Открыть' : '🔒 Приватный'}</div>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    ` : '';
+
+    // ========== Каналы (сетка 2 в ряд) ==========
+    const channelsBlock = channels.length ? `
+      <div class="section-title">📢 Каналы (${channels.length})</div>
+      <div class="card-grid">
+        ${channels.slice(0, 6).map((c, idx) => {
+          let link = c.link || '';
+          if (!link && c.chat_id) link = chatLinkFromId(c.chat_id) || '';
+          const colors = ['blue', 'purple', 'green', 'orange', 'pink'];
+          const color = colors[idx % colors.length];
+          return `
+            <div class="card-tile" ${link ? `onclick="window.open('${esc(link)}','_blank')"` : ''}>
+              <div class="tile-avatar ${color}">📢</div>
+              <div class="tile-info">
+                <div class="tile-name">${esc(c.title || '—')}</div>
+                <div class="tile-sub">${link ? '🔗 Открыть' : '🔒 Приватный'}</div>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    ` : '';
+
+    // ========== Знакомые (сетка 2 в ряд) ==========
+    const friendsBlock = friends.length ? `
+      <div class="section-title">👥 Знакомые (${friends.length})</div>
+      <div class="card-grid">
+        ${friends.slice(0, 6).map((f, idx) => {
+          const fname = f.name || `Пользователь ${f.id}`;
+          const fusername = f.username ? `@${f.username}` : `ID: ${f.id}`;
+          const flink = f.username ? `https://t.me/${f.username}` : `tg://user?id=${f.id}`;
+          const colors = ['blue', 'purple', 'green', 'orange', 'pink'];
+          const color = colors[idx % colors.length];
+          const initial = (fname[0] || '?').toUpperCase();
+          return `
+            <div class="card-tile" onclick="window.open('${esc(flink)}','_blank')">
+              <div class="tile-avatar ${color}">${esc(initial)}</div>
+              <div class="tile-info">
+                <div class="tile-name">${esc(fname)}</div>
+                <div class="tile-sub">${esc(fusername)}</div>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    ` : '';
+
     // ========== Кнопки внизу ==========
     const actionsBlock = `
       <div class="section-title">Действия</div>
@@ -3053,7 +3119,9 @@ async function renderProfile(userId) {
         <button class="icon-btn" onclick="renderScreen('home')" style="position:absolute;left:8px;top:8px;color:var(--text);">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
+        
         ${avatarBlock}
+        
         <div style="font-size:24px;font-weight:700;color:var(--text);">${esc(fullName)}</div>
         ${username ? `<div style="font-size:15px;color:var(--accent);margin-top:4px;">${esc(username)}</div>` : ''}
         <div style="font-size:13px;color:var(--text-mute);margin-top:6px;">ID: <code>${u.user_id}</code></div>
@@ -3071,6 +3139,9 @@ async function renderProfile(userId) {
 
       ${balanceBlock}
       ${statsBlock}
+      ${groupsBlock}
+      ${channelsBlock}
+      ${friendsBlock}
       ${namesBlock}
       ${actionsBlock}
     `;

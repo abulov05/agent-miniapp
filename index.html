@@ -3420,50 +3420,7 @@ async function refreshUserProfile(userId) {
     }
   }
 }
-// ============================================================
-// 🔄 ОБНОВЛЕНИЕ ПРОФИЛЯ ИЗ TELEGRAM
-// ============================================================
-async function refreshUserProfile(userId) {
-  const u = getTelegramUser();
-  if (!u) { toast('Откройте через Telegram', 'error'); return; }
 
-  vibrate();
-
-  // Показываем загрузку в кнопке
-  const btn = event?.target;
-  const originalText = btn ? btn.textContent : '';
-
-  if (btn) {
-    btn.disabled = true;
-    btn.textContent = '⏳ Обновляю...';
-  }
-
-  try {
-    const data = await pubPost('/api/user/refresh', { user_id: userId });
-
-    if (!data.success) {
-      toast('❌ ' + (data.error || 'Не удалось обновить'), 'error');
-      if (btn) {
-        btn.disabled = false;
-        btn.textContent = originalText;
-      }
-      return;
-    }
-
-    toast('✅ Профиль обновлён!', 'ok');
-    vibrate(30);
-
-    // Перерисовываем профиль через 300ms
-    setTimeout(() => renderScreen('profile', userId), 300);
-
-  } catch (e) {
-    toast('❌ Ошибка: ' + e.message, 'error');
-    if (btn) {
-      btn.disabled = false;
-      btn.textContent = originalText;
-    }
-  }
-}
   // ============================================================
 // 🌐 AI ОПРЕДЕЛЕНИЕ ЯЗЫКА
 // ============================================================

@@ -2963,6 +2963,8 @@ async function renderProfile(userId) {
     const commentsCount = (u.comments || []).length;
     const chatsCount = allChats.length;
     const wordsCount = (u.words || []).length;
+    const namesCount = (u.name_history || []).length;
+    const changesCount = (u.profile_changes || []).length;
 
     // ========== Аватарка ==========
     const avatarBlock = `
@@ -3022,27 +3024,11 @@ async function renderProfile(userId) {
       </div>
     `;
 
-    // ========== История имён ==========
-    const namesBlock = (u.name_history && u.name_history.length) ? `
-      <div class="section-title">📜 История имён (${u.name_history.length})</div>
-      <ul class="list">
-        ${u.name_history.slice(0, 30).map(n => `
-          <li class="list-item">
-            <div class="list-icon purple">👤</div>
-            <div class="list-content">
-              <div class="list-title">${esc(n.name || '—')}</div>
-              <div class="list-sub">${esc(n.date || '')}</div>
-            </div>
-          </li>
-        `).join('')}
-      </ul>
-    ` : '';
-
-    // ========== Группы (сетка 2 в ряд) ==========
+    // ========== Группы ==========
     const groupsBlock = groups.length ? `
       <div class="section-title">👥 Группы (${groups.length})</div>
       <div class="card-grid">
-        ${groups.slice(0, 6).map((c, idx) => {
+        ${groups.slice(0, 4).map((c, idx) => {
           let link = c.link || '';
           if (!link && c.chat_id) link = chatLinkFromId(c.chat_id) || '';
           const colors = ['blue', 'purple', 'green', 'orange', 'pink'];
@@ -3058,13 +3044,14 @@ async function renderProfile(userId) {
           `;
         }).join('')}
       </div>
+      ${groups.length > 4 ? `<button class="btn-show-all" onclick="showAllGroups(${u.user_id})">👥 Показать все группы (${groups.length})</button>` : ''}
     ` : '';
 
-    // ========== Каналы (сетка 2 в ряд) ==========
+    // ========== Каналы ==========
     const channelsBlock = channels.length ? `
       <div class="section-title">📢 Каналы (${channels.length})</div>
       <div class="card-grid">
-        ${channels.slice(0, 6).map((c, idx) => {
+        ${channels.slice(0, 4).map((c, idx) => {
           let link = c.link || '';
           if (!link && c.chat_id) link = chatLinkFromId(c.chat_id) || '';
           const colors = ['blue', 'purple', 'green', 'orange', 'pink'];
@@ -3080,9 +3067,10 @@ async function renderProfile(userId) {
           `;
         }).join('')}
       </div>
+      ${channels.length > 4 ? `<button class="btn-show-all" onclick="showAllChannels(${u.user_id})">📢 Показать все каналы (${channels.length})</button>` : ''}
     ` : '';
 
-    // ========== Знакомые (сетка 2 в ряд) ==========
+    // ========== Знакомые ==========
     const friendsBlock = friends.length ? `
       <div class="section-title">👥 Знакомые (${friends.length})</div>
       <div class="card-grid">
@@ -3104,6 +3092,80 @@ async function renderProfile(userId) {
           `;
         }).join('')}
       </div>
+      ${friends.length > 6 ? `<button class="btn-show-all" onclick="showAllFriends(${u.user_id})">👥 Показать все (${friends.length})</button>` : ''}
+    ` : '';
+
+    // ========== Сообщения (Комментарии) ==========
+    const commentsBlock = (u.comments && u.comments.length) ? `
+      <div class="section-title">💬 Сообщения (${commentsCount})</div>
+      <div style="margin-bottom:16px;">
+        ${u.comments.slice(0, 30).map(c => {
+          const chatTitle = c.chat || '—';
+          const text = c.text || '';
+          const date = (c.date || '').slice(0, 16);
+          let link = c.link || '';
+          
+          const isPrivate = link.includes('/c/');
+          let linkHtml = '';
+          if (link && !isPrivate) {
+            linkHtml = `<a href="${esc(link)}" target="_blank" style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--accent);text-decoration:none;background:rgba(0,122,255,0.12);padding:5px 12px;border-radius:8px;font-weight:600;">🔗 Открыть</a>`;
+          } else if (isPrivate) {
+            linkHtml = `<button onclick="copyToClipboard('${esc(link)}')" style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--text-mute);background:var(--bg);border:1px solid var(--border-soft);padding:5px 12px;border-radius:8px;cursor:pointer;">🔒 Приватный</button>`;
+          }
+
+          const msgId = 'msg_' + Math.random().toString(36).substr(2, 9);
+          const textForAttr = esc(text).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
+          return `
+            <div style="background:var(--bg-elev);border-radius:12px;padding:12px 14px;margin-bottom:8px;">
+              <div style="font-size:12px;color:var(--accent);font-weight:600;margin-bottom:6px;display:flex;justify-content:space-between;gap:8px;">
+                <span>📌 ${esc(chatTitle)}</span>
+                <span style="color:var(--text-mute);font-weight:400;white-space:nowrap;">${esc(date)}</span>
+              </div>
+              <div id="${msgId}" style="font-size:13px;color:var(--text);line-height:1.5;word-break:break-word;">${esc(text)}</div>
+              <div id="${msgId}_translated" style="display:none;margin-top:8px;padding:8px 10px;background:rgba(52,199,89,0.08);border-left:3px solid var(--green);border-radius:6px;font-size:13px;color:var(--text);line-height:1.5;"></div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">
+                ${linkHtml}
+                <button onclick="translateMessage('${msgId}', this)" data-text="${textForAttr}" style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--green);background:rgba(52,199,89,0.12);border:1px solid rgba(52,199,89,0.3);padding:5px 12px;border-radius:8px;cursor:pointer;font-weight:600;">🌍 Перевести</button>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    ` : '';
+
+    // ========== История имён ==========
+    const namesBlock = (u.name_history && u.name_history.length) ? `
+      <div class="section-title">📜 История имён (${namesCount})</div>
+      <ul class="list">
+        ${u.name_history.slice(0, 30).map(n => `
+          <li class="list-item">
+            <div class="list-icon purple">👤</div>
+            <div class="list-content">
+              <div class="list-title">${esc(n.name || '—')}</div>
+              <div class="list-sub">${esc(n.date || '')}</div>
+            </div>
+          </li>
+        `).join('')}
+      </ul>
+    ` : '';
+
+    // ========== Изменения профиля ==========
+    const changesBlock = (u.profile_changes && u.profile_changes.length) ? `
+      <div class="section-title">🔄 Изменения профиля (${changesCount})</div>
+      <ul class="list">
+        ${u.profile_changes.slice(0, 20).map(c => {
+          const fieldNames = { 'first_name': 'Имя', 'last_name': 'Фамилия', 'username': 'Username', 'bio': 'Bio', 'phone': 'Телефон' };
+          const label = fieldNames[c.field] || c.field;
+          return `
+            <li class="list-item" style="display:block;">
+              <div style="font-size:12px;color:var(--text-mute);margin-bottom:4px;">${esc(label)} · ${esc((c.date || '').slice(0, 16))}</div>
+              <div style="font-size:13px;color:var(--red);text-decoration:line-through;">❌ ${esc(c.old || '—')}</div>
+              <div style="font-size:13px;color:var(--green);font-weight:600;">✅ ${esc(c.new || '—')}</div>
+            </li>
+          `;
+        }).join('')}
+      </ul>
     ` : '';
 
     // ========== Кнопки внизу ==========
@@ -3142,7 +3204,9 @@ async function renderProfile(userId) {
       ${groupsBlock}
       ${channelsBlock}
       ${friendsBlock}
+      ${commentsBlock}
       ${namesBlock}
+      ${changesBlock}
       ${actionsBlock}
     `;
 

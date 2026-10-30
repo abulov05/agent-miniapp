@@ -1069,35 +1069,16 @@ async function renderHome() {
       <button class="quick-card" onclick="renderScreen('phone-check')"><div class="quick-card-icon green">📱</div><div><div class="quick-card-title">Проверка номера</div><div class="quick-card-sub">Страна, оператор, карта</div></div></button>
     </div>
 
-    <div class="section-title">👥 Соцсети</div>
+    <div class="section-title">📸 Соцсети</div>
     <div class="quick-grid">
       <button class="quick-card" onclick="renderScreen('vk-search')"><div class="quick-card-icon">🔵</div><div><div class="quick-card-title">Поиск VK</div><div class="quick-card-sub">Профиль ВКонтакте</div></div></button>
       <button class="quick-card" onclick="renderScreen('tg-search')"><div class="quick-card-icon">✈️</div><div><div class="quick-card-title">Поиск Telegram</div><div class="quick-card-sub">ID, username, чаты</div></div></button>
+      <button class="quick-card" onclick="renderScreen('instagram-search')" style="background:linear-gradient(135deg, rgba(225,48,108,0.1), rgba(253,203,110,0.1)); border:1px solid rgba(225,48,108,0.25);">
+        <div class="quick-card-icon" style="background:linear-gradient(135deg,#e1306c,#fd1d1d,#fcb045);color:white;">📸</div>
+        <div><div class="quick-card-title">Осинг Instagram</div><div class="quick-card-sub">Профиль по @username / ID / телефону</div></div>
+      </button>
       <button class="quick-card" onclick="renderScreen('username-check')"><div class="quick-card-icon green">🌐</div><div><div class="quick-card-title">Проверка @username</div><div class="quick-card-sub">Все платформы</div></div></button>
     </div>
-
-<div class="section-title">📸 Соцсети</div>
-<div class="quick-grid">
-  <button class="quick-card" onclick="renderScreen('vk-search')">
-    <div class="quick-card-icon">🔵</div>
-    <div><div class="quick-card-title">Поиск VK</div><div class="quick-card-sub">Профиль ВКонтакте</div></div>
-  </button>
-  <button class="quick-card" onclick="renderScreen('tg-search')">
-    <div class="quick-card-icon">✈️</div>
-    <div><div class="quick-card-title">Поиск Telegram</div><div class="quick-card-sub">ID, username, чаты</div></div>
-  </button>
-  <!-- ✅ НОВАЯ КНОПКА -->
-  <button class="quick-card" onclick="renderScreen('instagram-search')" style="background:linear-gradient(135deg, rgba(225,48,108,0.1), rgba(253,203,110,0.1)); border:1px solid rgba(225,48,108,0.25);">
-    <div class="quick-card-icon" style="background:linear-gradient(135deg,#e1306c,#fd1d1d,#fcb045);color:white;">📸</div>
-    <div><div class="quick-card-title">Осинг Instagram</div><div class="quick-card-sub">Профиль по @username / ID / телефону</div></div>
-  </button>
-  <button class="quick-card" onclick="renderScreen('username-check')">
-    <div class="quick-card-icon green">🌐</div>
-    <div><div class="quick-card-title">Проверка @username</div><div class="quick-card-sub">Все платформы</div></div>
-  </button>
-</div>
-
-
 
     <div class="section-title">🎁 Бонусы и связь</div>
     <div class="quick-grid">
@@ -1148,7 +1129,6 @@ async function renderHome() {
   } catch (e) {}
 }
 
-
 async function loadProfileAvatar(userId) {
   const img = document.getElementById('profile-avatar-img');
   const initials = document.getElementById('profile-avatar-initials');
@@ -1174,6 +1154,7 @@ async function loadProfileAvatar(userId) {
     console.warn('[PROFILE-AVATAR] ❌ Failed:', e);
   }
 }
+
 // ============================================================
 // 📸 renderInstagramSearch() ЛИЦА (FACE SEARCH) С АНИМАЦИЕЙ СКАНЕРА
 // ============================================================
@@ -1929,25 +1910,32 @@ async function handleSearch() {
     const isUsername = /^@?[a-zA-Z][a-zA-Z0-9_]{2,31}$/.test(q) && !q.includes(' ') && !/^\+?\d/.test(q);
     const currentUser = getTelegramUser();
 
-       // ============================================================
+    // ============================================================
     // 🔍 Шаг 1: Ищем в БАЗЕ БОТА
     // ============================================================
     if (isId || isUsername) {
       contentWrap.innerHTML = `<div class="section-title">🔍 Поиск: ${esc(q)}</div>${renderLoading('Ищем в базе бота...')}`;
 
       try {
-        // ❌ БЫЛО:
-        // const localData = await pubPost('/api/search_local', { query: q });
-
-        // ✅ СТАЛО:
         const localData = await pubPost('/api/search_local', { 
           query: q,
           viewer_id: currentUser ? currentUser.id : 0
         });
 
         if (localData.success && localData.user) {
-          // Нашли в базе — показываем профиль
           renderScreen('profile', localData.user.user_id);
+          if (currentUser) {
+            pubPost('/api/save_local_search', {
+              user_id: currentUser.id,
+              query: q,
+              target_user_id: localData.user.user_id
+            }).catch(() => {});
+          }
+          return;
+        }
+      } catch (e) {
+        console.warn('[SEARCH] Локальный поиск упал:', e);
+      }
 
       // ============================================================
       // 🌐 Шаг 2: НЕТ в базе → ищем в TELEGRAM
@@ -1957,7 +1945,6 @@ async function handleSearch() {
       try {
         const tgData = await pubPost('/api/search_telegram', { query: q });
         if (tgData.success && tgData.user_id) {
-          // Нашли в Telegram — открываем профиль
           renderScreen('profile', tgData.user_id);
           if (currentUser) {
             pubPost('/api/save_local_search', {

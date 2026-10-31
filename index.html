@@ -2952,19 +2952,97 @@ async function renderProfile(userId) {
     const fullName = ((u.first_name || '') + ' ' + (u.last_name || '')).trim() || 'Без имени';
     const initials = (fullName[0] || '?').toUpperCase();
     const username = u.username ? '@' + u.username : null;
+    
+    // === ДОБАВЛЕНО: берем телефон из ответа API ===
+    const userPhone = u.phone || null;
+
     const tier = (u.started_bot || me.has_subscription) ? 'PREMIUM' : 'USER';
     const tierColor = (u.started_bot || me.has_subscription) ? 'var(--orange)' : 'var(--accent)';
-    
-    // Считаем статистику
+    const chatsCount = (u.chats || []).length;
+    const commentsCount = (u.comments || []).length;
+    const wordsCount = (u.words || []).length;
+    const namesCount = (u.name_history || []).length;
+    const friendsCount = (u.friends || []).length;
+    const changesCount = (u.profile_changes || []).length;
+
+    // ========== Группы и каналы ==========
     const allChats = u.chats || [];
     const groups = allChats.filter(c => c.type === 'group' || c.type === 'supergroup');
     const channels = allChats.filter(c => c.type === 'channel');
-    const friends = u.friends || [];
-    const commentsCount = (u.comments || []).length;
-    const chatsCount = allChats.length;
-    const wordsCount = (u.words || []).length;
-    const namesCount = (u.name_history || []).length;
-    const changesCount = (u.profile_changes || []).length;
+
+    const renderChatItem = (c, icon) => {
+      let link = c.link || '';
+      if (!link && c.chat_id) {
+        link = chatLinkFromId(c.chat_id) || '';
+      }
+      const linkHtml = link
+        ? `<a href="${esc(link)}" target="_blank" onclick="event.stopPropagation()" style="font-size:11px;color:var(--accent);text-decoration:none;background:rgba(0,122,255,0.1);padding:4px 10px;border-radius:8px;font-weight:600;white-space:nowrap;">🔗 Открыть</a>`
+        : `<span style="font-size:11px;color:var(--text-mute);background:var(--bg-elev);padding:4px 10px;border-radius:8px;white-space:nowrap;">🔒 Приватный</span>`;
+      return `
+        <li class="list-item" style="display:flex;align-items:center;gap:10px;">
+          <div class="list-icon">${icon}</div>
+          <div class="list-content" style="flex:1;min-width:0;">
+            <div class="list-title" style="word-break:break-word;">${esc(c.title || '—')}</div>
+            <div class="list-sub">${esc(c.type || 'group')}</div>
+          </div>
+          ${linkHtml}
+        </li>
+      `;
+    };
+
+    // ========== Группы и каналы — сетка ==========
+    const chatsBlock = (groups.length || channels.length) ? `
+      ${groups.length ? `
+        <div class="section-title">👥 Группы (${groups.length})</div>
+        <div class="card-grid">
+          ${groups.slice(0, 4).map((c, idx) => {
+            let link = c.link || '';
+            if (!link && c.chat_id) link = chatLinkFromId(c.chat_id) || '';
+            const colors = ['blue', 'purple', 'green', 'orange'];
+            const color = colors[idx % colors.length];
+            return `
+              <div class="card-tile" ${link ? `onclick="window.open('${esc(link)}','_blank')"` : ''}>
+                <div class="tile-avatar ${color}">💬</div>
+                <div class="tile-info">
+                  <div class="tile-name">${esc(c.title || '—')}</div>
+                  <div class="tile-sub">${link ? '🔗 Открыть' : '🔒 Приватный'}</div>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+        ${groups.length > 4 ? `
+          <button class="btn-show-all" onclick="showAllGroups(${u.user_id})">
+            👥 Показать все группы (${groups.length})
+          </button>
+        ` : ''}
+      ` : ''}
+      ${channels.length ? `
+        <div class="section-title">📢 Каналы (${channels.length})</div>
+        <div class="card-grid">
+          ${channels.slice(0, 4).map((c, idx) => {
+            let link = c.link || '';
+            if (!link && c.chat_id) link = chatLinkFromId(c.chat_id) || '';
+            const colors = ['blue', 'purple', 'green', 'orange'];
+            const color = colors[idx % colors.length];
+            return `
+              <div class="card-tile" ${link ? `onclick="window.open('${esc(link)}','_blank')"` : ''}>
+                <div class="tile-avatar ${color}">📢</div>
+                <div class="tile-info">
+                  <div class="tile-name">${esc(c.title || '—')}</div>
+                  <div class="tile-sub">${link ? '🔗 Открыть' : '🔒 Приватный'}</div>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+        ${channels.length > 4 ? `
+          <button class="btn-show-all" onclick="showAllChannels(${u.user_id})">
+            📢 Показать все каналы (${channels.length})
+          </button>
+        ` : ''}
+      ` : ''}
+    ` : '';
 
     // ========== Аватарка ==========
     const avatarBlock = `
@@ -2974,7 +3052,7 @@ async function renderProfile(userId) {
       </div>
     `;
 
-    // ========== Баланс + Кнопки ==========
+    // ========== Баланс + 7 кнопок в сетке 2×3 ==========
     const balanceBlock = `
       <div style="background:var(--bg-elev);border-radius:14px;padding:12px 16px;margin-bottom:12px;display:flex;align-items:center;gap:12px;">
         <div style="font-size:24px;">💎</div>
@@ -2986,27 +3064,49 @@ async function renderProfile(userId) {
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
         <button class="btn-pair profile" onclick="showAiProfileSummary(${u.user_id})" type="button">
-          <span>ПРОФИЛЬ</span><span class="icon-circle">🧠</span>
+          <span>ПРОФИЛЬ</span>
+          <span class="icon-circle">🧠</span>
         </button>
         <button class="btn-pair sentiment" onclick="showAiProfileSentiment(${u.user_id})" type="button">
-          <span>ЭМОЦИИ</span><span class="icon-circle">😊</span>
+          <span>ЭМОЦИИ</span>
+          <span class="icon-circle">😊</span>
         </button>
         <button class="btn-pair language" onclick="showAiProfileLanguage(${u.user_id})" type="button">
-          <span>ЯЗЫК</span><span class="icon-circle">🌐</span>
+          <span>ЯЗЫК</span>
+          <span class="icon-circle">🌐</span>
         </button>
         <button class="btn-pair similar" onclick="showSimilarUsers(${u.user_id})" type="button">
-          <span>ПОХОЖИЕ</span><span class="icon-circle">👥</span>
+          <span>ПОХОЖИЕ</span>
+          <span class="icon-circle">👥</span>
         </button>
         <button class="btn-pair" onclick="showActivityChart(${u.user_id})" style="background:linear-gradient(135deg,#ff9500,#ff2d55);" type="button">
-          <span>АКТИВНОСТЬ</span><span class="icon-circle">📊</span>
+          <span>АКТИВНОСТЬ</span>
+          <span class="icon-circle">📊</span>
         </button>
         <button class="btn-pair refresh" onclick="refreshUserProfile(${u.user_id})" type="button">
-          <span>ОБНОВИТЬ</span><span class="icon-circle">🔄</span>
+          <span>ОБНОВИТЬ</span>
+          <span class="icon-circle">🔄</span>
         </button>
       </div>
     `;
 
-    // ========== Статистика (3 карточки) ==========
+    // ========== История имён ==========
+    const namesBlock = (u.name_history && u.name_history.length) ? `
+      <div class="section-title">📜 История имён (${namesCount})</div>
+      <ul class="list">
+        ${u.name_history.slice(0, 30).map(n => `
+          <li class="list-item">
+            <div class="list-icon purple">👤</div>
+            <div class="list-content">
+              <div class="list-title">${esc(n.name || '—')}</div>
+              <div class="list-sub">${esc(n.date || '')}</div>
+            </div>
+          </li>
+        `).join('')}
+      </ul>
+    ` : '';
+
+    // ========== Статистика ==========
     const statsBlock = `
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:20px 0;">
         <div style="background:var(--bg-elev);border-radius:14px;padding:16px 8px;text-align:center;">
@@ -3024,57 +3124,11 @@ async function renderProfile(userId) {
       </div>
     `;
 
-    // ========== Группы ==========
-    const groupsBlock = groups.length ? `
-      <div class="section-title">👥 Группы (${groups.length})</div>
-      <div class="card-grid">
-        ${groups.slice(0, 4).map((c, idx) => {
-          let link = c.link || '';
-          if (!link && c.chat_id) link = chatLinkFromId(c.chat_id) || '';
-          const colors = ['blue', 'purple', 'green', 'orange', 'pink'];
-          const color = colors[idx % colors.length];
-          return `
-            <div class="card-tile" ${link ? `onclick="window.open('${esc(link)}','_blank')"` : ''}>
-              <div class="tile-avatar ${color}">💬</div>
-              <div class="tile-info">
-                <div class="tile-name">${esc(c.title || '—')}</div>
-                <div class="tile-sub">${link ? '🔗 Открыть' : '🔒 Приватный'}</div>
-              </div>
-            </div>
-          `;
-        }).join('')}
-      </div>
-      ${groups.length > 4 ? `<button class="btn-show-all" onclick="showAllGroups(${u.user_id})">👥 Показать все группы (${groups.length})</button>` : ''}
-    ` : '';
-
-    // ========== Каналы ==========
-    const channelsBlock = channels.length ? `
-      <div class="section-title">📢 Каналы (${channels.length})</div>
-      <div class="card-grid">
-        ${channels.slice(0, 4).map((c, idx) => {
-          let link = c.link || '';
-          if (!link && c.chat_id) link = chatLinkFromId(c.chat_id) || '';
-          const colors = ['blue', 'purple', 'green', 'orange', 'pink'];
-          const color = colors[idx % colors.length];
-          return `
-            <div class="card-tile" ${link ? `onclick="window.open('${esc(link)}','_blank')"` : ''}>
-              <div class="tile-avatar ${color}">📢</div>
-              <div class="tile-info">
-                <div class="tile-name">${esc(c.title || '—')}</div>
-                <div class="tile-sub">${link ? '🔗 Открыть' : '🔒 Приватный'}</div>
-              </div>
-            </div>
-          `;
-        }).join('')}
-      </div>
-      ${channels.length > 4 ? `<button class="btn-show-all" onclick="showAllChannels(${u.user_id})">📢 Показать все каналы (${channels.length})</button>` : ''}
-    ` : '';
-
     // ========== Знакомые ==========
-    const friendsBlock = friends.length ? `
-      <div class="section-title">👥 Знакомые (${friends.length})</div>
+    const friendsBlock = (u.friends && u.friends.length) ? `
+      <div class="section-title">👥 Знакомые (${friendsCount})</div>
       <div class="card-grid">
-        ${friends.slice(0, 6).map((f, idx) => {
+        ${u.friends.slice(0, 6).map((f, idx) => {
           const fname = f.name || `Пользователь ${f.id}`;
           const fusername = f.username ? `@${f.username}` : `ID: ${f.id}`;
           const flink = f.username ? `https://t.me/${f.username}` : `tg://user?id=${f.id}`;
@@ -3092,10 +3146,26 @@ async function renderProfile(userId) {
           `;
         }).join('')}
       </div>
-      ${friends.length > 6 ? `<button class="btn-show-all" onclick="showAllFriends(${u.user_id})">👥 Показать все (${friends.length})</button>` : ''}
+      ${u.friends.length > 6 ? `
+        <button class="btn-show-all" onclick="showAllFriends(${u.user_id})">
+          👥 Показать все (${u.friends.length})
+        </button>
+      ` : ''}
     ` : '';
 
-    // ========== Сообщения (Комментарии) ==========
+    // ========== Частые слова ==========
+    const wordsBlock = (u.words && u.words.length) ? `
+      <div class="section-title">🔤 Частые слова (${wordsCount})</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;padding:12px;background:var(--bg-elev);border-radius:14px;margin-bottom:16px;">
+        ${u.words.slice(0, 50).map((w, idx) => {
+          const size = idx < 5 ? '16px' : (idx < 15 ? '14px' : '12px');
+          const color = idx < 5 ? 'var(--accent)' : (idx < 15 ? 'var(--text)' : 'var(--text-mute)');
+          return `<span style="font-size:${size};color:${color};font-weight:${idx < 5 ? '700' : '500'};">${esc(w.word)}<span style="color:var(--text-mute);font-size:10px;margin-left:2px;">${w.count}</span></span>`;
+        }).join('')}
+      </div>
+    ` : '';
+
+    // ========== Сообщения с ссылками ==========
     const commentsBlock = (u.comments && u.comments.length) ? `
       <div class="section-title">💬 Сообщения (${commentsCount})</div>
       <div style="margin-bottom:16px;">
@@ -3104,7 +3174,17 @@ async function renderProfile(userId) {
           const text = c.text || '';
           const date = (c.date || '').slice(0, 16);
           let link = c.link || '';
-          
+
+          const chatInfo = (u.chats || []).find(ch =>
+            ch.title === c.chat || String(ch.chat_id) === String(c.chat_id)
+          );
+          if (chatInfo && chatInfo.username) {
+            const msgIdLink = (link.match(/\/(\d+)$/) || [])[1];
+            if (msgIdLink) {
+              link = 'https://t.me/' + chatInfo.username + '/' + msgIdLink;
+            }
+          }
+
           const isPrivate = link.includes('/c/');
           let linkHtml = '';
           if (link && !isPrivate) {
@@ -3132,22 +3212,6 @@ async function renderProfile(userId) {
           `;
         }).join('')}
       </div>
-    ` : '';
-
-    // ========== История имён ==========
-    const namesBlock = (u.name_history && u.name_history.length) ? `
-      <div class="section-title">📜 История имён (${namesCount})</div>
-      <ul class="list">
-        ${u.name_history.slice(0, 30).map(n => `
-          <li class="list-item">
-            <div class="list-icon purple">👤</div>
-            <div class="list-content">
-              <div class="list-title">${esc(n.name || '—')}</div>
-              <div class="list-sub">${esc(n.date || '')}</div>
-            </div>
-          </li>
-        `).join('')}
-      </ul>
     ` : '';
 
     // ========== Изменения профиля ==========
@@ -3181,31 +3245,25 @@ async function renderProfile(userId) {
         <button class="icon-btn" onclick="renderScreen('home')" style="position:absolute;left:8px;top:8px;color:var(--text);">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
-        
         ${avatarBlock}
-        
         <div style="font-size:24px;font-weight:700;color:var(--text);">${esc(fullName)}</div>
         ${username ? `<div style="font-size:15px;color:var(--accent);margin-top:4px;">${esc(username)}</div>` : ''}
+        
         <div style="font-size:13px;color:var(--text-mute);margin-top:6px;">ID: <code>${u.user_id}</code></div>
         
-        <!-- ВЫВОД ТЕЛЕФОНА -->
-        ${u.phone ? `
-        <div style="font-size:14px;color:${u.phone_locked ? 'var(--text-mute)' : 'var(--accent)'};margin-top:6px;font-weight:${u.phone_locked ? '400' : '600'};" onclick="copyToClipboard('${u.phone}')">
-          📱 ${esc(u.phone)} ${u.phone_locked ? '🔒' : ''}
-        </div>
-        ` : ''}
-        <!-- КОНЕЦ ВЫВОДА ТЕЛЕФОНА -->
-
+        <!-- === ДОБАВЛЕНО: ВЫВОД ТЕЛЕФОНА === -->
+        ${userPhone ? `<div style="font-size:13px;color:var(--text-mute);margin-top:4px;">📱 <code style="color:var(--orange);">${esc(userPhone)}</code></div>` : ''}
+        
         <div style="display:inline-block;margin-top:10px;padding:4px 14px;background:${tierColor}20;color:${tierColor};border-radius:20px;font-size:11px;font-weight:700;">⚡ ${tier}</div>
       </div>
 
       ${balanceBlock}
       ${statsBlock}
-      ${groupsBlock}
-      ${channelsBlock}
-      ${friendsBlock}
-      ${commentsBlock}
+      ${chatsBlock}
       ${namesBlock}
+      ${friendsBlock}
+      ${wordsBlock}
+      ${commentsBlock}
       ${changesBlock}
       ${actionsBlock}
     `;
